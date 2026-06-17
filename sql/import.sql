@@ -3,7 +3,8 @@
 --
 -- Quelle (gleiche Datenbank wie WoltLab):
 --   * gf_membres            -> Mitglieder (Stammdaten + Jahresbeiträge)
---   * wcf1_form_response    -> Online-Anträge (formID = 3)
+-- Online-Anträge (wcf1_form_response, formID 3) werden NICHT hier importiert,
+-- sondern live im App-Modul „Anträge" verwaltet (siehe Abschnitt 3).
 -- Ziel:
 --   * mitglieder, beitraege  (vorher mit schema.sql angelegt)
 --
@@ -110,82 +111,15 @@ JOIN `mitglieder` m ON m.`quelle` = 'gf_membres' AND m.`legacy_no` = g.`id`
 WHERE g.`Cot 2026` IS NOT NULL AND g.`Cot 2026` > 0;
 
 -- ------------------------------------------------------------------
--- 3) Online-Anträge aus wcf1_form_response (formID = 3)
---    Echtes Feld-Schema des Mitgliedsantrags:
---      22=Nachname 23=Vorname 24=Geburtsdatum 25=Sprachen(Array)
---      27=Forenname 28=Straße 29=PLZ 30=Ort 31=Land 32=Telefon
---      33=E-Mail 34=Hausnummer
---    Defektes JSON wird (Zeilenumbrüche entfernt) repariert; bleibt es
---    ungültig, wird die Zeile übersprungen. Dubletten zu bestehenden
---    Mitgliedern (User-ID / Forenname / E-Mail) werden ausgelassen.
+-- 3) Online-Anträge  ->  jetzt im App-Modul „Anträge"
 -- ------------------------------------------------------------------
-INSERT INTO `mitglieder`
-    (`vorname`, `nachname`, `email`, `telefon`, `geburtsdatum`,
-     `hausnummer`, `strasse`, `plz`, `ort`, `land`,
-     `wcf_user_id`, `forum_name`,
-     `status`, `antragsart`, `antragsdatum`, `quelle`, `bemerkung`, `vollstaendigkeit`)
-SELECT
-    COALESCE(NULLIF(TRIM(JSON_UNQUOTE(JSON_EXTRACT(r.`fields`, '$."23"'))), ''), '?'),
-    COALESCE(NULLIF(TRIM(JSON_UNQUOTE(JSON_EXTRACT(r.`fields`, '$."22"'))), ''), '?'),
-    NULLIF(TRIM(JSON_UNQUOTE(JSON_EXTRACT(r.`fields`, '$."33"'))), ''),
-    NULLIF(TRIM(JSON_UNQUOTE(JSON_EXTRACT(r.`fields`, '$."32"'))), ''),
-    CASE WHEN JSON_UNQUOTE(JSON_EXTRACT(r.`fields`, '$."24"')) REGEXP '^[0-9]{4}-[0-9]{2}-[0-9]{2}$'
-         THEN JSON_UNQUOTE(JSON_EXTRACT(r.`fields`, '$."24"')) ELSE NULL END,
-    NULLIF(TRIM(JSON_UNQUOTE(JSON_EXTRACT(r.`fields`, '$."34"'))), ''),
-    NULLIF(TRIM(JSON_UNQUOTE(JSON_EXTRACT(r.`fields`, '$."28"'))), ''),
-    NULLIF(TRIM(JSON_UNQUOTE(JSON_EXTRACT(r.`fields`, '$."29"'))), ''),
-    NULLIF(TRIM(JSON_UNQUOTE(JSON_EXTRACT(r.`fields`, '$."30"'))), ''),
-    COALESCE(NULLIF(TRIM(JSON_UNQUOTE(JSON_EXTRACT(r.`fields`, '$."31"'))), ''), 'Luxembourg'),
-    NULLIF(r.`userID`, 0),
-    COALESCE(NULLIF(TRIM(r.`username`), ''),
-             NULLIF(TRIM(JSON_UNQUOTE(JSON_EXTRACT(r.`fields`, '$."27"'))), '')),
-    'antrag',
-    'online',
-    DATE(FROM_UNIXTIME(r.`time`)),
-    'woltlab_form',
-    CASE WHEN JSON_EXTRACT(r.`fields`, '$."25"') IS NOT NULL
-         THEN CONCAT('Sprachen: ', JSON_EXTRACT(r.`fields`, '$."25"')) ELSE NULL END,
-    ROUND((
-        (COALESCE(TRIM(JSON_UNQUOTE(JSON_EXTRACT(r.`fields`, '$."23"'))), '') <> '') +
-        (COALESCE(TRIM(JSON_UNQUOTE(JSON_EXTRACT(r.`fields`, '$."22"'))), '') <> '') +
-        (COALESCE(TRIM(JSON_UNQUOTE(JSON_EXTRACT(r.`fields`, '$."33"'))), '') <> '') +
-        (COALESCE(TRIM(JSON_UNQUOTE(JSON_EXTRACT(r.`fields`, '$."32"'))), '') <> '') +
-        (JSON_UNQUOTE(JSON_EXTRACT(r.`fields`, '$."24"')) IS NOT NULL) +
-        (COALESCE(TRIM(JSON_UNQUOTE(JSON_EXTRACT(r.`fields`, '$."28"'))), '') <> '') +
-        (COALESCE(TRIM(JSON_UNQUOTE(JSON_EXTRACT(r.`fields`, '$."29"'))), '') <> '') +
-        (COALESCE(TRIM(JSON_UNQUOTE(JSON_EXTRACT(r.`fields`, '$."30"'))), '') <> '') +
-        (COALESCE(TRIM(JSON_UNQUOTE(JSON_EXTRACT(r.`fields`, '$."31"'))), '') <> '') +
-        (COALESCE(TRIM(r.`username`), '') <> '')
-    ) / 10 * 100)
-FROM (
-        /* `fields` wird repariert: (1) Emoji/Surrogate-Escapes \uD800-\uDFFF
-           entfernen (manche MySQL/MariaDB-Versionen lehnen sie als JSON ab),
-           (2) alle Steuerzeichen raus, dann validiert. Ungültiges JSON -> '{}'. */
-        SELECT `responseID`, `userID`, `username`, `time`,
-               JSON_VALID(`clean`) AS `is_valid`,
-               IF(JSON_VALID(`clean`), `clean`, '{}') AS `fields`
-        FROM (
-            SELECT `responseID`, `userID`, `username`, `time`,
-                   REGEXP_REPLACE(
-                       REGEXP_REPLACE(`fields`, '\\\\u[dD][89a-fA-F][0-9a-fA-F]{2}', ''),
-                       '[[:cntrl:]]', ' '
-                   ) AS `clean`
-            FROM `wcf1_form_response`
-            WHERE `formID` = 3
-        ) x
-     ) r
-WHERE r.`is_valid` = 1
-  AND NOT EXISTS (
-        SELECT 1 FROM `mitglieder` m
-        WHERE (m.`wcf_user_id` IS NOT NULL AND m.`wcf_user_id` = r.`userID`)
-           OR (m.`forum_name` IS NOT NULL AND TRIM(r.`username`) <> ''
-               AND m.`forum_name` =
-                   CONVERT(TRIM(r.`username`) USING utf8mb4) COLLATE utf8mb4_unicode_ci)
-           OR (m.`email` IS NOT NULL
-               AND m.`email` =
-                   CONVERT(TRIM(JSON_UNQUOTE(JSON_EXTRACT(r.`fields`, '$."33"'))) USING utf8mb4)
-                   COLLATE utf8mb4_unicode_ci)
-  );
+-- Die Online-Anträge aus wcf1_form_response (formID 3) werden NICHT mehr per
+-- SQL importiert, sondern LIVE im App-Modul „Anträge" angezeigt und einzeln
+-- (oder gesammelt) in die Mitgliederverwaltung übernommen.
+--   Vorteil: PHP parst das WoltLab-JSON zuverlässig (Emoji/Surrogate-Escapes,
+--   Steuerzeichen) – unabhängig von der JSON-Strenge der DB-Version – und die
+--   Anträge bleiben einsehbar und verwaltbar statt nur einmalig importiert.
+-- Siehe: app/Models/Antrag.php, app/Controllers/AntraegeController.php
 
 -- ------------------------------------------------------------------
 -- 4) Kontrolle / Hilfsabfragen (nach dem Import einzeln ausführen)

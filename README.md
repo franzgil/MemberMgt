@@ -11,7 +11,11 @@ serverseitig gerenderte Views.
 - **Dashboard**: Kennzahlen, offene Anträge, Datenqualität/Vollständigkeit.
 - **Mitglieder**: Liste mit Suche & Status-Filter, Detailansicht, Anlegen,
   Bearbeiten, Archivieren (Austritt).
+- **Anträge**: Online-Anträge aus dem WoltLab-Formular werden **live** angezeigt
+  (robustes JSON-Parsing in PHP inkl. Emoji/Surrogate), als „neu/erfasst/unlesbar"
+  markiert und einzeln oder gesammelt in die Mitgliederverwaltung übernommen.
 - **Lebenszyklus**: `antrag` → (Trésorier bestätigt Zahlung) → `aktiv`.
+- **Mitglieds-Typ**: Aktives Mitglied / Fördermitglied.
 - **Beiträge** (Cotisation) je Jahr, normalisiert in eigener Tabelle.
 - Sicherheit: PDO Prepared Statements, XSS-Escaping, CSRF-Token.
 
@@ -50,9 +54,12 @@ sql/           schema.sql, seed.sql
    mysql -u DEINUSER -p DEINEDB < sql/import.sql
    ```
    Das Skript **leert zuerst** `mitglieder`/`beitraege` (entfernt damit die
-   Beispieldaten) und importiert anschließend:
-   - `gf_membres` → Mitglieder + Jahresbeiträge (`Cot 2024/2025/2026`)
-   - `wcf1_form_response` (`formID = 3`) → Online-Anträge (Status `antrag`)
+   Beispieldaten) und importiert anschließend `gf_membres` → Mitglieder +
+   Jahresbeiträge (`Cot 2024/2025/2026`).
+
+   Die **Online-Anträge** (`wcf1_form_response`, `formID 3`) werden **nicht**
+   importiert, sondern live im App-Modul **„Anträge"** angezeigt und dort in die
+   Mitgliederverwaltung übernommen.
 
    > Voraussetzung: MySQL 5.7+ / MariaDB 10.2+ (JSON-Funktionen). Das
    > Status-Mapping (`gf_membres.status`) ggf. im CASE oben anpassen –

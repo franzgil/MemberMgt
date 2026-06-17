@@ -14,6 +14,7 @@
         <nav>
             <a href="<?= url('/') ?>">Dashboard</a>
             <a href="<?= url('/mitglieder') ?>">Mitglieder</a>
+            <a href="<?= url('/antraege') ?>">Anträge</a>
             <a class="btn-primary" href="<?= url('/mitglieder/create') ?>">+ Neu</a>
         </nav>
     </div>
