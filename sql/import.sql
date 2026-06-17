@@ -148,9 +148,13 @@ SELECT
         (COALESCE(TRIM(JSON_UNQUOTE(JSON_EXTRACT(r.`fields`, '$."44"'))), '') <> '') +
         (COALESCE(TRIM(r.`username`), '') <> '')
     ) / 10 * 100)
-FROM `wcf1_form_response` r
-WHERE r.`formID` = 3
-  AND NOT EXISTS (
+FROM (
+        /* Nur Antworten mit GÜLTIGEM JSON verarbeiten – defekte/leere
+           `fields` (z. B. Altdaten) würden JSON_EXTRACT sonst abbrechen (#4038). */
+        SELECT * FROM `wcf1_form_response`
+        WHERE `formID` = 3 AND JSON_VALID(`fields`)
+     ) r
+WHERE NOT EXISTS (
         SELECT 1 FROM `mitglieder` m
         WHERE (m.`wcf_user_id` IS NOT NULL AND m.`wcf_user_id` = r.`userID`)
            OR (m.`forum_name` IS NOT NULL AND TRIM(r.`username`) <> ''
@@ -171,4 +175,6 @@ WHERE r.`formID` = 3
 -- Ergebnis prüfen:
 --   SELECT status, COUNT(*) FROM mitglieder GROUP BY status;
 --   SELECT COUNT(*) AS antraege FROM mitglieder WHERE quelle = 'woltlab_form';
+-- Übersprungene Antworten mit ungültigem/leerem JSON (formID 3):
+--   SELECT COUNT(*) FROM wcf1_form_response WHERE formID=3 AND NOT JSON_VALID(`fields`);
 --   SELECT * FROM beitraege ORDER BY mitglied_id, jahr LIMIT 50;
