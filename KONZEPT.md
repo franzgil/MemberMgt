@@ -327,13 +327,18 @@ Zielschema und liefert die zu migrierenden Bestandsdaten.
    **kombiniert**, `gf_membres` **getrennt** (`Numero`/`Rue`). Beim Import aus
    dem Formular muss die Adresse **aufgeteilt** werden.
 
-> **Zielschema** = `gf_membres`-Felder **+** Workflow-Felder aus 4./3a.
-> (`status` mit Antrag→aktiv, `antragsart`, `zahlung_*`, `wcf_user_id`,
-> `quelle`, `created_at/updated_at`) **+** ausgelagerte `beitraege`-Tabelle.
+**Entschieden:**
+- ✅ **Bereinigtes Schema** `mitglieder` (klare Namen) statt direkter
+  `gf_membres`-Nutzung; Bestandsdaten werden **einmalig migriert**.
+- ✅ **Normalisierte `beitraege`-Tabelle** statt Jahres-Spalten
+  (`Cot 2024/2025/2026`/`Cot Comite`).
 
-> **Noch zu klären:** (a) bestehende Tabelle `gf_membres` **weiternutzen** oder
-> in ein **bereinigtes Schema migrieren**? (b) Welche Werte hat `status`?
-> (c) Bedeutung/Einheit der `Cot…`-Beträge (Euro/Cent, 0 = bezahlt/Komitee?).
+Das vollständige, finale Schema liegt in **`sql/schema.sql`** (Tabellen
+`mitglieder` + `beitraege`). Die Zahlungsbestätigung (Trésorier) entspricht
+jetzt einem bestätigten **Beitragseintrag fürs laufende Jahr** in `beitraege`.
+
+> **Noch (klein) zu klären:** Welche Werte hat `gf_membres.status`?
+> Einheit/Bedeutung der `Cot…`-Beträge (Euro/Cent, `Cot Comite`)?
 
 ## 5. Funktionsumfang Stufe 1 (Stammdaten)
 
