@@ -13,10 +13,23 @@ if (!function_exists('e')) {
 }
 
 if (!function_exists('url')) {
-    /** Pfad relativ zur Basis-URL. */
+    /**
+     * Link auf eine App-Route – läuft über den Front Controller (index.php),
+     * damit die App auch OHNE mod_rewrite funktioniert (PATH_INFO).
+     * Beispiel: url('/mitglieder') -> /apps/MemberMgt/public/index.php/mitglieder
+     */
     function url(string $path = ''): string
     {
-        return BASE_URL . $path;
+        $path = ($path === '' || $path === '/') ? '' : '/' . ltrim($path, '/');
+        return BASE_URL . '/index.php' . $path;
+    }
+}
+
+if (!function_exists('asset')) {
+    /** Link auf eine statische Datei (CSS, JS, Bilder) – ohne index.php. */
+    function asset(string $path = ''): string
+    {
+        return BASE_URL . '/' . ltrim($path, '/');
     }
 }
 

@@ -33,18 +33,24 @@ spl_autoload_register(function (string $class): void {
     }
 });
 
-// Route ermitteln (htaccess liefert ?url=…, sonst aus REQUEST_URI ableiten)
+// Route ermitteln – funktioniert in drei Betriebsarten:
+//   1) mit mod_rewrite  -> ?url=…
+//   2) ohne mod_rewrite -> PATH_INFO (index.php/mitglieder/…)
+//   3) Direktaufruf      -> aus REQUEST_URI abgeleitet
 $route = $_GET['url'] ?? null;
-if ($route === null) {
-    $uri = parse_url($_SERVER['REQUEST_URI'] ?? '/', PHP_URL_PATH) ?? '/';
-    // Verzeichnis des Front Controllers abschneiden …
-    if (BASE_URL !== '' && strpos($uri, BASE_URL) === 0) {
-        $uri = substr($uri, strlen(BASE_URL));
+if ($route === null || $route === '') {
+    if (!empty($_SERVER['PATH_INFO'])) {
+        $route = $_SERVER['PATH_INFO'];
+    } else {
+        $uri = parse_url($_SERVER['REQUEST_URI'] ?? '/', PHP_URL_PATH) ?? '/';
+        if (BASE_URL !== '' && strpos($uri, BASE_URL) === 0) {
+            $uri = substr($uri, strlen(BASE_URL));
+        }
+        $route = $uri;
     }
-    // … und einen direkten Aufruf von /index.php ebenfalls entfernen.
-    $uri = preg_replace('#^/index\.php#', '', $uri);
-    $route = $uri;
 }
+// Ein evtl. enthaltenes 'index.php' am Anfang der Route entfernen.
+$route = preg_replace('#^/?index\.php#', '', (string) $route);
 
 try {
     (new App\Core\Router())->dispatch((string) $route);

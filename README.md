@@ -50,8 +50,15 @@ sql/           schema.sql, seed.sql
    Dann <http://localhost:8000> öffnen. (`-t public` setzt den Web-Root korrekt,
    damit Assets unter `public/` ausgeliefert werden.)
 
-   Bei Apache: den `DocumentRoot` auf `public/` zeigen lassen
-   (mod_rewrite + `.htaccess` sind vorbereitet).
+   Bei Apache: idealerweise den `DocumentRoot`/Alias auf `public/` zeigen lassen.
+
+### Ohne mod_rewrite
+
+Die App funktioniert **auch ohne mod_rewrite**: Alle Links laufen über den Front
+Controller via `PATH_INFO` (z. B. `…/public/index.php/mitglieder`). Die
+mitgelieferte `public/.htaccess` ist nur eine optionale Verschönerung für saubere
+URLs; ist `mod_rewrite`/`AllowOverride` nicht verfügbar, ändert sich nichts an der
+Funktion. Statische Dateien (CSS) werden direkt ausgeliefert, nicht über `index.php`.
 
 ## Anforderungen
 

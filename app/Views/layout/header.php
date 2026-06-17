@@ -5,7 +5,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title><?= e($titel ?? '') ?> · <?= e(APP_NAME) ?></title>
-    <link rel="stylesheet" href="<?= url('/assets/css/style.css') ?>">
+    <link rel="stylesheet" href="<?= asset('/assets/css/style.css') ?>">
 </head>
 <body>
 <header class="topbar">
