@@ -21,6 +21,34 @@ Forum, Zahlungsdienste). Ziel ist ein **zentraler Mitgliederbestand**, in den
 diese Quellen einfließen. Das Dashboard zeigt jederzeit, **wie vollständig**
 der Bestand ist und **wo nachgepflegt** werden muss.
 
+### Mitglieds-Lebenszyklus (zentrale Geschäftslogik)
+
+```
+  Forum-Registrierung (WoltLab)      Antrag                Bestätigung
+  ───────────────────────────►  ──────────────────►  ──────────────────────►
+  Forum-Nutzer                  Antragsteller         Mitglied (aktiv)
+  (kein Mitglied,               (online ODER Papier   (erst nach Zahlungs-
+   Daten teils vorhanden)        auf Ausstellung)      bestätigung durch Trésorier)
+```
+
+**Regeln:**
+1. **Forum-Account ist Pflicht** für jedes Mitglied – die gesamte
+   Vereinskommunikation läuft über WoltLab. Ein zukünftiges Mitglied kann sich
+   im Forum registrieren, ist damit aber **noch kein Mitglied**; ein Teil der
+   Stammdaten ist dann bereits vorhanden und kann übernommen werden.
+2. **Antragstellung** auf zwei Wegen:
+   - **Online-Antrag** (Formular)
+   - **Papier-Antrag**, ausgefüllt auf einer Ausstellung (später erfasst)
+3. **Mitglied wird man erst**, wenn der **Trésorier die Bezahlung bestätigt**
+   – per **Überweisung** oder **bar**. Vorher gilt der Status „Antrag“.
+4. Die eigentliche **Mitgliederverwaltung liegt in einer eigenen Tabelle**
+   (`mitglieder`), **getrennt** von den WoltLab-Tabellen. WoltLab bleibt die
+   Identitäts-/Login-Quelle, die Mitgliedschaft selbst wird hier geführt.
+
+> Konsequenz fürs Dashboard: Die „Pipeline“ Forum-Nutzer → Antragsteller →
+> Mitglied wird sichtbar gemacht, inkl. **offener Anträge, die auf die
+> Zahlungsbestätigung warten**.
+
 ## 2. Technologie
 
 | Bereich       | Wahl                                              |
@@ -89,8 +117,10 @@ genutzt. WoltLab speichert Nutzer u. a. in `wcf1_user`, Sitzungen in
 2. **WoltLab-Paket/Plugin:** Die App als WoltLab-Package integrieren. Tiefste
    Integration, aber deutlich höherer Aufwand und an WoltLab-Strukturen gebunden.
 
-> Verknüpfung: Jedes Mitglied wird optional mit einer **WoltLab-User-ID**
-> (`wcf_user_id`) verknüpft → Brücke zwischen Verwaltung und Community.
+> Verknüpfung: Jedes Mitglied wird mit einer **WoltLab-User-ID** (`wcf_user_id`)
+> verknüpft → Brücke zwischen Verwaltung und Community. Für **aktive Mitglieder
+> ist diese Verknüpfung Pflicht** (Forum-Account verpflichtend), für Antragsteller
+> kann sie noch fehlen.
 
 ## 4. Datenmodell (Stammdaten)
 
@@ -109,10 +139,15 @@ genutzt. WoltLab speichert Nutzer u. a. in `wcf1_user`, Sitzungen in
 | ort               | VARCHAR(100)           | optional                                  |
 | land              | VARCHAR(60)            | Default 'Luxembourg'                      |
 | geburtsdatum      | DATE                   | optional                                  |
-| beitrittsdatum    | DATE                   | Pflicht                                   |
+| status            | ENUM('antrag','aktiv','pausiert','inaktiv','ausgetreten','abgelehnt') | Default 'antrag' |
+| antragsart        | ENUM('online','papier')| wie der Antrag gestellt wurde             |
+| antragsdatum      | DATE                   | Datum der Antragstellung                  |
+| zahlungsart       | ENUM('ueberweisung','bar') NULL | wird bei Bestätigung gesetzt     |
+| zahlung_bestaetigt_am | DATE NULL          | **macht zum Mitglied** (durch Trésorier)  |
+| bestaetigt_durch  | INT NULL               | `wcf_user_id` des bestätigenden Trésorier |
+| beitrittsdatum    | DATE NULL              | gesetzt bei Bestätigung (= Mitglied seit) |
 | austrittsdatum    | DATE NULL              | gesetzt bei Austritt                      |
-| status            | ENUM('aktiv','inaktiv','pausiert') | Default 'aktiv'               |
-| wcf_user_id       | INT NULL, UNIQUE       | Verknüpfung zum WoltLab-Account           |
+| wcf_user_id       | INT NULL, UNIQUE       | WoltLab-Account – **Pflicht für Mitglieder** |
 | forum_name        | VARCHAR(100)           | AFOL-spezifisch (Community-/Forenname)    |
 | quelle            | VARCHAR(50)            | Herkunft des Datensatzes (s. Datenquellen)|
 | vollstaendigkeit  | TINYINT                | berechneter Vollständigkeits-% (Cache)    |
@@ -121,7 +156,12 @@ genutzt. WoltLab speichert Nutzer u. a. in `wcf1_user`, Sitzungen in
 | created_at        | DATETIME               | Default CURRENT_TIMESTAMP                 |
 | updated_at        | DATETIME               | aktualisiert bei Änderung                 |
 
-> **Archivieren statt Löschen:** Austritte werden i.d.R. über `status` +
+> **Statuslogik:** Ein Datensatz startet als `antrag` (online oder Papier).
+> Erst wenn der **Trésorier** `zahlung_bestaetigt_am` + `zahlungsart` setzt,
+> wechselt der Status auf `aktiv` und `beitrittsdatum` wird gesetzt → **jetzt
+> Mitglied**. `wcf_user_id` ist für aktive Mitglieder verpflichtend.
+
+> **Archivieren statt Löschen:** Austritte werden über `status='ausgetreten'` +
 > `austrittsdatum` abgebildet (Daten bleiben erhalten). Hartes Löschen bleibt
 > als Admin-Funktion möglich.
 
@@ -156,54 +196,67 @@ zusammengeführt, statt Mehrfach-Datensätze anzulegen.
 
 Das Dashboard ist die Startseite und gibt einen schnellen Überblick:
 
-- **Kennzahlen:** Anzahl Mitglieder gesamt, aktiv/inaktiv/pausiert,
-  Neuzugänge (Zeitraum), mit/ohne WoltLab-Verknüpfung.
+- **Pipeline / Lebenszyklus:** Forum-Nutzer → Antragsteller → Mitglieder.
+  Besonders hervorgehoben: **offene Anträge, die auf die Zahlungsbestätigung
+  des Trésorier warten** (Aufgabenliste „zu bestätigen“), getrennt nach
+  Online- und Papier-Antrag.
+- **Kennzahlen:** Mitglieder gesamt, aktiv/pausiert/inaktiv/ausgetreten,
+  Anträge offen, Neuzugänge (Zeitraum), mit/ohne WoltLab-Verknüpfung.
 - **Datenqualität:** Anteil vollständiger Datensätze, Top-Lücken
-  (z. B. „12 ohne E-Mail“, „8 ohne Beitrittsdatum“), Dubletten-Verdacht.
+  (z. B. „12 ohne E-Mail“, „5 aktive Mitglieder ohne Forum-Account“),
+  Dubletten-Verdacht.
 - **Quellenübersicht:** Datensätze je Quelle, letzter Import, Differenzen
-  zwischen Quellen (z. B. „im Forum, aber nicht im Bestand“).
-- **Direkte Sprünge:** Klick auf eine Lücke → gefilterte Mitgliederliste zum
-  Nachpflegen.
+  zwischen Quellen (z. B. „im Forum, aber kein Antrag/Mitglied“).
+- **Direkte Sprünge:** Klick auf eine Lücke/Aufgabe → gefilterte Liste zum
+  Nachpflegen bzw. Bestätigen.
 
 ## 4c. Datenvollständigkeit
 
 - Pro Mitglied wird ein **Vollständigkeitswert** aus definierten Pflicht-/
   Wunschfeldern berechnet (Feld `vollstaendigkeit`).
 - **Regeln/Checks**, z. B.: E-Mail vorhanden & gültig, Beitrittsdatum gesetzt,
-  Adresse vollständig, WoltLab-Verknüpfung vorhanden.
+  Adresse vollständig, **WoltLab-Verknüpfung vorhanden (für aktive Mitglieder
+  Pflicht)**, Zahlungsart/-bestätigung dokumentiert.
 - Das Dashboard und farbliche Markierungen in der Liste lenken die Pflege
   gezielt auf unvollständige Datensätze.
 
 ## 5. Funktionsumfang Stufe 1 (Stammdaten)
 
-| Route (Beispiel)                  | Aktion        | Beschreibung                  |
-|-----------------------------------|---------------|-------------------------------|
-| `GET /mitglieder`                 | index         | Liste + Suche/Filter          |
-| `GET /mitglieder/show/{id}`       | show          | Detailansicht                 |
-| `GET /mitglieder/create`          | create        | Formular „Neues Mitglied“     |
-| `POST /mitglieder`                | store         | Speichern (mit Validierung)   |
-| `GET /mitglieder/edit/{id}`       | edit          | Formular „Bearbeiten“         |
-| `POST /mitglieder/update/{id}`    | update        | Änderungen speichern          |
-| `POST /mitglieder/delete/{id}`    | destroy       | Löschen/Archivieren           |
+| Route (Beispiel)                  | Aktion        | Beschreibung                          |
+|-----------------------------------|---------------|---------------------------------------|
+| `GET /dashboard`                  | dashboard     | Überblick + offene Aufgaben           |
+| `GET /mitglieder`                 | index         | Liste + Suche/Filter (nach Status)    |
+| `GET /mitglieder/show/{id}`       | show          | Detailansicht                         |
+| `GET /mitglieder/create`          | create        | Formular „Neuer Antrag/Mitglied“      |
+| `POST /mitglieder`                | store         | Speichern (mit Validierung)           |
+| `GET /mitglieder/edit/{id}`       | edit          | Formular „Bearbeiten“                 |
+| `POST /mitglieder/update/{id}`    | update        | Änderungen speichern                  |
+| `POST /mitglieder/bestaetigen/{id}` | confirm     | **Trésorier**: Zahlung bestätigen → Mitglied |
+| `POST /mitglieder/delete/{id}`    | destroy       | Löschen/Archivieren                   |
 
 **Validierung (serverseitig):** Pflichtfelder, gültige E-Mail, eindeutige
-E-Mail/Mitgliedsnummer, plausible Datumswerte.
+E-Mail/Mitgliedsnummer, plausible Datumswerte. **Statuswechsel auf `aktiv`** nur
+über die Bestätigungs-Aktion (setzt `zahlungsart`, `zahlung_bestaetigt_am`,
+`bestaetigt_durch`, `beitrittsdatum`) – idealerweise nur für die
+Trésorier-Berechtigung freigegeben.
 
 ## 6. Sicherheit (von Anfang an)
 - PDO Prepared Statements gegen SQL-Injection.
 - Ausgabe-Escaping (`htmlspecialchars`) in allen Views gegen XSS.
 - CSRF-Token in allen Formularen.
 - DB-Zugangsdaten außerhalb des Web-Roots und nicht im Repo (`.gitignore`).
-- Hinweis: Ein **Login/Zugriffsschutz** ist für den Echtbetrieb nötig und als
-  nächster Schritt vorgesehen (Tabelle `benutzer`).
+- **Login/Zugriffsschutz über WoltLab** (siehe 3a); Bestätigen von Zahlungen nur
+  für die Trésorier-/Vorstands-Gruppe.
 
 ## 7. Vorgeschlagene Umsetzungsreihenfolge
 1. Projektgerüst + MVC-Kern (Router, Database, Basis-Controller/-Model).
-2. DB-Schema `mitglieder` + Beispieldaten.
-3. Mitglieder-Liste mit Suche.
-4. Anlegen + Bearbeiten + Validierung.
-5. Detailansicht + Löschen/Archivieren.
-6. (Danach) Login/Rollen, dann weitere Module.
+2. DB-Schema `mitglieder` (inkl. Status/Antrag/Zahlung) + Beispieldaten.
+3. Mitglieder-/Antrags-Liste mit Suche & Status-Filter.
+4. Anlegen (Antrag) + Bearbeiten + Validierung.
+5. **Bestätigungs-Workflow** (Trésorier: Zahlung → Mitglied).
+6. Detailansicht + Archivieren (Austritt).
+7. Dashboard (Pipeline, offene Anträge, Datenqualität).
+8. WoltLab-Login-Anbindung + Datenquellen-Import.
 
 ## 8. Offene Fragen
 1. **Datenquellen:** Bitte je Quelle ein Beispiel/Export (Spaltennamen, Format)
