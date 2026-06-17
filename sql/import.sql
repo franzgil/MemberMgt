@@ -158,15 +158,18 @@ SELECT
         (COALESCE(TRIM(r.`username`), '') <> '')
     ) / 10 * 100)
 FROM (
-        /* `fields` wird repariert: ALLE Steuerzeichen raus, dann validiert.
-           Ungültiges JSON -> '{}' (JSON_EXTRACT trifft nie auf defektes JSON,
-           auch bei derived_merge). `is_valid` filtert leere Datensätze heraus. */
+        /* `fields` wird repariert: (1) Emoji/Surrogate-Escapes \uD800-\uDFFF
+           entfernen (manche MySQL/MariaDB-Versionen lehnen sie als JSON ab),
+           (2) alle Steuerzeichen raus, dann validiert. Ungültiges JSON -> '{}'. */
         SELECT `responseID`, `userID`, `username`, `time`,
                JSON_VALID(`clean`) AS `is_valid`,
                IF(JSON_VALID(`clean`), `clean`, '{}') AS `fields`
         FROM (
             SELECT `responseID`, `userID`, `username`, `time`,
-                   REGEXP_REPLACE(`fields`, '[[:cntrl:]]', ' ') AS `clean`
+                   REGEXP_REPLACE(
+                       REGEXP_REPLACE(`fields`, '\\\\u[dD][89a-fA-F][0-9a-fA-F]{2}', ''),
+                       '[[:cntrl:]]', ' '
+                   ) AS `clean`
             FROM `wcf1_form_response`
             WHERE `formID` = 3
         ) x
