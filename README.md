@@ -43,6 +43,21 @@ sql/           schema.sql, seed.sql
    ```
    `config/database.php` ist per `.gitignore` ausgeschlossen.
 
+4. **Echtdaten importieren** (statt der Beispieldaten) aus den Bestandstabellen
+   `gf_membres` und `wcf1_form_response` – in **derselben** Datenbank ausführen
+   (z. B. in phpMyAdmin oder per CLI):
+   ```bash
+   mysql -u DEINUSER -p DEINEDB < sql/import.sql
+   ```
+   Das Skript **leert zuerst** `mitglieder`/`beitraege` (entfernt damit die
+   Beispieldaten) und importiert anschließend:
+   - `gf_membres` → Mitglieder + Jahresbeiträge (`Cot 2024/2025/2026`)
+   - `wcf1_form_response` (`formID = 3`) → Online-Anträge (Status `antrag`)
+
+   > Voraussetzung: MySQL 5.7+ / MariaDB 10.2+ (JSON-Funktionen). Das
+   > Status-Mapping (`gf_membres.status`) ggf. im CASE oben anpassen –
+   > vorkommende Werte zeigt `SELECT status, COUNT(*) FROM gf_membres GROUP BY status;`
+
 3. **Starten** (lokal, eingebauter PHP-Server):
    ```bash
    php -S localhost:8000 -t public public/index.php
