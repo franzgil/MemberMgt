@@ -220,6 +220,37 @@ Das Dashboard ist die Startseite und gibt einen schnellen Überblick:
 - Das Dashboard und farbliche Markierungen in der Liste lenken die Pflege
   gezielt auf unvollständige Datensätze.
 
+## 4d. Quelle im Detail: WoltLab-Formular „Mitgliedsantrag" (formID 3)
+
+Der Online-Antrag ist ein WoltLab-Formular (Plugin „Forms"). Relevante Tabellen:
+
+| Tabelle              | Rolle                                                        |
+|----------------------|-------------------------------------------------------------|
+| `wcf1_form`          | Formular-Definition; **`formID = 3`** = Mitgliedsantrag      |
+| `wcf1_form_field`    | Feld-Definitionen (Label `title`, `optionType`, `required`, `selectOptions`, `showOrder`) |
+| `wcf1_form_response` | Abgeschickte Anträge (eine Zeile = ein Antrag)              |
+| `wcf1_form_action`   | Automatik-Aktionen beim Absenden (E-Mail/Gruppe – später)   |
+
+**Wichtige `wcf1_form_response`-Spalten:**
+- `userID` → WoltLab-Account → unser **`wcf_user_id`** (NULL bei Gast)
+- `username` → Forenname → **`forum_name`**
+- `time` (Unix-Timestamp) → **`antragsdatum`**
+- `fields` (longtext) → die eingegebenen **Werte je `fieldID`** (gegen
+  `wcf1_form_field` aufzulösen)
+- `isDone`, `status('accepted','declined')` → **WoltLab-eigener** Bearbeitungs-
+  status; **nicht** mit unserer Zahlungsbestätigung verwechseln
+
+**Import-/Sync-Logik (Vorschlag):**
+1. Felddefinitionen aus `wcf1_form_field WHERE formID=3` laden (fieldID → Bedeutung).
+2. Anträge aus `wcf1_form_response WHERE formID=3` lesen, `fields` parsen.
+3. Pro Antrag einen `mitglieder`-Datensatz mit `status='antrag'`,
+   `antragsart='online'`, `quelle='woltlab_form'` anlegen/aktualisieren
+   (Matching über `wcf_user_id`/E-Mail, keine Dubletten).
+4. Mitglied wird daraus erst durch die **Trésorier-Zahlungsbestätigung** (separat).
+
+> Offen für exaktes Mapping: die **Feldzeilen** (`formID=3`) und **eine
+> Beispiel-`fields`-Zelle** einer Antwort (Format der gespeicherten Werte).
+
 ## 5. Funktionsumfang Stufe 1 (Stammdaten)
 
 | Route (Beispiel)                  | Aktion        | Beschreibung                          |
