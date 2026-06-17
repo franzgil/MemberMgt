@@ -11,9 +11,10 @@
 -- Dieses Skript ist wiederholbar gedacht: es LEERT zuerst die Zieltabellen
 -- (entfernt damit auch die Beispieldaten aus seed.sql) und importiert neu.
 --
--- HINWEIS Status-Mapping: Die echten Werte von gf_membres.status sind hier
--- noch nicht final hinterlegt – unbekannte Werte landen auf 'aktiv'.
--- Bitte die distinct-Werte prüfen (Abfrage am Dateiende) und CASE anpassen.
+-- HINWEIS Status-Mapping: Der Status kommt aus der Spalte `Membre` (Werte wie
+-- 'Actif'/'Passif'). Unbekannte Werte landen auf 'aktiv'. Bitte die distinct-
+-- Werte prüfen (Abfrage am Dateiende) und das CASE bei Bedarf anpassen.
+-- Offen: echte Mitgliedsnummer (welche Spalte?) und Bedeutung von `status`(23).
 -- =============================================================
 
 SET NAMES utf8mb4;
@@ -37,7 +38,7 @@ INSERT INTO `mitglieder`
      `forum_name`, `status`, `karte_ausgestellt`, `quelle`, `vollstaendigkeit`)
 SELECT
     g.`id`,
-    NULLIF(g.`Membre`, ''),
+    NULL,  /* mitgliedsnummer: Quelle noch unklar (Membre = Status!), spaeter setzen */
     COALESCE(NULLIF(TRIM(g.`Prenom`), ''), '?'),
     COALESCE(NULLIF(TRIM(g.`Nom`), ''), '?'),
     NULLIF(TRIM(g.`E-Mail`), ''),
@@ -52,15 +53,14 @@ SELECT
     NULLIF(TRIM(g.`Localite`), ''),
     COALESCE(NULLIF(TRIM(g.`Pays`), ''), 'Luxembourg'),
     NULLIF(TRIM(g.`Username`), ''),
-    CASE LOWER(TRIM(COALESCE(g.`status`, '')))
+    CASE LOWER(TRIM(COALESCE(g.`Membre`, '')))
         WHEN 'actif'      THEN 'aktiv'
-        WHEN 'aktiv'      THEN 'aktiv'
         WHEN 'active'     THEN 'aktiv'
-        WHEN '1'          THEN 'aktiv'
+        WHEN 'aktiv'      THEN 'aktiv'
+        WHEN 'passif'     THEN 'pausiert'
+        WHEN 'passive'    THEN 'pausiert'
         WHEN 'inactif'    THEN 'inaktiv'
         WHEN 'inaktiv'    THEN 'inaktiv'
-        WHEN 'passif'     THEN 'pausiert'
-        WHEN 'pause'      THEN 'pausiert'
         WHEN 'demission'  THEN 'ausgetreten'
         WHEN 'démission'  THEN 'ausgetreten'
         WHEN 'ausgetreten' THEN 'ausgetreten'
@@ -158,7 +158,8 @@ WHERE r.`formID` = 3
 -- ------------------------------------------------------------------
 -- 4) Kontrolle / Hilfsabfragen (nach dem Import einzeln ausführen)
 -- ------------------------------------------------------------------
--- Vorkommende Status-Werte in gf_membres (zum Anpassen des CASE oben):
+-- Vorkommende Werte zum Anpassen des CASE oben (bitte mir schicken):
+--   SELECT `Membre`, COUNT(*) FROM gf_membres GROUP BY `Membre`;
 --   SELECT `status`, COUNT(*) FROM gf_membres GROUP BY `status`;
 -- Ergebnis prüfen:
 --   SELECT status, COUNT(*) FROM mitglieder GROUP BY status;
