@@ -158,7 +158,7 @@ SELECT
         (COALESCE(TRIM(r.`username`), '') <> '')
     ) / 10 * 100)
 FROM (
-        /* `fields` wird repariert: Zeilenumbrüche/Tabs raus, dann validiert.
+        /* `fields` wird repariert: ALLE Steuerzeichen raus, dann validiert.
            Ungültiges JSON -> '{}' (JSON_EXTRACT trifft nie auf defektes JSON,
            auch bei derived_merge). `is_valid` filtert leere Datensätze heraus. */
         SELECT `responseID`, `userID`, `username`, `time`,
@@ -166,7 +166,7 @@ FROM (
                IF(JSON_VALID(`clean`), `clean`, '{}') AS `fields`
         FROM (
             SELECT `responseID`, `userID`, `username`, `time`,
-                   REPLACE(REPLACE(REPLACE(`fields`, '\r', ' '), '\n', ' '), '\t', ' ') AS `clean`
+                   REGEXP_REPLACE(`fields`, '[[:cntrl:]]', ' ') AS `clean`
             FROM `wcf1_form_response`
             WHERE `formID` = 3
         ) x
