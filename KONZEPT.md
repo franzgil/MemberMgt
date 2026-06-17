@@ -168,7 +168,9 @@ genutzt. WoltLab speichert Nutzer u. a. in `wcf1_user`, Sitzungen in
 ### Ausblick (noch nicht gebaut, nur vorgesehen)
 - `import_log` (welche Quelle wann importiert, Anzahl, Fehler) – für das Dashboard.
 - `beitraege`, `zahlungen` – Beitragsverwaltung.
-- `events`, `event_anmeldungen` – Veranstaltungen.
+
+> **Out of scope:** Events/Ausstellungen werden bewusst **nicht** umgesetzt.
+> Der Fokus liegt ausschließlich auf der Mitgliederverwaltung.
 
 > Login/Rollen kommen aus **WoltLab** (siehe 3a) – keine eigene `benutzer`-Tabelle.
 
@@ -240,16 +242,41 @@ Der Online-Antrag ist ein WoltLab-Formular (Plugin „Forms"). Relevante Tabelle
 - `isDone`, `status('accepted','declined')` → **WoltLab-eigener** Bearbeitungs-
   status; **nicht** mit unserer Zahlungsbestätigung verwechseln
 
-**Import-/Sync-Logik (Vorschlag):**
-1. Felddefinitionen aus `wcf1_form_field WHERE formID=3` laden (fieldID → Bedeutung).
-2. Anträge aus `wcf1_form_response WHERE formID=3` lesen, `fields` parsen.
+**Format der `fields`-Spalte:** JSON-Objekt `{"fieldID": Wert, …}` (Werte als
+Text oder Zahl). Beispiel:
+`{"39":"Chantal","40":"Welfringer","41":"49, rue …","42":"1619", …}`
+
+**Feld-Mapping (nur Stammdaten – Events sind out of scope):**
+
+| fieldID | Inhalt (Beispiel)        | → `mitglieder`-Spalte |
+|---------|--------------------------|-----------------------|
+| 39      | Vorname                  | `vorname`             |
+| 40      | Nachname                 | `nachname`            |
+| 41      | Straße + Nr.             | `strasse`             |
+| 42      | PLZ                      | `plz`                 |
+| 43      | Ort                      | `ort`                 |
+| 44      | Land                     | `land`                |
+| 45      | Telefon                  | `telefon`            |
+| 46      | E-Mail                   | `email`               |
+| —       | `response.userID`        | `wcf_user_id`         |
+| —       | `response.username`      | `forum_name`          |
+| —       | `response.time` (Unix)   | `antragsdatum`        |
+
+> **Out of scope:** Felder 47–58 (Exponat/MOC-Beschreibung, Stellfläche,
+> Unterkunft, Frühstück) gehören zur Ausstellungs-Anmeldung und werden **nicht**
+> übernommen. Der Fokus liegt ausschließlich auf der **Mitgliederverwaltung**.
+
+**Import-/Sync-Logik:**
+1. Anträge aus `wcf1_form_response WHERE formID=3` lesen, `fields`-JSON parsen.
+2. Nur die o. g. Stammdaten-Felder übernehmen, Rest ignorieren.
 3. Pro Antrag einen `mitglieder`-Datensatz mit `status='antrag'`,
    `antragsart='online'`, `quelle='woltlab_form'` anlegen/aktualisieren
    (Matching über `wcf_user_id`/E-Mail, keine Dubletten).
 4. Mitglied wird daraus erst durch die **Trésorier-Zahlungsbestätigung** (separat).
 
-> Offen für exaktes Mapping: die **Feldzeilen** (`formID=3`) und **eine
-> Beispiel-`fields`-Zelle** einer Antwort (Format der gespeicherten Werte).
+> Die fieldID→Spalte-Zuordnung ist aus einer Beispielantwort abgeleitet. Falls
+> die Feld-Beschriftungen (`wcf1_form_field`) später abweichen, wird das Mapping
+> in einer zentralen Konfiguration angepasst (keine Code-Änderung nötig).
 
 ## 5. Funktionsumfang Stufe 1 (Stammdaten)
 
