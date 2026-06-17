@@ -149,12 +149,18 @@ SELECT
         (COALESCE(TRIM(r.`username`), '') <> '')
     ) / 10 * 100)
 FROM (
-        /* Nur Antworten mit GÜLTIGEM JSON verarbeiten – defekte/leere
-           `fields` (z. B. Altdaten) würden JSON_EXTRACT sonst abbrechen (#4038). */
-        SELECT * FROM `wcf1_form_response`
-        WHERE `formID` = 3 AND JSON_VALID(`fields`)
+        /* `fields` wird hier SANITISIERT: ungültiges/leeres JSON -> '{}'.
+           Dadurch trifft JSON_EXTRACT nie auf defektes JSON (#4038),
+           auch wenn der Optimizer die Unterabfrage merged. `is_valid`
+           filtert die leeren Datensätze anschließend wieder heraus. */
+        SELECT `responseID`, `userID`, `username`, `time`,
+               JSON_VALID(`fields`) AS `is_valid`,
+               IF(JSON_VALID(`fields`), `fields`, '{}') AS `fields`
+        FROM `wcf1_form_response`
+        WHERE `formID` = 3
      ) r
-WHERE NOT EXISTS (
+WHERE r.`is_valid` = 1
+  AND NOT EXISTS (
         SELECT 1 FROM `mitglieder` m
         WHERE (m.`wcf_user_id` IS NOT NULL AND m.`wcf_user_id` = r.`userID`)
            OR (m.`forum_name` IS NOT NULL AND TRIM(r.`username`) <> ''
