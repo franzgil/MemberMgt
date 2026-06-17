@@ -11,10 +11,11 @@
 -- Dieses Skript ist wiederholbar gedacht: es LEERT zuerst die Zieltabellen
 -- (entfernt damit auch die Beispieldaten aus seed.sql) und importiert neu.
 --
--- HINWEIS Status-Mapping: Der Status kommt aus der Spalte `Membre` (Werte wie
--- 'Actif'/'Passif'). Unbekannte Werte landen auf 'aktiv'. Bitte die distinct-
--- Werte prüfen (Abfrage am Dateiende) und das CASE bei Bedarf anpassen.
--- Offen: echte Mitgliedsnummer (welche Spalte?) und Bedeutung von `status`(23).
+-- Spalten-Deutung (aus Bestandsanalyse):
+--   No      = fortlaufende Mitgliedsnummer        -> mitgliedsnummer
+--   status  = Bearbeitungsstatus ('beantragt' -> antrag, 'accepted'/'' -> aktiv)
+--   Membre  = Mitglieds-Typ (Actif/B)             -> als Notiz in bemerkung
+-- Unbekannte status-Werte landen auf 'aktiv'.
 -- =============================================================
 
 SET NAMES utf8mb4;
@@ -35,10 +36,10 @@ INSERT INTO `mitglieder`
     (`legacy_no`, `mitgliedsnummer`, `vorname`, `nachname`, `email`, `telefon`,
      `geburtsdatum`, `geburtsort`, `geburtsland`, `matricule`,
      `hausnummer`, `strasse`, `plz`, `ort`, `land`,
-     `forum_name`, `status`, `karte_ausgestellt`, `quelle`, `vollstaendigkeit`)
+     `forum_name`, `status`, `karte_ausgestellt`, `quelle`, `bemerkung`, `vollstaendigkeit`)
 SELECT
     g.`id`,
-    NULL,  /* mitgliedsnummer: Quelle noch unklar (Membre = Status!), spaeter setzen */
+    NULLIF(g.`No`, 0),  /* Mitgliedsnummer = fortlaufende Nummer 'No' */
     COALESCE(NULLIF(TRIM(g.`Prenom`), ''), '?'),
     COALESCE(NULLIF(TRIM(g.`Nom`), ''), '?'),
     NULLIF(TRIM(g.`E-Mail`), ''),
@@ -53,22 +54,21 @@ SELECT
     NULLIF(TRIM(g.`Localite`), ''),
     COALESCE(NULLIF(TRIM(g.`Pays`), ''), 'Luxembourg'),
     NULLIF(TRIM(g.`Username`), ''),
-    CASE LOWER(TRIM(COALESCE(g.`Membre`, '')))
-        WHEN 'actif'      THEN 'aktiv'
-        WHEN 'active'     THEN 'aktiv'
-        WHEN 'aktiv'      THEN 'aktiv'
-        WHEN 'passif'     THEN 'pausiert'
-        WHEN 'passive'    THEN 'pausiert'
-        WHEN 'inactif'    THEN 'inaktiv'
-        WHEN 'inaktiv'    THEN 'inaktiv'
-        WHEN 'demission'  THEN 'ausgetreten'
-        WHEN 'démission'  THEN 'ausgetreten'
-        WHEN 'ausgetreten' THEN 'ausgetreten'
+    /* Lebenszyklus aus gf_membres.status: beantragt -> antrag, sonst aktiv */
+    CASE LOWER(TRIM(COALESCE(g.`status`, '')))
+        WHEN 'beantragt' THEN 'antrag'
+        WHEN 'accepted'  THEN 'aktiv'
+        WHEN 'declined'  THEN 'abgelehnt'
+        WHEN 'refuse'    THEN 'abgelehnt'
+        WHEN ''          THEN 'aktiv'
         ELSE 'aktiv'
     END,
     CASE WHEN LOWER(COALESCE(g.`cartemembre_delivre`, '')) IN ('1','y','o','j','x','oui','yes')
          THEN 1 ELSE 0 END,
     'gf_membres',
+    /* Mitglieds-Typ (gf_membres.Membre: Actif/B) als Notiz bewahren */
+    CASE WHEN TRIM(COALESCE(g.`Membre`, '')) <> ''
+         THEN CONCAT('Typ (Membre): ', TRIM(g.`Membre`)) ELSE NULL END,
     ROUND((
         (COALESCE(TRIM(g.`Prenom`), '') <> '') +
         (COALESCE(TRIM(g.`Nom`), '') <> '') +
@@ -149,10 +149,13 @@ WHERE r.`formID` = 3
   AND NOT EXISTS (
         SELECT 1 FROM `mitglieder` m
         WHERE (m.`wcf_user_id` IS NOT NULL AND m.`wcf_user_id` = r.`userID`)
-           OR (m.`forum_name` IS NOT NULL AND r.`username` <> ''
-               AND m.`forum_name` = r.`username`)
+           OR (m.`forum_name` IS NOT NULL AND TRIM(r.`username`) <> ''
+               AND m.`forum_name` =
+                   CONVERT(TRIM(r.`username`) USING utf8mb4) COLLATE utf8mb4_unicode_ci)
            OR (m.`email` IS NOT NULL
-               AND m.`email` = TRIM(JSON_UNQUOTE(JSON_EXTRACT(r.`fields`, '$."46"'))))
+               AND m.`email` =
+                   CONVERT(TRIM(JSON_UNQUOTE(JSON_EXTRACT(r.`fields`, '$."46"'))) USING utf8mb4)
+                   COLLATE utf8mb4_unicode_ci)
   );
 
 -- ------------------------------------------------------------------
