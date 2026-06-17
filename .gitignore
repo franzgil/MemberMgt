@@ -1,0 +1,12 @@
+# DB-Zugangsdaten nie ins Repo
+/config/database.php
+
+# Composer
+/vendor/
+
+# OS / Editor
+.DS_Store
+Thumbs.db
+*.swp
+.idea/
+.vscode/

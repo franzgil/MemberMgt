@@ -1,0 +1,10 @@
+# Alle nicht vorhandenen Pfade auf den Front Controller umleiten (Apache)
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+    RewriteCond %{REQUEST_FILENAME} !-f
+    RewriteCond %{REQUEST_FILENAME} !-d
+    RewriteRule ^(.*)$ index.php?url=$1 [QSA,L]
+</IfModule>
+
+# Verzeichnislisting deaktivieren
+Options -Indexes
