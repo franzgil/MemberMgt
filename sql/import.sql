@@ -111,53 +111,65 @@ WHERE g.`Cot 2026` IS NOT NULL AND g.`Cot 2026` > 0;
 
 -- ------------------------------------------------------------------
 -- 3) Online-Anträge aus wcf1_form_response (formID = 3)
---    Nur Personen, die noch NICHT als Mitglied existieren
---    (Abgleich über WoltLab-User-ID bzw. E-Mail).
---    Feld-Mapping: 39=Vorname 40=Nachname 41=Adresse 42=PLZ 43=Ort
---                  44=Land 45=Telefon 46=E-Mail
+--    Echtes Feld-Schema des Mitgliedsantrags:
+--      22=Nachname 23=Vorname 24=Geburtsdatum 25=Sprachen(Array)
+--      27=Forenname 28=Straße 29=PLZ 30=Ort 31=Land 32=Telefon
+--      33=E-Mail 34=Hausnummer
+--    Defektes JSON wird (Zeilenumbrüche entfernt) repariert; bleibt es
+--    ungültig, wird die Zeile übersprungen. Dubletten zu bestehenden
+--    Mitgliedern (User-ID / Forenname / E-Mail) werden ausgelassen.
 -- ------------------------------------------------------------------
 INSERT INTO `mitglieder`
-    (`vorname`, `nachname`, `email`, `telefon`,
-     `strasse`, `plz`, `ort`, `land`,
+    (`vorname`, `nachname`, `email`, `telefon`, `geburtsdatum`,
+     `hausnummer`, `strasse`, `plz`, `ort`, `land`,
      `wcf_user_id`, `forum_name`,
-     `status`, `antragsart`, `antragsdatum`, `quelle`, `vollstaendigkeit`)
+     `status`, `antragsart`, `antragsdatum`, `quelle`, `bemerkung`, `vollstaendigkeit`)
 SELECT
-    COALESCE(NULLIF(TRIM(JSON_UNQUOTE(JSON_EXTRACT(r.`fields`, '$."39"'))), ''), '?'),
-    COALESCE(NULLIF(TRIM(JSON_UNQUOTE(JSON_EXTRACT(r.`fields`, '$."40"'))), ''), '?'),
-    NULLIF(TRIM(JSON_UNQUOTE(JSON_EXTRACT(r.`fields`, '$."46"'))), ''),
-    NULLIF(TRIM(JSON_UNQUOTE(JSON_EXTRACT(r.`fields`, '$."45"'))), ''),
-    NULLIF(TRIM(JSON_UNQUOTE(JSON_EXTRACT(r.`fields`, '$."41"'))), ''),
-    NULLIF(TRIM(JSON_UNQUOTE(JSON_EXTRACT(r.`fields`, '$."42"'))), ''),
-    NULLIF(TRIM(JSON_UNQUOTE(JSON_EXTRACT(r.`fields`, '$."43"'))), ''),
-    COALESCE(NULLIF(TRIM(JSON_UNQUOTE(JSON_EXTRACT(r.`fields`, '$."44"'))), ''), 'Luxembourg'),
+    COALESCE(NULLIF(TRIM(JSON_UNQUOTE(JSON_EXTRACT(r.`fields`, '$."23"'))), ''), '?'),
+    COALESCE(NULLIF(TRIM(JSON_UNQUOTE(JSON_EXTRACT(r.`fields`, '$."22"'))), ''), '?'),
+    NULLIF(TRIM(JSON_UNQUOTE(JSON_EXTRACT(r.`fields`, '$."33"'))), ''),
+    NULLIF(TRIM(JSON_UNQUOTE(JSON_EXTRACT(r.`fields`, '$."32"'))), ''),
+    CASE WHEN JSON_UNQUOTE(JSON_EXTRACT(r.`fields`, '$."24"')) REGEXP '^[0-9]{4}-[0-9]{2}-[0-9]{2}$'
+         THEN JSON_UNQUOTE(JSON_EXTRACT(r.`fields`, '$."24"')) ELSE NULL END,
+    NULLIF(TRIM(JSON_UNQUOTE(JSON_EXTRACT(r.`fields`, '$."34"'))), ''),
+    NULLIF(TRIM(JSON_UNQUOTE(JSON_EXTRACT(r.`fields`, '$."28"'))), ''),
+    NULLIF(TRIM(JSON_UNQUOTE(JSON_EXTRACT(r.`fields`, '$."29"'))), ''),
+    NULLIF(TRIM(JSON_UNQUOTE(JSON_EXTRACT(r.`fields`, '$."30"'))), ''),
+    COALESCE(NULLIF(TRIM(JSON_UNQUOTE(JSON_EXTRACT(r.`fields`, '$."31"'))), ''), 'Luxembourg'),
     NULLIF(r.`userID`, 0),
-    NULLIF(TRIM(r.`username`), ''),
+    COALESCE(NULLIF(TRIM(r.`username`), ''),
+             NULLIF(TRIM(JSON_UNQUOTE(JSON_EXTRACT(r.`fields`, '$."27"'))), '')),
     'antrag',
     'online',
     DATE(FROM_UNIXTIME(r.`time`)),
     'woltlab_form',
+    CASE WHEN JSON_EXTRACT(r.`fields`, '$."25"') IS NOT NULL
+         THEN CONCAT('Sprachen: ', JSON_EXTRACT(r.`fields`, '$."25"')) ELSE NULL END,
     ROUND((
-        (COALESCE(TRIM(JSON_UNQUOTE(JSON_EXTRACT(r.`fields`, '$."39"'))), '') <> '') +
-        (COALESCE(TRIM(JSON_UNQUOTE(JSON_EXTRACT(r.`fields`, '$."40"'))), '') <> '') +
-        (COALESCE(TRIM(JSON_UNQUOTE(JSON_EXTRACT(r.`fields`, '$."46"'))), '') <> '') +
-        (COALESCE(TRIM(JSON_UNQUOTE(JSON_EXTRACT(r.`fields`, '$."45"'))), '') <> '') +
-        0 + /* Geburtsdatum nicht im Formular */
-        (COALESCE(TRIM(JSON_UNQUOTE(JSON_EXTRACT(r.`fields`, '$."41"'))), '') <> '') +
-        (COALESCE(TRIM(JSON_UNQUOTE(JSON_EXTRACT(r.`fields`, '$."42"'))), '') <> '') +
-        (COALESCE(TRIM(JSON_UNQUOTE(JSON_EXTRACT(r.`fields`, '$."43"'))), '') <> '') +
-        (COALESCE(TRIM(JSON_UNQUOTE(JSON_EXTRACT(r.`fields`, '$."44"'))), '') <> '') +
+        (COALESCE(TRIM(JSON_UNQUOTE(JSON_EXTRACT(r.`fields`, '$."23"'))), '') <> '') +
+        (COALESCE(TRIM(JSON_UNQUOTE(JSON_EXTRACT(r.`fields`, '$."22"'))), '') <> '') +
+        (COALESCE(TRIM(JSON_UNQUOTE(JSON_EXTRACT(r.`fields`, '$."33"'))), '') <> '') +
+        (COALESCE(TRIM(JSON_UNQUOTE(JSON_EXTRACT(r.`fields`, '$."32"'))), '') <> '') +
+        (JSON_UNQUOTE(JSON_EXTRACT(r.`fields`, '$."24"')) IS NOT NULL) +
+        (COALESCE(TRIM(JSON_UNQUOTE(JSON_EXTRACT(r.`fields`, '$."28"'))), '') <> '') +
+        (COALESCE(TRIM(JSON_UNQUOTE(JSON_EXTRACT(r.`fields`, '$."29"'))), '') <> '') +
+        (COALESCE(TRIM(JSON_UNQUOTE(JSON_EXTRACT(r.`fields`, '$."30"'))), '') <> '') +
+        (COALESCE(TRIM(JSON_UNQUOTE(JSON_EXTRACT(r.`fields`, '$."31"'))), '') <> '') +
         (COALESCE(TRIM(r.`username`), '') <> '')
     ) / 10 * 100)
 FROM (
-        /* `fields` wird hier SANITISIERT: ungültiges/leeres JSON -> '{}'.
-           Dadurch trifft JSON_EXTRACT nie auf defektes JSON (#4038),
-           auch wenn der Optimizer die Unterabfrage merged. `is_valid`
-           filtert die leeren Datensätze anschließend wieder heraus. */
+        /* `fields` wird repariert: Zeilenumbrüche/Tabs raus, dann validiert.
+           Ungültiges JSON -> '{}' (JSON_EXTRACT trifft nie auf defektes JSON,
+           auch bei derived_merge). `is_valid` filtert leere Datensätze heraus. */
         SELECT `responseID`, `userID`, `username`, `time`,
-               JSON_VALID(`fields`) AS `is_valid`,
-               IF(JSON_VALID(`fields`), `fields`, '{}') AS `fields`
-        FROM `wcf1_form_response`
-        WHERE `formID` = 3
+               JSON_VALID(`clean`) AS `is_valid`,
+               IF(JSON_VALID(`clean`), `clean`, '{}') AS `fields`
+        FROM (
+            SELECT `responseID`, `userID`, `username`, `time`,
+                   REPLACE(REPLACE(REPLACE(`fields`, '\r', ' '), '\n', ' '), '\t', ' ') AS `clean`
+            FROM `wcf1_form_response`
+            WHERE `formID` = 3
+        ) x
      ) r
 WHERE r.`is_valid` = 1
   AND NOT EXISTS (
@@ -168,7 +180,7 @@ WHERE r.`is_valid` = 1
                    CONVERT(TRIM(r.`username`) USING utf8mb4) COLLATE utf8mb4_unicode_ci)
            OR (m.`email` IS NOT NULL
                AND m.`email` =
-                   CONVERT(TRIM(JSON_UNQUOTE(JSON_EXTRACT(r.`fields`, '$."46"'))) USING utf8mb4)
+                   CONVERT(TRIM(JSON_UNQUOTE(JSON_EXTRACT(r.`fields`, '$."33"'))) USING utf8mb4)
                    COLLATE utf8mb4_unicode_ci)
   );
 

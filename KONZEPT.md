@@ -242,29 +242,30 @@ Der Online-Antrag ist ein WoltLab-Formular (Plugin „Forms"). Relevante Tabelle
 - `isDone`, `status('accepted','declined')` → **WoltLab-eigener** Bearbeitungs-
   status; **nicht** mit unserer Zahlungsbestätigung verwechseln
 
-**Format der `fields`-Spalte:** JSON-Objekt `{"fieldID": Wert, …}` (Werte als
-Text oder Zahl). Beispiel:
-`{"39":"Chantal","40":"Welfringer","41":"49, rue …","42":"1619", …}`
+**Feld-Mapping (echtes Schema des Mitgliedsantrags, fieldID 22–34):**
 
-**Feld-Mapping (nur Stammdaten – Events sind out of scope):**
-
-| fieldID | Inhalt (Beispiel)        | → `mitglieder`-Spalte |
+| fieldID | Inhalt                   | → `mitglieder`-Spalte |
 |---------|--------------------------|-----------------------|
-| 39      | Vorname                  | `vorname`             |
-| 40      | Nachname                 | `nachname`            |
-| 41      | Straße + Nr.             | `strasse`             |
-| 42      | PLZ                      | `plz`                 |
-| 43      | Ort                      | `ort`                 |
-| 44      | Land                     | `land`                |
-| 45      | Telefon                  | `telefon`            |
-| 46      | E-Mail                   | `email`               |
+| 23      | Vorname                  | `vorname`             |
+| 22      | Nachname                 | `nachname`            |
+| 24      | Geburtsdatum             | `geburtsdatum`        |
+| 25      | Sprachen (Mehrfachauswahl)| `bemerkung`          |
+| 27      | Forenname                | `forum_name`          |
+| 34      | Hausnummer               | `hausnummer`          |
+| 28      | Straße                   | `strasse`             |
+| 29      | PLZ                      | `plz`                 |
+| 30      | Ort                      | `ort`                 |
+| 31      | Land                     | `land`                |
+| 32      | Telefon                  | `telefon`             |
+| 33      | E-Mail                   | `email`               |
 | —       | `response.userID`        | `wcf_user_id`         |
 | —       | `response.username`      | `forum_name`          |
 | —       | `response.time` (Unix)   | `antragsdatum`        |
 
-> **Out of scope:** Felder 47–58 (Exponat/MOC-Beschreibung, Stellfläche,
-> Unterkunft, Frühstück) gehören zur Ausstellungs-Anmeldung und werden **nicht**
-> übernommen. Der Fokus liegt ausschließlich auf der **Mitgliederverwaltung**.
+> **Hinweis:** Eine frühere Beispiel-JSON nutzte Felder `39–58` – das war die
+> **Ausstellungs-Anmeldung** (anderes Formular), nicht der Mitgliedsantrag.
+> Der echte Mitgliedsantrag (formID 3) verwendet `22–34`.
+> Defektes JSON (echte Zeilenumbrüche in Textfeldern) wird beim Import repariert.
 
 **Import-/Sync-Logik:**
 1. Anträge aus `wcf1_form_response WHERE formID=3` lesen, `fields`-JSON parsen.
