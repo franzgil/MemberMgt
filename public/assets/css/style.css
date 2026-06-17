@@ -28,6 +28,7 @@ a:hover { text-decoration: underline; }
 .brand { color: var(--gelb); font-weight: 800; font-size: 1.25rem; letter-spacing: .5px; }
 .topbar nav { display: flex; gap: 1rem; align-items: center; }
 .topbar nav a { color: #fff; }
+.navuser { color: var(--gelb); font-size: .85rem; }
 
 main.wrap { padding-top: 1.5rem; padding-bottom: 3rem; }
 

@@ -52,6 +52,31 @@ if ($route === null || $route === '') {
 // Ein evtl. enthaltenes 'index.php' am Anfang der Route entfernen.
 $route = preg_replace('#^/?index\.php#', '', (string) $route);
 
+// Zugriffsschutz über WoltLab (sofern config/auth.php aktiviert).
+// Die /auth-Routen (Diagnose, „Kein Zugriff") bleiben ohne Prüfung erreichbar.
+if (App\Core\Auth::enabled()) {
+    App\Core\Auth::boot();
+    $istAuthRoute = (bool) preg_match('#^/?auth(/|$)#', (string) $route);
+    if (!$istAuthRoute && !App\Core\Auth::check()) {
+        if (App\Core\Auth::bootError() !== null) {
+            http_response_code(500);
+            echo '<h1>Login-Konfiguration</h1><pre>'
+                . htmlspecialchars(App\Core\Auth::bootError(), ENT_QUOTES, 'UTF-8')
+                . '</pre><p>Bitte config/auth.php prüfen oder den Schutz vorübergehend '
+                . 'deaktivieren (enabled = false).</p>';
+            exit;
+        }
+        if (App\Core\Auth::user() === null) {
+            // nicht eingeloggt -> WoltLab-Login
+            header('Location: ' . App\Core\Auth::loginUrl());
+            exit;
+        }
+        // eingeloggt, aber nicht in erlaubter Gruppe -> Hinweisseite
+        header('Location: ' . BASE_URL . '/index.php/auth/denied');
+        exit;
+    }
+}
+
 try {
     (new App\Core\Router())->dispatch((string) $route);
 } catch (Throwable $e) {

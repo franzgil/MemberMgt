@@ -82,6 +82,28 @@ mitgelieferte `public/.htaccess` ist nur eine optionale Verschönerung für saub
 URLs; ist `mod_rewrite`/`AllowOverride` nicht verfügbar, ändert sich nichts an der
 Funktion. Statische Dateien (CSS) werden direkt ausgeliefert, nicht über `index.php`.
 
+## Zugriffsschutz über WoltLab
+
+Die Verwaltung wird über die bestehende **WoltLab-Anmeldung** geschützt – kein
+eigenes Passwort-System. Zugriff nur für berechtigte WoltLab-Benutzergruppen
+(z. B. den Vorstand).
+
+1. Konfiguration anlegen:
+   ```bash
+   cp config/auth.example.php config/auth.php
+   ```
+   (`config/auth.php` ist per `.gitignore` ausgeschlossen.)
+2. In `config/auth.php` setzen:
+   - `woltlab_global`: Pfad zu WoltLabs `global.php` (leer = automatische Suche).
+   - `allowed_groups` / `allowed_group_ids`: berechtigte Gruppe(n).
+   - `login_url`: WoltLab-Login-Seite.
+3. **Verifizieren:** `…/index.php/auth/debug` öffnen – zeigt den erkannten
+   WoltLab-Benutzer, seine Gruppen und ob der Zugriff erlaubt ist. Dort die
+   passenden Gruppen-Namen/IDs ablesen und in `config/auth.php` eintragen.
+
+> Solange `config/auth.php` fehlt, ist der Schutz **aus** (praktisch für lokale
+> Entwicklung). Zum vorübergehenden Deaktivieren `enabled => false` setzen.
+
 ## Anforderungen
 
 - PHP 7.4+ (kompatibel zu PHP 8) mit `pdo_mysql`

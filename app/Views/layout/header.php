@@ -16,6 +16,9 @@
             <a href="<?= url('/mitglieder') ?>">Mitglieder</a>
             <a href="<?= url('/antraege') ?>">Anträge</a>
             <a class="btn-primary" href="<?= url('/mitglieder/create') ?>">+ Neu</a>
+            <?php if (($au = \App\Core\Auth::user()) !== null): ?>
+                <span class="navuser"><?= e($au['username']) ?></span>
+            <?php endif; ?>
         </nav>
     </div>
 </header>

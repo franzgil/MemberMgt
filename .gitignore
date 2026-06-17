@@ -1,6 +1,9 @@
 # DB-Zugangsdaten nie ins Repo
 /config/database.php
 
+# Login-/WoltLab-Konfiguration (umgebungsspezifisch)
+/config/auth.php
+
 # Composer
 /vendor/
 
