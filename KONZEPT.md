@@ -278,6 +278,63 @@ Text oder Zahl). Beispiel:
 > die Feld-Beschriftungen (`wcf1_form_field`) später abweichen, wird das Mapping
 > in einer zentralen Konfiguration angepasst (keine Code-Änderung nötig).
 
+## 4e. Bestehende Tabelle `gf_membres` (aktuelle Mitgliederverwaltung)
+
+Dies ist die **heute genutzte** Mitgliedertabelle. Sie ist die Grundlage für das
+Zielschema und liefert die zu migrierenden Bestandsdaten.
+
+**Spalten → Zielmodell:**
+
+| `gf_membres`            | Deutung                         | → Zielspalte             |
+|-------------------------|---------------------------------|--------------------------|
+| `id`                    | PK                              | `id`                     |
+| `No`                    | laufende Alt-Nummer             | `legacy_no`              |
+| `Membre`                | Mitgliedsnummer (varchar 6)     | `mitgliedsnummer`        |
+| `Nom` / `Prenom`        | Nach-/Vorname                   | `nachname` / `vorname`   |
+| `Username`              | WoltLab-Forenname               | `forum_name` (→ `wcf_user_id`) |
+| `E-Mail`                | E-Mail (Feld zu kurz → erweitern)| `email`                 |
+| `Telephone`             | Telefon                         | `telefon`                |
+| `Date de naissance`     | Geburtsdatum                    | `geburtsdatum`           |
+| `Matricule`             | **LU-Personenkennziffer (sensibel)** | `matricule`         |
+| `Lieu de naissance`     | Geburtsort                      | `geburtsort`             |
+| `Pays de naissance`     | Geburtsland                     | `geburtsland`            |
+| `Numero` / `Rue`        | Hausnummer / Straße (getrennt)  | `hausnummer` / `strasse` |
+| `Code postal`/`Localite`/`Pays` | PLZ/Ort/Land            | `plz` / `ort` / `land`   |
+| `Cot Comite`            | Beitrag Komitee                 | → Tabelle `beitraege`    |
+| `Cot 2024/2025/2026`    | **Jahresbeitrag pro Jahr**      | → Tabelle `beitraege`    |
+| `cartemembre_delivre`   | Mitgliedskarte ausgehändigt     | `karte_ausgestellt`      |
+| `status`                | Status (varchar 10)             | `status`                 |
+
+**Erkenntnisse, die das Modell prägen:**
+
+1. **Mitgliedschaft ist jährlich.** „Mitglied" = **Jahresbeitrag fürs laufende
+   Jahr bezahlt** (genau das bestätigt der Trésorier). Statt Jahres-Spalten
+   (`Cot 2024/25/26`) wird eine **normalisierte Beitragstabelle** empfohlen:
+
+   ```
+   beitraege(id, mitglied_id, jahr, betrag, art('ueberweisung','bar'),
+             bezahlt_am, bestaetigt_durch)
+   ```
+   → keine jährliche Schema-Änderung; Dashboard kann „bezahlt/offen pro Jahr".
+
+2. **`Matricule` ist sensibel** (LU-Personenkennziffer). Zugriff nur für
+   Vorstand/Trésorier, **nicht** in Listen/Dashboard offen anzeigen.
+
+3. **WoltLab-Verknüpfung über `Username`** → Match auf `wcf1_user.username`,
+   um `userID` (`wcf_user_id`) zu setzen.
+
+4. **Adressformat unterschiedlich:** Online-Formular speichert Adresse
+   **kombiniert**, `gf_membres` **getrennt** (`Numero`/`Rue`). Beim Import aus
+   dem Formular muss die Adresse **aufgeteilt** werden.
+
+> **Zielschema** = `gf_membres`-Felder **+** Workflow-Felder aus 4./3a.
+> (`status` mit Antrag→aktiv, `antragsart`, `zahlung_*`, `wcf_user_id`,
+> `quelle`, `created_at/updated_at`) **+** ausgelagerte `beitraege`-Tabelle.
+
+> **Noch zu klären:** (a) bestehende Tabelle `gf_membres` **weiternutzen** oder
+> in ein **bereinigtes Schema migrieren**? (b) Welche Werte hat `status`?
+> (c) Bedeutung/Einheit der `Cot…`-Beträge (Euro/Cent, 0 = bezahlt/Komitee?).
+
 ## 5. Funktionsumfang Stufe 1 (Stammdaten)
 
 | Route (Beispiel)                  | Aktion        | Beschreibung                          |
