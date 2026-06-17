@@ -36,10 +36,13 @@ spl_autoload_register(function (string $class): void {
 // Route ermitteln (htaccess liefert ?url=…, sonst aus REQUEST_URI ableiten)
 $route = $_GET['url'] ?? null;
 if ($route === null) {
-    $uri = parse_url($_SERVER['REQUEST_URI'] ?? '/', PHP_URL_PATH);
+    $uri = parse_url($_SERVER['REQUEST_URI'] ?? '/', PHP_URL_PATH) ?? '/';
+    // Verzeichnis des Front Controllers abschneiden …
     if (BASE_URL !== '' && strpos($uri, BASE_URL) === 0) {
         $uri = substr($uri, strlen(BASE_URL));
     }
+    // … und einen direkten Aufruf von /index.php ebenfalls entfernen.
+    $uri = preg_replace('#^/index\.php#', '', $uri);
     $route = $uri;
 }
 
