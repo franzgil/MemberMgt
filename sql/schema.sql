@@ -48,6 +48,8 @@ CREATE TABLE `mitglieder` (
   -- Mitgliedschafts-Lebenszyklus
   `status`           ENUM('antrag','aktiv','pausiert','inaktiv','ausgetreten','abgelehnt')
                                     NOT NULL DEFAULT 'antrag',
+  `typ`              ENUM('aktiv','foerder') NOT NULL DEFAULT 'aktiv'
+                                    COMMENT 'Aktives Mitglied vs Foerdermitglied (gf_membres.Membre)',
   `antragsart`       ENUM('online','papier') DEFAULT NULL,
   `antragsdatum`     DATE           DEFAULT NULL,
   `beitrittsdatum`   DATE           DEFAULT NULL COMMENT 'gesetzt bei erster Beitragsbestätigung',

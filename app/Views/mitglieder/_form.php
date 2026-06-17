@@ -61,6 +61,14 @@ $v = static function (string $key, $default = '') use ($m) {
                     <?php endforeach; ?>
                 </select>
             </label>
+            <label>Typ
+                <?php $typ = old('typ', $m['typ'] ?? 'aktiv'); ?>
+                <select name="typ">
+                    <?php foreach (\App\Models\Mitglied::TYPEN as $code => $label): ?>
+                        <option value="<?= e($code) ?>" <?= $typ === $code ? 'selected' : '' ?>><?= e($label) ?></option>
+                    <?php endforeach; ?>
+                </select>
+            </label>
             <label>Antragsart
                 <?php $aart = old('antragsart', $m['antragsart'] ?? ''); ?>
                 <select name="antragsart">

@@ -14,13 +14,16 @@ class Mitglied extends Model
     /** Gültige Statuswerte (entsprechen dem ENUM in schema.sql). */
     public const STATUS = ['antrag', 'aktiv', 'pausiert', 'inaktiv', 'ausgetreten', 'abgelehnt'];
 
+    /** Mitglieds-Typen: aktiv = Aktives Mitglied, foerder = Fördermitglied. */
+    public const TYPEN = ['aktiv' => 'Aktives Mitglied', 'foerder' => 'Fördermitglied'];
+
     /** Bearbeitbare Spalten. */
     private const FIELDS = [
         'mitgliedsnummer', 'vorname', 'nachname', 'email', 'telefon',
         'geburtsdatum', 'geburtsort', 'geburtsland', 'matricule',
         'hausnummer', 'strasse', 'plz', 'ort', 'land',
         'wcf_user_id', 'forum_name',
-        'status', 'antragsart', 'antragsdatum', 'beitrittsdatum',
+        'status', 'typ', 'antragsart', 'antragsdatum', 'beitrittsdatum',
         'austrittsdatum', 'karte_ausgestellt', 'quelle', 'bemerkung',
     ];
 
@@ -116,6 +119,14 @@ class Mitglied extends Model
         return (int) $this->db->query('SELECT COUNT(*) FROM mitglieder')->fetchColumn();
     }
 
+    /** Anzahl je Typ ('aktiv'/'foerder'). */
+    public function countTyp(string $typ): int
+    {
+        $stmt = $this->db->prepare('SELECT COUNT(*) FROM mitglieder WHERE typ = :t');
+        $stmt->execute(['t' => $typ]);
+        return (int) $stmt->fetchColumn();
+    }
+
     /** Datensätze, denen ein bestimmtes Feld fehlt (für Datenqualität). */
     public function countMissing(string $field): int
     {
@@ -161,6 +172,9 @@ class Mitglied extends Model
         }
         if (array_key_exists('karte_ausgestellt', $clean)) {
             $clean['karte_ausgestellt'] = $clean['karte_ausgestellt'] ? 1 : 0;
+        }
+        if (array_key_exists('typ', $clean) && !isset(self::TYPEN[$clean['typ']])) {
+            $clean['typ'] = 'aktiv';
         }
         return $clean;
     }

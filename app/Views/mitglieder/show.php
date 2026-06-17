@@ -22,6 +22,7 @@ function feld($label, $value) {
     <section class="panel">
         <h2>Stammdaten</h2>
         <?php
+        feld('Typ', \App\Models\Mitglied::TYPEN[$m['typ']] ?? $m['typ']);
         feld('E-Mail', $m['email']);
         feld('Telefon', $m['telefon']);
         feld('Geburtsdatum', $m['geburtsdatum']);

@@ -4,20 +4,20 @@
 INSERT INTO `mitglieder`
     (`mitgliedsnummer`, `vorname`, `nachname`, `email`, `telefon`,
      `geburtsdatum`, `hausnummer`, `strasse`, `plz`, `ort`, `land`,
-     `forum_name`, `status`, `antragsart`, `antragsdatum`, `beitrittsdatum`,
+     `forum_name`, `status`, `typ`, `antragsart`, `antragsdatum`, `beitrittsdatum`,
      `quelle`, `vollstaendigkeit`)
 VALUES
-    ('M0001', 'Chantal', 'Welfringer', 'brixembourg@example.lu', '00352691199916',
+    ('1', 'Chantal', 'Welfringer', 'brixembourg@example.lu', '00352691199916',
      '1980-05-12', '49', 'rue Michel Gehrend', '1619', 'Luxembourg', 'Luxembourg',
-     'brixembourg', 'aktiv', 'online', '2024-02-01', '2024-02-15',
+     'brixembourg', 'aktiv', 'aktiv', 'online', '2024-02-01', '2024-02-15',
      'woltlab_form', 100),
-    ('M0002', 'Marco', 'Schmit', 'marco.schmit@example.lu', '00352621000000',
+    ('2', 'Marco', 'Schmit', 'marco.schmit@example.lu', '00352621000000',
      '1992-09-30', '7', 'Grand-Rue', '1660', 'Luxembourg', 'Luxembourg',
-     'mschmit', 'antrag', 'papier', '2026-05-20', NULL,
-     'papier', 70),
-    ('M0003', 'Anne', 'Muller', 'anne.muller@example.lu', NULL,
+     'mschmit', 'aktiv', 'foerder', 'papier', '2024-05-20', '2024-06-01',
+     'gf_membres', 80),
+    ('3', 'Anne', 'Muller', 'anne.muller@example.lu', NULL,
      NULL, '12', 'Avenue de la Gare', '1611', 'Esch-sur-Alzette', 'Luxembourg',
-     NULL, 'antrag', 'online', '2026-06-01', NULL,
+     NULL, 'antrag', 'aktiv', 'online', '2026-06-01', NULL,
      'woltlab_form', 50);
 
 INSERT INTO `beitraege` (`mitglied_id`, `jahr`, `betrag`, `art`, `bezahlt_am`)

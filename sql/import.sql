@@ -14,7 +14,7 @@
 -- Spalten-Deutung (aus Bestandsanalyse):
 --   No      = fortlaufende Mitgliedsnummer        -> mitgliedsnummer
 --   status  = Bearbeitungsstatus ('beantragt' -> antrag, 'accepted'/'' -> aktiv)
---   Membre  = Mitglieds-Typ (Actif/B)             -> als Notiz in bemerkung
+--   Membre  = Mitglieds-Typ: Actif -> typ 'aktiv', B (Bienfaiteur) -> typ 'foerder'
 -- Unbekannte status-Werte landen auf 'aktiv'.
 -- =============================================================
 
@@ -36,7 +36,7 @@ INSERT INTO `mitglieder`
     (`legacy_no`, `mitgliedsnummer`, `vorname`, `nachname`, `email`, `telefon`,
      `geburtsdatum`, `geburtsort`, `geburtsland`, `matricule`,
      `hausnummer`, `strasse`, `plz`, `ort`, `land`,
-     `forum_name`, `status`, `karte_ausgestellt`, `quelle`, `bemerkung`, `vollstaendigkeit`)
+     `forum_name`, `status`, `typ`, `karte_ausgestellt`, `quelle`, `vollstaendigkeit`)
 SELECT
     g.`id`,
     NULLIF(g.`No`, 0),  /* Mitgliedsnummer = fortlaufende Nummer 'No' */
@@ -63,12 +63,16 @@ SELECT
         WHEN ''          THEN 'aktiv'
         ELSE 'aktiv'
     END,
+    /* Mitglieds-Typ: Actif -> aktiv, B (Bienfaiteur) -> foerder */
+    CASE LOWER(TRIM(COALESCE(g.`Membre`, '')))
+        WHEN 'b'              THEN 'foerder'
+        WHEN 'foerder'        THEN 'foerder'
+        WHEN 'foerdermitglied' THEN 'foerder'
+        ELSE 'aktiv'
+    END,
     CASE WHEN LOWER(COALESCE(g.`cartemembre_delivre`, '')) IN ('1','y','o','j','x','oui','yes')
          THEN 1 ELSE 0 END,
     'gf_membres',
-    /* Mitglieds-Typ (gf_membres.Membre: Actif/B) als Notiz bewahren */
-    CASE WHEN TRIM(COALESCE(g.`Membre`, '')) <> ''
-         THEN CONCAT('Typ (Membre): ', TRIM(g.`Membre`)) ELSE NULL END,
     ROUND((
         (COALESCE(TRIM(g.`Prenom`), '') <> '') +
         (COALESCE(TRIM(g.`Nom`), '') <> '') +

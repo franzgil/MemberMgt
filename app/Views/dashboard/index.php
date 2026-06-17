@@ -23,6 +23,10 @@
         <div class="card-num"><?= e($bezahltJahr) ?></div>
         <div class="card-label">Beitrag <?= e($aktuellesJahr) ?> bezahlt</div>
     </div>
+    <div class="card">
+        <div class="card-num"><?= e($foerderCount) ?></div>
+        <div class="card-label">Fördermitglieder</div>
+    </div>
 </section>
 
 <div class="grid-2">

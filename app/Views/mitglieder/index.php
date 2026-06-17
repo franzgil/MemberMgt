@@ -27,7 +27,7 @@
     <thead>
         <tr>
             <th>Nr.</th><th>Name</th><th>E-Mail</th><th>Forum</th>
-            <th>Status</th><th class="num">Vollst.</th><th></th>
+            <th>Status</th><th>Typ</th><th class="num">Vollst.</th><th></th>
         </tr>
     </thead>
     <tbody>
@@ -38,6 +38,7 @@
             <td><?= e($m['email']) ?></td>
             <td><?= e($m['forum_name']) ?></td>
             <td><span class="badge badge-<?= e($m['status']) ?>"><?= e($m['status']) ?></span></td>
+            <td><?= $m['typ'] === 'foerder' ? '<span class="badge badge-foerder">Förder</span>' : 'Aktiv' ?></td>
             <td class="num"><?= e($m['vollstaendigkeit']) ?>%</td>
             <td><a href="<?= url('/mitglieder/show/' . $m['id']) ?>">Details</a></td>
         </tr>

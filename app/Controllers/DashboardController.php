@@ -23,6 +23,7 @@ class DashboardController extends Controller
             'offeneAntraege' => $statusCounts['antrag'],
             'bezahltJahr'   => $beitrag->countPaid(AKTUELLES_JAHR),
             'aktuellesJahr' => AKTUELLES_JAHR,
+            'foerderCount'  => $mitglieder->countTyp('foerder'),
             'avgVoll'       => $mitglieder->durchschnittVollstaendigkeit(),
             'aktiveOhneForum' => $mitglieder->aktiveOhneForum(),
             'luecken'       => [
