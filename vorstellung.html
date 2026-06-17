@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AFOL.lu – Mitgliederverwaltung</title>
+<style>
+    :root {
+        --rot: #c8102e;
+        --gelb: #ffcf00;
+        --dunkel: #1c1c1e;
+        --grau: #6b7280;
+        --hell: #f4f5f7;
+        --rand: #e2e4e8;
+        --gruen: #1a7f37;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+    body {
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+        color: var(--dunkel); line-height: 1.6; background: #fff;
+    }
+    .wrap { max-width: 1080px; margin: 0 auto; padding: 0 24px; }
+
+    /* Kopf */
+    header.top {
+        background: var(--dunkel); color: #fff; position: sticky; top: 0; z-index: 10;
+        border-bottom: 3px solid var(--gelb);
+    }
+    header.top .wrap { display: flex; align-items: center; justify-content: space-between; height: 60px; }
+    .logo { font-weight: 800; font-size: 1.2rem; letter-spacing: .5px; }
+    .logo span { color: var(--gelb); }
+    header.top nav a { color: #fff; text-decoration: none; margin-left: 22px; font-size: .92rem; opacity: .85; }
+    header.top nav a:hover { opacity: 1; color: var(--gelb); }
+    @media (max-width: 640px) { header.top nav { display: none; } }
+
+    /* Hero */
+    .hero {
+        background: radial-gradient(1200px 500px at 80% -10%, rgba(200,16,46,.25), transparent),
+                    linear-gradient(160deg, #1c1c1e 0%, #2a2a2e 100%);
+        color: #fff; padding: 88px 0 96px;
+    }
+    .hero .badge {
+        display: inline-block; background: rgba(255,207,0,.15); color: var(--gelb);
+        border: 1px solid rgba(255,207,0,.4); padding: 5px 14px; border-radius: 999px;
+        font-size: .8rem; font-weight: 600; letter-spacing: .5px; margin-bottom: 22px;
+    }
+    .hero h1 { font-size: 2.8rem; line-height: 1.15; font-weight: 800; max-width: 760px; }
+    .hero h1 em { color: var(--gelb); font-style: normal; }
+    .hero p.lead { font-size: 1.2rem; color: #cfd0d4; max-width: 640px; margin-top: 20px; }
+    .hero .cta { margin-top: 34px; display: flex; gap: 14px; flex-wrap: wrap; }
+    .btn {
+        display: inline-block; text-decoration: none; font-weight: 700; padding: 13px 24px;
+        border-radius: 8px; font-size: .98rem; transition: transform .08s ease;
+    }
+    .btn:active { transform: translateY(1px); }
+    .btn-primary { background: var(--rot); color: #fff; }
+    .btn-ghost { background: transparent; color: #fff; border: 1px solid rgba(255,255,255,.35); }
+    @media (max-width: 640px) { .hero h1 { font-size: 2rem; } }
+
+    /* Abschnitte */
+    section { padding: 72px 0; }
+    section.alt { background: var(--hell); }
+    .eyebrow { color: var(--rot); font-weight: 700; font-size: .8rem; letter-spacing: 1.5px; text-transform: uppercase; }
+    h2.sec { font-size: 2rem; font-weight: 800; margin: 8px 0 10px; }
+    p.sub { color: var(--grau); max-width: 680px; font-size: 1.05rem; }
+
+    /* Feature-Grid */
+    .grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 22px; margin-top: 40px; }
+    @media (max-width: 860px) { .grid { grid-template-columns: 1fr 1fr; } }
+    @media (max-width: 560px) { .grid { grid-template-columns: 1fr; } }
+    .card {
+        background: #fff; border: 1px solid var(--rand); border-radius: 12px; padding: 26px;
+        transition: box-shadow .15s ease, transform .15s ease;
+    }
+    .card:hover { box-shadow: 0 12px 30px rgba(0,0,0,.08); transform: translateY(-3px); }
+    .card .ico {
+        width: 44px; height: 44px; border-radius: 10px; display: grid; place-items: center;
+        background: rgba(200,16,46,.1); color: var(--rot); font-size: 1.4rem; margin-bottom: 16px;
+    }
+    .card h3 { font-size: 1.12rem; margin-bottom: 8px; }
+    .card p { color: var(--grau); font-size: .96rem; }
+
+    /* Lebenszyklus */
+    .flow { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; margin-top: 40px; }
+    .step {
+        background: #fff; border: 1px solid var(--rand); border-radius: 10px; padding: 18px 22px;
+        flex: 1; min-width: 180px; text-align: center;
+    }
+    .step .t { font-weight: 800; font-size: 1.05rem; }
+    .step .d { color: var(--grau); font-size: .88rem; margin-top: 4px; }
+    .step.green { border-color: var(--gruen); }
+    .arrow { color: var(--rot); font-size: 1.6rem; font-weight: 800; }
+    @media (max-width: 720px) { .arrow { transform: rotate(90deg); } .flow { flex-direction: column; } }
+
+    /* Tech */
+    .tech { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 34px; }
+    .pill {
+        background: #fff; border: 1px solid var(--rand); border-radius: 999px;
+        padding: 9px 18px; font-weight: 600; font-size: .92rem;
+    }
+    .pill b { color: var(--rot); }
+
+    /* Status */
+    .status { margin-top: 36px; display: grid; grid-template-columns: 1fr 1fr; gap: 12px 30px; }
+    @media (max-width: 560px) { .status { grid-template-columns: 1fr; } }
+    .status li { list-style: none; display: flex; align-items: center; gap: 12px; padding: 8px 0;
+        border-bottom: 1px solid var(--rand); font-size: 1rem; }
+    .check { color: var(--gruen); font-weight: 800; }
+    .soon { color: var(--grau); font-weight: 800; }
+
+    /* Footer */
+    footer { background: var(--dunkel); color: #cfd0d4; padding: 40px 0; text-align: center; }
+    footer .logo { color: #fff; margin-bottom: 8px; }
+    footer a { color: var(--gelb); text-decoration: none; }
+    .disc { font-size: .82rem; color: #8a8b90; margin-top: 10px; }
+</style>
+</head>
+<body>
+
+<header class="top">
+    <div class="wrap">
+        <div class="logo">AFOL<span>.lu</span> · Verwaltung</div>
+        <nav>
+            <a href="#funktionen">Funktionen</a>
+            <a href="#ablauf">Ablauf</a>
+            <a href="#technik">Technik</a>
+            <a href="#status">Status</a>
+        </nav>
+    </div>
+</header>
+
+<section class="hero">
+    <div class="wrap">
+        <span class="badge">Vereinsverwaltung · AFOL.lu a.s.b.l.</span>
+        <h1>Mitglieder &amp; Anträge der <em>AFOL.lu</em> – sauber an einem Ort verwaltet.</h1>
+        <p class="lead">
+            Eine schlanke Webanwendung, die die Mitgliederdaten und die Online-Anträge
+            aus der bestehenden WoltLab-Community zusammenführt – einsehbar, pflegbar
+            und geschützt durch die vorhandene Anmeldung.
+        </p>
+        <div class="cta">
+            <a class="btn btn-primary" href="#funktionen">Funktionen ansehen</a>
+            <a class="btn btn-ghost" href="#status">Projektstand</a>
+        </div>
+    </div>
+</section>
+
+<section id="funktionen">
+    <div class="wrap">
+        <span class="eyebrow">Was die Anwendung kann</span>
+        <h2 class="sec">Alles, was die Mitgliederpflege braucht</h2>
+        <p class="sub">Von der Aufnahme bis zur Beitragskontrolle – ohne Tabellen-Chaos.</p>
+        <div class="grid">
+            <div class="card">
+                <div class="ico">👥</div>
+                <h3>Mitglieder</h3>
+                <p>Liste mit Suche &amp; Status-Filter, Detailansicht, Anlegen, Bearbeiten und
+                   Archivieren bei Austritt – alle Stammdaten an einem Ort.</p>
+            </div>
+            <div class="card">
+                <div class="ico">📝</div>
+                <h3>Online-Anträge</h3>
+                <p>Die Anträge aus dem WoltLab-Formular erscheinen <strong>live</strong>,
+                   werden als neu/erfasst/unlesbar markiert und per Klick in die Verwaltung übernommen.</p>
+            </div>
+            <div class="card">
+                <div class="ico">🔄</div>
+                <h3>Lebenszyklus</h3>
+                <p>Klarer Weg vom Antrag über die Zahlungsbestätigung des Trésoriers bis
+                   zum aktiven Mitglied.</p>
+            </div>
+            <div class="card">
+                <div class="ico">💶</div>
+                <h3>Beiträge</h3>
+                <p>Jahresbeiträge (Cotisation) je Mitglied und Jahr – normalisiert und
+                   nachvollziehbar gespeichert.</p>
+            </div>
+            <div class="card">
+                <div class="ico">📊</div>
+                <h3>Dashboard</h3>
+                <p>Kennzahlen auf einen Blick: offene Anträge, aktive Mitglieder und die
+                   Datenqualität der Stammdaten.</p>
+            </div>
+            <div class="card">
+                <div class="ico">🔐</div>
+                <h3>WoltLab-Login</h3>
+                <p>Zugriff nur für den Vorstand – über die bestehende WoltLab-Anmeldung,
+                   ganz ohne zweites Passwort-System.</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section id="ablauf" class="alt">
+    <div class="wrap">
+        <span class="eyebrow">Der Weg eines Antrags</span>
+        <h2 class="sec">Vom Online-Antrag zum Mitglied</h2>
+        <p class="sub">Jeder Schritt ist sichtbar und nachvollziehbar.</p>
+        <div class="flow">
+            <div class="step">
+                <div class="t">Online-Antrag</div>
+                <div class="d">Eingang über das WoltLab-Formular</div>
+            </div>
+            <div class="arrow">→</div>
+            <div class="step">
+                <div class="t">Übernommen</div>
+                <div class="d">Vorstand prüft &amp; übernimmt (Status „antrag")</div>
+            </div>
+            <div class="arrow">→</div>
+            <div class="step">
+                <div class="t">Zahlung</div>
+                <div class="d">Trésorier bestätigt den Beitrag</div>
+            </div>
+            <div class="arrow">→</div>
+            <div class="step green">
+                <div class="t">Aktiv ✓</div>
+                <div class="d">Vollwertiges Mitglied</div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section id="technik">
+    <div class="wrap">
+        <span class="eyebrow">Unter der Haube</span>
+        <h2 class="sec">Schlank, sicher, ohne Abhängigkeiten</h2>
+        <p class="sub">
+            Reines PHP im MVC-Stil auf derselben Datenbank wie die WoltLab-Community –
+            wartbar und gut in den bestehenden Webspace integrierbar. Eine Besonderheit:
+            Die Antrags-Daten enthalten Emojis (Sprach-Flaggen), an denen ein reiner
+            SQL-Import scheiterte; das robuste JSON-Parsing in PHP löst das zuverlässig.
+        </p>
+        <div class="tech">
+            <span class="pill"><b>PHP</b> · MVC</span>
+            <span class="pill"><b>MySQL/MariaDB</b></span>
+            <span class="pill"><b>PDO</b> · Prepared Statements</span>
+            <span class="pill"><b>WoltLab</b> · SSO</span>
+            <span class="pill">CSRF-Schutz</span>
+            <span class="pill">XSS-Escaping</span>
+            <span class="pill">Ohne Framework-Ballast</span>
+        </div>
+    </div>
+</section>
+
+<section id="status" class="alt">
+    <div class="wrap">
+        <span class="eyebrow">Projektstand</span>
+        <h2 class="sec">Was fertig ist – und was als Nächstes kommt</h2>
+        <ul class="status">
+            <li><span class="check">✓</span> Mitgliederverwaltung (Liste, Detail, Anlegen, Bearbeiten, Archiv)</li>
+            <li><span class="check">✓</span> Online-Anträge live verwalten &amp; übernehmen</li>
+            <li><span class="check">✓</span> Lebenszyklus Antrag → aktiv</li>
+            <li><span class="check">✓</span> Mitglieds-Typ: Aktiv / Förderer</li>
+            <li><span class="check">✓</span> Jahresbeiträge</li>
+            <li><span class="check">✓</span> Dashboard mit Kennzahlen &amp; Datenqualität</li>
+            <li><span class="check">✓</span> Datenimport aus Alt-Tabelle</li>
+            <li><span class="check">✓</span> Zugriffsschutz über WoltLab-Login</li>
+            <li><span class="soon">◌</span> Trésorier-Rolle für Zahlungsfreigaben</li>
+            <li><span class="soon">◌</span> Beitrags-Übersicht je Jahr</li>
+        </ul>
+    </div>
+</section>
+
+<footer>
+    <div class="wrap">
+        <div class="logo">AFOL<span style="color:var(--gelb)">.lu</span> a.s.b.l.</div>
+        <div>Mitgliederverwaltung für die luxemburgische LEGO®-Fan-Community</div>
+        <div class="disc">
+            Interne Vereinsanwendung · LEGO® ist eine Marke der LEGO Gruppe, die dieses
+            Projekt weder sponsert noch unterstützt.
+        </div>
+    </div>
+</footer>
+
+</body>
+</html>
