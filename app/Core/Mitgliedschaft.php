@@ -21,6 +21,9 @@ class Mitgliedschaft
     public const UNBEKANNT  = 'unbekannt';
     public const NA         = 'na'; // kein aktives Mitglied → nicht anwendbar
 
+    /** Filterbare Gültigkeits-Werte (für die Mitgliederliste). */
+    public const FILTER = [self::GUELTIG, self::ABGELAUFEN, self::UNBEKANNT];
+
     /** Aktuelles Mitgliedsjahr, am GV-Monat ausgerichtet. */
     public static function aktuellesJahr(?int $jahr = null, ?int $monat = null): int
     {

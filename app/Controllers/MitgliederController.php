@@ -23,14 +23,23 @@ class MitgliederController extends Controller
     public function index(): void
     {
         $filters = [
-            'q'      => trim($_GET['q'] ?? ''),
-            'status' => $_GET['status'] ?? '',
+            'q'       => trim($_GET['q'] ?? ''),
+            'status'  => $_GET['status'] ?? '',
+            'gueltig' => $_GET['gueltig'] ?? '',
         ];
         $liste = $this->mitglieder->all($filters);
         $bezahlt = $this->beitraege->paidYearsForMany(array_column($liste, 'id'));
         $gueltigkeit = [];
         foreach ($liste as $m) {
             $gueltigkeit[(int) $m['id']] = Mitgliedschaft::bewerten($m, $bezahlt[(int) $m['id']] ?? []);
+        }
+
+        // Nachgelagerter Filter auf die (in PHP berechnete) Gültigkeit.
+        if (in_array($filters['gueltig'], Mitgliedschaft::FILTER, true)) {
+            $liste = array_values(array_filter(
+                $liste,
+                fn ($m) => $gueltigkeit[(int) $m['id']]['status'] === $filters['gueltig']
+            ));
         }
 
         $this->view('mitglieder/index', [
@@ -149,10 +158,13 @@ class MitgliederController extends Controller
         $betrag = trim($_POST['betrag'] ?? '');
         $betrag = $betrag === '' ? null : (float) str_replace(',', '.', $betrag);
 
-        // Beitrag verbuchen (Trésorier = aktuell eingeloggter WoltLab-User; später ersetzt)
-        $this->beitraege->confirm($id, $jahr, $betrag, $art, $mitglied['wcf_user_id'] ?? null);
+        // Beitrag verbuchen – bestätigt durch den eingeloggten Trésorier (WoltLab)
+        $tresorier = \App\Core\Auth::user()['userID'] ?? null;
+        $this->beitraege->confirm($id, $jahr, $betrag, $art, $tresorier);
 
-        // Antrag wird zum Mitglied
+        // War es eine Aktivierung (aus Antrag) oder eine Erneuerung (schon aktiv)?
+        $warAktiv = ($mitglied['status'] ?? '') === 'aktiv';
+
         $update = ['status' => 'aktiv'];
         if (empty($mitglied['beitrittsdatum'])) {
             $update['beitrittsdatum'] = date('Y-m-d');
@@ -161,7 +173,9 @@ class MitgliederController extends Controller
         $update = array_merge($mitglied, $update);
         $this->mitglieder->update($id, $update);
 
-        flash('success', "Zahlung für $jahr bestätigt – Mitglied ist jetzt aktiv.");
+        flash('success', $warAktiv
+            ? "Beitrag für $jahr bestätigt – Mitgliedschaft verlängert."
+            : "Zahlung für $jahr bestätigt – Mitglied ist jetzt aktiv.");
         $this->redirect('/mitglieder/show/' . $id);
     }
 

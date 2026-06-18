@@ -37,6 +37,15 @@ $gueltigBadge = static function (?array $g): string {
             </option>
         <?php endforeach; ?>
     </select>
+    <?php $gOpts = ['' => 'Alle Gültigkeit', Mitgliedschaft::GUELTIG => 'gültig',
+                    Mitgliedschaft::ABGELAUFEN => 'abgelaufen', Mitgliedschaft::UNBEKANNT => 'ohne Angabe']; ?>
+    <select name="gueltig">
+        <?php foreach ($gOpts as $val => $label): ?>
+            <option value="<?= e($val) ?>" <?= ($filters['gueltig'] ?? '') === $val ? 'selected' : '' ?>>
+                <?= e($label) ?>
+            </option>
+        <?php endforeach; ?>
+    </select>
     <button type="submit">Filtern</button>
 </form>
 
