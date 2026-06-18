@@ -1,5 +1,5 @@
 <?php
-/** @var array $m @var array $beitraege @var array $arten @var int $jahr @var string $csrf */
+/** @var array $m @var array $beitraege @var array $gueltigkeit @var array $arten @var int $jahr @var string $csrf */
 function feld($label, $value) {
     echo '<div class="kv"><span class="k">' . e($label) . '</span><span class="val">'
         . ($value !== null && $value !== '' ? e($value) : '<em class="muted">–</em>') . '</span></div>';
@@ -17,6 +17,21 @@ function feld($label, $value) {
 
 <p class="muted">Vollständigkeit: <strong><?= e($m['vollstaendigkeit']) ?>%</strong>
     <?php if ($m['mitgliedsnummer']): ?> · Nr. <?= e($m['mitgliedsnummer']) ?><?php endif; ?></p>
+
+<?php
+$g = $gueltigkeit ?? null;
+if ($g && $g['status'] !== \App\Core\Mitgliedschaft::NA):
+    if ($g['status'] === \App\Core\Mitgliedschaft::GUELTIG): ?>
+        <p>Mitgliedschaft: <span class="badge badge-aktiv">gültig</span>
+           <span class="muted">für das Mitgliedsjahr <?= e((string) $g['bis']) ?> (bis zur nächsten Generalversammlung)</span></p>
+    <?php elseif ($g['status'] === \App\Core\Mitgliedschaft::ABGELAUFEN): ?>
+        <p>Mitgliedschaft: <span class="badge badge-erneuern">erneuern</span>
+           <span class="muted">zuletzt gedeckt bis <?= e((string) $g['bis']) ?>, Erneuerung für <?= e((string) $g['jahr']) ?> nötig</span></p>
+    <?php else: ?>
+        <p>Mitgliedschaft: <span class="muted">unbekannt (kein Beitritts-/Beitragsjahr hinterlegt)</span></p>
+    <?php endif;
+endif;
+?>
 
 <div class="grid-2">
     <section class="panel">

@@ -4,6 +4,7 @@ declare(strict_types=1);
 namespace App\Controllers;
 
 use App\Core\Controller;
+use App\Core\Mitgliedschaft;
 use App\Models\Beitrag;
 use App\Models\Mitglied;
 
@@ -25,9 +26,17 @@ class MitgliederController extends Controller
             'q'      => trim($_GET['q'] ?? ''),
             'status' => $_GET['status'] ?? '',
         ];
+        $liste = $this->mitglieder->all($filters);
+        $bezahlt = $this->beitraege->paidYearsForMany(array_column($liste, 'id'));
+        $gueltigkeit = [];
+        foreach ($liste as $m) {
+            $gueltigkeit[(int) $m['id']] = Mitgliedschaft::bewerten($m, $bezahlt[(int) $m['id']] ?? []);
+        }
+
         $this->view('mitglieder/index', [
             'titel'  => 'Mitglieder',
-            'liste'  => $this->mitglieder->all($filters),
+            'liste'  => $liste,
+            'gueltigkeit' => $gueltigkeit,
             'filters' => $filters,
             'status' => Mitglied::STATUS,
         ]);
@@ -40,10 +49,18 @@ class MitgliederController extends Controller
             $this->notFound();
             return;
         }
+        $beitraege = $this->beitraege->forMitglied((int) $id);
+        $bezahlteJahre = [];
+        foreach ($beitraege as $b) {
+            if (!empty($b['bezahlt_am'])) {
+                $bezahlteJahre[] = (int) $b['jahr'];
+            }
+        }
         $this->view('mitglieder/show', [
             'titel'    => $mitglied['vorname'] . ' ' . $mitglied['nachname'],
             'm'        => $mitglied,
-            'beitraege' => $this->beitraege->forMitglied((int) $id),
+            'beitraege' => $beitraege,
+            'gueltigkeit' => Mitgliedschaft::bewerten($mitglied, $bezahlteJahre),
             'arten'    => Beitrag::ARTEN,
             'jahr'     => AKTUELLES_JAHR,
         ]);

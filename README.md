@@ -82,6 +82,21 @@ mitgelieferte `public/.htaccess` ist nur eine optionale Verschönerung für saub
 URLs; ist `mod_rewrite`/`AllowOverride` nicht verfügbar, ändert sich nichts an der
 Funktion. Statische Dateien (CSS) werden direkt ausgeliefert, nicht über `index.php`.
 
+## Mitgliedschaft & Gültigkeit
+
+In der Mitgliederliste (Spalte **Gültig**) und auf der Detailseite wird angezeigt,
+ob die Mitgliedschaft noch läuft. Regeln (AFOL.lu a.s.b.l.):
+
+- Die Mitgliedsausweise werden jährlich zur **Generalversammlung (März)** erstellt;
+  das Mitgliedsjahr läuft von GV zu GV (Monat konfigurierbar über `GV_MONAT`).
+- Wer im laufenden Jahr beitritt, ist **auch im Folgejahr** Mitglied
+  (Beitrittsjahr + 1 ist gedeckt). Danach jährliche Erneuerung per bestätigtem Beitrag.
+- Anzeige: **gültig &lt;Jahr&gt;** · **erneuern** (abgelaufen) · **?** (kein Beitritts-/
+  Beitragsjahr bekannt) · **–** (kein aktives Mitglied).
+
+Das Gnadenjahr (+1) greift nur bei bekanntem Beitritts-/Antragsdatum; bei reinen
+Altdaten (nur Cot-Jahre) zählt das zuletzt bestätigte Beitragsjahr.
+
 ## Zugriffsschutz über WoltLab
 
 Die Verwaltung wird über die bestehende **WoltLab-Anmeldung** geschützt – kein

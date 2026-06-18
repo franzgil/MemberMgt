@@ -85,6 +85,7 @@ tr.warn td { color: var(--warn); }
 .badge-ausgetreten { background: #fdecec; color: var(--rot); }
 .badge-abgelehnt { background: #fdecec; color: var(--rot); }
 .badge-foerder { background: #eef3ff; color: #1d4ed8; }
+.badge-erneuern { background: #fdecec; color: var(--rot); }
 
 /* Filterbar */
 .filterbar { display: flex; gap: .5rem; margin: 1rem 0; flex-wrap: wrap; }

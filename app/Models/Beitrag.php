@@ -23,6 +23,30 @@ class Beitrag extends Model
         return $stmt->fetchAll();
     }
 
+    /**
+     * Bezahlte Beitragsjahre für mehrere Mitglieder in einer Abfrage.
+     * @param int[] $ids
+     * @return array<int,int[]>  mitglied_id => [Jahre]
+     */
+    public function paidYearsForMany(array $ids): array
+    {
+        $ids = array_values(array_unique(array_map('intval', $ids)));
+        if (!$ids) {
+            return [];
+        }
+        $platzhalter = implode(',', array_fill(0, count($ids), '?'));
+        $stmt = $this->db->prepare(
+            "SELECT mitglied_id, jahr FROM beitraege
+             WHERE bezahlt_am IS NOT NULL AND mitglied_id IN ($platzhalter)"
+        );
+        $stmt->execute($ids);
+        $map = [];
+        foreach ($stmt->fetchAll() as $r) {
+            $map[(int) $r['mitglied_id']][] = (int) $r['jahr'];
+        }
+        return $map;
+    }
+
     public function paidForYear(int $mitgliedId, int $jahr): bool
     {
         $stmt = $this->db->prepare(
