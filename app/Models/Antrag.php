@@ -44,6 +44,17 @@ class Antrag extends Model
         }
     }
 
+    /** Anzahl der Online-Anträge (formID 3); 0 wenn WoltLab nicht erreichbar. */
+    public function count(): int
+    {
+        if (!$this->verfuegbar()) {
+            return 0;
+        }
+        return (int) $this->db
+            ->query('SELECT COUNT(*) FROM wcf1_form_response WHERE formID = ' . self::FORM_ID)
+            ->fetchColumn();
+    }
+
     /** Alle Anträge (neueste zuerst), inkl. Markierung „bereits erfasst". */
     public function all(): array
     {
