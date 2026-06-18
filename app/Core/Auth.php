@@ -113,19 +113,42 @@ class Auth
             return false;
         }
         $cfg = self::config();
-        $allowedIDs = array_map('intval', $cfg['allowed_group_ids'] ?? []);
-        $allowedNames = array_map(
-            static fn ($n) => mb_strtolower(trim((string) $n)),
-            $cfg['allowed_groups'] ?? []
-        );
+        return self::inGruppe($cfg['allowed_groups'] ?? [], $cfg['allowed_group_ids'] ?? []);
+    }
+
+    /**
+     * Darf der aktuelle Benutzer Beiträge bestätigen (Trésorier-Rolle)?
+     * Bei deaktiviertem Schutz (lokale Entwicklung) immer true.
+     */
+    public static function darfBeitragBestaetigen(): bool
+    {
+        self::boot();
+        if (!self::enabled()) {
+            return true;
+        }
+        if (self::$user === null) {
+            return false;
+        }
+        $cfg = self::config();
+        return self::inGruppe($cfg['tresorier_groups'] ?? [], $cfg['tresorier_group_ids'] ?? []);
+    }
+
+    /** Ist der aktuelle Benutzer in einer der genannten Gruppen (Name oder ID)? */
+    private static function inGruppe(array $namen, array $ids): bool
+    {
+        if (self::$user === null) {
+            return false;
+        }
+        $ids = array_map('intval', $ids);
+        $namen = array_map(static fn ($n) => mb_strtolower(trim((string) $n)), $namen);
 
         foreach (self::$user['groupIDs'] as $gid) {
-            if (in_array($gid, $allowedIDs, true)) {
+            if (in_array($gid, $ids, true)) {
                 return true;
             }
         }
         foreach (self::$user['groupNames'] as $name) {
-            if (in_array(mb_strtolower(trim($name)), $allowedNames, true)) {
+            if (in_array(mb_strtolower(trim($name)), $namen, true)) {
                 return true;
             }
         }

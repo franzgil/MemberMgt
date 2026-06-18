@@ -1,5 +1,6 @@
 <?php
-/** @var array $m @var array $beitraege @var array $gueltigkeit @var array $arten @var int $jahr @var string $csrf */
+/** @var array $m @var array $beitraege @var array $bestaetiger @var array $gueltigkeit
+ *  @var bool $darfBestaetigen @var array $arten @var int $jahr @var string $csrf */
 function feld($label, $value) {
     echo '<div class="kv"><span class="k">' . e($label) . '</span><span class="val">'
         . ($value !== null && $value !== '' ? e($value) : '<em class="muted">–</em>') . '</span></div>';
@@ -62,19 +63,30 @@ endif;
             <p class="muted">Noch keine Beiträge erfasst.</p>
         <?php else: ?>
             <table class="mini">
-                <tr><th>Jahr</th><th>Betrag</th><th>Art</th><th>Bezahlt am</th></tr>
+                <tr><th>Jahr</th><th>Betrag</th><th>Art</th><th>Bezahlt am</th><th>bestätigt durch</th></tr>
                 <?php foreach ($beitraege as $b): ?>
+                    <?php $bd = (int) ($b['bestaetigt_durch'] ?? 0); ?>
                     <tr>
                         <td><?= e($b['jahr']) ?></td>
                         <td><?= $b['betrag'] !== null ? e(number_format((float) $b['betrag'], 2, ',', '.')) . ' €' : '–' ?></td>
                         <td><?= e($b['art']) ?></td>
                         <td><?= e($b['bezahlt_am']) ?></td>
+                        <td><?php
+                            if ($bd && isset($bestaetiger[$bd])) {
+                                echo e($bestaetiger[$bd]);
+                            } elseif ($bd) {
+                                echo '<span class="muted" title="WoltLab-User-ID">#' . e((string) $bd) . '</span>';
+                            } else {
+                                echo '<span class="muted">–</span>';
+                            }
+                        ?></td>
                     </tr>
                 <?php endforeach; ?>
             </table>
         <?php endif; ?>
 
         <h3>Zahlung bestätigen (Trésorier)</h3>
+        <?php if (!empty($darfBestaetigen)): ?>
         <form class="form-inline" method="post" action="<?= url('/mitglieder/bestaetigen/' . $m['id']) ?>">
             <input type="hidden" name="csrf" value="<?= e($csrf) ?>">
             <label>Jahr<input type="number" name="jahr" value="<?= e($jahr) ?>" style="width:5em"></label>
@@ -88,6 +100,9 @@ endif;
             </label>
             <button type="submit" class="btn-primary">Bestätigen → aktiv</button>
         </form>
+        <?php else: ?>
+            <p class="muted">Nur Mitglieder der Trésorier-Gruppe können Zahlungen bestätigen.</p>
+        <?php endif; ?>
     </section>
 </div>
 

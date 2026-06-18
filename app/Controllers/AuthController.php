@@ -19,6 +19,7 @@ class AuthController extends Controller
             'user'      => Auth::user(),
             'config'    => Auth::config(),
             'darfRein'  => Auth::check(),
+            'darfBestaetigen' => Auth::darfBeitragBestaetigen(),
         ]);
     }
 

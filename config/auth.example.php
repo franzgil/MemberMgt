@@ -21,6 +21,10 @@ return [
     // …oder alternativ/zusätzlich über Gruppen-IDs (sicherer als Namen):
     'allowed_group_ids' => [],
 
+    // Beiträge bestätigen dürfen nur Mitglieder dieser Gruppe(n) (Trésorier):
+    'tresorier_groups' => ['Tresorier'],
+    'tresorier_group_ids' => [],
+
     // WoltLab-Login-Seite (Weiterleitung, wenn nicht eingeloggt)
     'login_url' => 'https://afol55.afol.lu/index.php?login/',
 ];

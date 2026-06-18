@@ -65,11 +65,17 @@ class MitgliederController extends Controller
                 $bezahlteJahre[] = (int) $b['jahr'];
             }
         }
+        // Namen der bestätigenden Trésoriers auflösen (wcf1_user).
+        $bestaetiger = (new \App\Models\WoltlabUser())
+            ->namesById(array_column($beitraege, 'bestaetigt_durch'));
+
         $this->view('mitglieder/show', [
             'titel'    => $mitglied['vorname'] . ' ' . $mitglied['nachname'],
             'm'        => $mitglied,
             'beitraege' => $beitraege,
+            'bestaetiger' => $bestaetiger,
             'gueltigkeit' => Mitgliedschaft::bewerten($mitglied, $bezahlteJahre),
+            'darfBestaetigen' => \App\Core\Auth::darfBeitragBestaetigen(),
             'arten'    => Beitrag::ARTEN,
             'jahr'     => AKTUELLES_JAHR,
         ]);
@@ -147,6 +153,13 @@ class MitgliederController extends Controller
     {
         $this->verifyCsrf();
         $id = (int) $id;
+
+        if (!\App\Core\Auth::darfBeitragBestaetigen()) {
+            flash('errors', 'Nur Mitglieder der Trésorier-Gruppe dürfen Zahlungen bestätigen.');
+            $this->redirect('/mitglieder/show/' . $id);
+            return;
+        }
+
         $mitglied = $this->mitglieder->find($id);
         if ($mitglied === null) {
             $this->notFound();

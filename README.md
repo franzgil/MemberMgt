@@ -113,8 +113,14 @@ eigenes Passwort-System. Zugriff nur für berechtigte WoltLab-Benutzergruppen
    - `allowed_groups` / `allowed_group_ids`: berechtigte Gruppe(n).
    - `login_url`: WoltLab-Login-Seite.
 3. **Verifizieren:** `…/index.php/auth/debug` öffnen – zeigt den erkannten
-   WoltLab-Benutzer, seine Gruppen und ob der Zugriff erlaubt ist. Dort die
-   passenden Gruppen-Namen/IDs ablesen und in `config/auth.php` eintragen.
+   WoltLab-Benutzer, seine Gruppen, ob der Zugriff erlaubt ist und ob er Beiträge
+   bestätigen darf (Trésorier). Dort die passenden Gruppen-Namen/IDs ablesen und
+   in `config/auth.php` eintragen.
+
+**Rollen:** Beiträge bestätigen dürfen nur Mitglieder der in `tresorier_groups`
+(bzw. `tresorier_group_ids`) genannten WoltLab-Gruppe(n) – Standard: `Tresorier`.
+Das Bestätigungsformular wird sonst ausgeblendet und der Server lehnt den Vorgang
+ab (fail-closed).
 
 > Solange `config/auth.php` fehlt, ist der Schutz **aus** (praktisch für lokale
 > Entwicklung). Zum vorübergehenden Deaktivieren `enabled => false` setzen.

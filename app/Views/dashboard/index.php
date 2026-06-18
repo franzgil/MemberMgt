@@ -1,5 +1,5 @@
 <?php
-/** @var int $total @var array $statusCounts @var int $onlineAntraege */
+/** @var int $total @var array $statusCounts @var int $onlineAntraege @var int $abgelaufen */
 /** @var int $bezahltJahr @var int $aktuellesJahr @var int $avgVoll */
 /** @var int $aktiveOhneForum @var array $luecken */
 ?>
@@ -18,6 +18,11 @@
         <div class="card-num"><?= e($onlineAntraege) ?></div>
         <div class="card-label">Online-Anträge</div>
         <a href="<?= url('/antraege') ?>">ansehen →</a>
+    </div>
+    <div class="card<?= $abgelaufen > 0 ? ' card-accent' : '' ?>">
+        <div class="card-num"><?= e($abgelaufen) ?></div>
+        <div class="card-label">abgelaufen</div>
+        <a href="<?= url('/mitglieder?gueltig=abgelaufen') ?>">erneuern →</a>
     </div>
     <div class="card">
         <div class="card-num"><?= e($bezahltJahr) ?></div>

@@ -1,5 +1,6 @@
 <?php
-/** @var bool $enabled @var ?string $bootError @var ?array $user @var array $config @var bool $darfRein */
+/** @var bool $enabled @var ?string $bootError @var ?array $user @var array $config
+ *  @var bool $darfRein @var bool $darfBestaetigen */
 ?>
 <h1>Login-Diagnose</h1>
 
@@ -8,6 +9,7 @@
     <div class="kv"><span class="k">Schutz aktiv</span><span class="val"><?= $enabled ? 'ja' : 'nein' ?></span></div>
     <div class="kv"><span class="k">WoltLab-Fehler</span><span class="val"><?= $bootError ? e($bootError) : '<em class="muted">keiner</em>' ?></span></div>
     <div class="kv"><span class="k">Zugriff erlaubt</span><span class="val"><?= $darfRein ? '✅ ja' : '❌ nein' ?></span></div>
+    <div class="kv"><span class="k">Darf Beiträge bestätigen (Trésorier)</span><span class="val"><?= $darfBestaetigen ? '✅ ja' : '❌ nein' ?></span></div>
 </section>
 
 <section class="panel">
@@ -26,6 +28,8 @@
     <h2>Erlaubte Gruppen (config/auth.php)</h2>
     <div class="kv"><span class="k">Namen</span><span class="val"><?= e(implode(' · ', $config['allowed_groups'] ?? [])) ?: '<em class="muted">–</em>' ?></span></div>
     <div class="kv"><span class="k">IDs</span><span class="val"><?= e(implode(', ', $config['allowed_group_ids'] ?? [])) ?: '<em class="muted">–</em>' ?></span></div>
+    <div class="kv"><span class="k">Trésorier-Gruppen</span><span class="val"><?= e(implode(' · ', $config['tresorier_groups'] ?? [])) ?: '<em class="muted">–</em>' ?></span></div>
+    <div class="kv"><span class="k">Trésorier-IDs</span><span class="val"><?= e(implode(', ', $config['tresorier_group_ids'] ?? [])) ?: '<em class="muted">–</em>' ?></span></div>
     <p class="muted">Stimmen die Gruppen-Namen/IDs oben mit deiner Vorstandsgruppe überein?
         Falls nicht, in <code>config/auth.php</code> anpassen (IDs sind am sichersten).</p>
 </section>
