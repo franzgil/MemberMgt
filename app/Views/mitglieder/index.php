@@ -49,31 +49,56 @@ $gueltigBadge = static function (?array $g): string {
     <button type="submit">Filtern</button>
 </form>
 
+<?php
+/** Tabelle für eine Mitglieder-Teilmenge rendern. */
+$tabelle = static function (array $rows) use ($gueltigBadge, $gueltigkeit): void {
+    if (!$rows) {
+        echo '<p class="muted">Keine Einträge in dieser Gruppe.</p>';
+        return;
+    }
+    ?>
+    <table class="data">
+        <thead>
+            <tr>
+                <th>Nr.</th><th>Name</th><th>E-Mail</th><th>Forum</th>
+                <th>Status</th><th>Gültig</th><th class="num">Vollst.</th><th></th>
+            </tr>
+        </thead>
+        <tbody>
+        <?php foreach ($rows as $m): ?>
+            <tr>
+                <td><?= e($m['mitgliedsnummer']) ?></td>
+                <td><strong><?= e($m['nachname']) ?></strong>, <?= e($m['vorname']) ?></td>
+                <td><?= e($m['email']) ?></td>
+                <td><?= e($m['forum_name']) ?></td>
+                <td><span class="badge badge-<?= e($m['status']) ?>"><?= e($m['status']) ?></span></td>
+                <td><?= $gueltigBadge($gueltigkeit[(int) $m['id']] ?? null) ?></td>
+                <td class="num"><?= e($m['vollstaendigkeit']) ?>%</td>
+                <td><a href="<?= url('/mitglieder/show/' . $m['id']) ?>">Details</a></td>
+            </tr>
+        <?php endforeach; ?>
+        </tbody>
+    </table>
+    <?php
+};
+
+// Nach Typ trennen: Aktive Mitglieder und Fördermitglieder.
+$aktive  = array_values(array_filter($liste, static fn ($m) => ($m['typ'] ?? '') !== 'foerder'));
+$foerder = array_values(array_filter($liste, static fn ($m) => ($m['typ'] ?? '') === 'foerder'));
+?>
+
 <?php if (!$liste): ?>
     <p class="muted">Keine Datensätze gefunden.</p>
 <?php else: ?>
-<table class="data">
-    <thead>
-        <tr>
-            <th>Nr.</th><th>Name</th><th>E-Mail</th><th>Forum</th>
-            <th>Status</th><th>Typ</th><th>Gültig</th><th class="num">Vollst.</th><th></th>
-        </tr>
-    </thead>
-    <tbody>
-    <?php foreach ($liste as $m): ?>
-        <tr>
-            <td><?= e($m['mitgliedsnummer']) ?></td>
-            <td><strong><?= e($m['nachname']) ?></strong>, <?= e($m['vorname']) ?></td>
-            <td><?= e($m['email']) ?></td>
-            <td><?= e($m['forum_name']) ?></td>
-            <td><span class="badge badge-<?= e($m['status']) ?>"><?= e($m['status']) ?></span></td>
-            <td><?= $m['typ'] === 'foerder' ? '<span class="badge badge-foerder">Förder</span>' : 'Aktiv' ?></td>
-            <td><?= $gueltigBadge($gueltigkeit[(int) $m['id']] ?? null) ?></td>
-            <td class="num"><?= e($m['vollstaendigkeit']) ?>%</td>
-            <td><a href="<?= url('/mitglieder/show/' . $m['id']) ?>">Details</a></td>
-        </tr>
-    <?php endforeach; ?>
-    </tbody>
-</table>
-<p class="muted"><?= count($liste) ?> Datensätze</p>
+    <section class="liste-gruppe">
+        <h2>Aktive Mitglieder <span class="muted">(<?= count($aktive) ?>)</span></h2>
+        <?php $tabelle($aktive); ?>
+    </section>
+
+    <section class="liste-gruppe">
+        <h2>Fördermitglieder <span class="muted">(<?= count($foerder) ?>)</span></h2>
+        <?php $tabelle($foerder); ?>
+    </section>
+
+    <p class="muted"><?= count($liste) ?> Datensätze gesamt</p>
 <?php endif; ?>
