@@ -51,7 +51,7 @@ $gueltigBadge = static function (?array $g): string {
 
 <?php
 /** Tabelle für eine Mitglieder-Teilmenge rendern. */
-$tabelle = static function (array $rows) use ($gueltigBadge, $gueltigkeit): void {
+$tabelle = static function (array $rows, bool $mitMatricule = false) use ($gueltigBadge, $gueltigkeit): void {
     if (!$rows) {
         echo '<p class="muted">Keine Einträge in dieser Gruppe.</p>';
         return;
@@ -60,7 +60,9 @@ $tabelle = static function (array $rows) use ($gueltigBadge, $gueltigkeit): void
     <table class="data">
         <thead>
             <tr>
-                <th>Nr.</th><th>Name</th><th>E-Mail</th><th>Forum</th>
+                <th>Nr.</th><th>Name</th>
+                <?php if ($mitMatricule): ?><th>Matricule</th><?php endif; ?>
+                <th>E-Mail</th><th>Forum</th>
                 <th>Status</th><th>Gültig</th><th class="num">Vollst.</th><th></th>
             </tr>
         </thead>
@@ -69,6 +71,7 @@ $tabelle = static function (array $rows) use ($gueltigBadge, $gueltigkeit): void
             <tr>
                 <td><?= e($m['mitgliedsnummer']) ?></td>
                 <td><strong><?= e($m['nachname']) ?></strong>, <?= e($m['vorname']) ?></td>
+                <?php if ($mitMatricule): ?><td><?= e($m['matricule']) ?></td><?php endif; ?>
                 <td><?= e($m['email']) ?></td>
                 <td><?= e($m['forum_name']) ?></td>
                 <td><span class="badge badge-<?= e($m['status']) ?>"><?= e($m['status']) ?></span></td>
@@ -82,14 +85,23 @@ $tabelle = static function (array $rows) use ($gueltigBadge, $gueltigkeit): void
     <?php
 };
 
-// Nach Typ trennen: Aktive Mitglieder und Fördermitglieder.
-$aktive  = array_values(array_filter($liste, static fn ($m) => ($m['typ'] ?? '') !== 'foerder'));
-$foerder = array_values(array_filter($liste, static fn ($m) => ($m['typ'] ?? '') === 'foerder'));
+// Vorstand = Matricule ausgefüllt. Diese werden aus Aktive/Förder herausgenommen,
+// damit niemand doppelt erscheint. Rest nach Typ trennen.
+$hatMatricule = static fn ($m) => trim((string) ($m['matricule'] ?? '')) !== '';
+$vorstand = array_values(array_filter($liste, $hatMatricule));
+$rest     = array_filter($liste, static fn ($m) => !$hatMatricule($m));
+$aktive   = array_values(array_filter($rest, static fn ($m) => ($m['typ'] ?? '') !== 'foerder'));
+$foerder  = array_values(array_filter($rest, static fn ($m) => ($m['typ'] ?? '') === 'foerder'));
 ?>
 
 <?php if (!$liste): ?>
     <p class="muted">Keine Datensätze gefunden.</p>
 <?php else: ?>
+    <details class="liste-gruppe" open>
+        <summary>Vorstand <span class="muted">(<?= count($vorstand) ?>)</span></summary>
+        <?php $tabelle($vorstand, true); ?>
+    </details>
+
     <details class="liste-gruppe" open>
         <summary>Aktive Mitglieder <span class="muted">(<?= count($aktive) ?>)</span></summary>
         <?php $tabelle($aktive); ?>
