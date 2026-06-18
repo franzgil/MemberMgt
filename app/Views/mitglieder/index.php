@@ -90,15 +90,15 @@ $foerder = array_values(array_filter($liste, static fn ($m) => ($m['typ'] ?? '')
 <?php if (!$liste): ?>
     <p class="muted">Keine Datensätze gefunden.</p>
 <?php else: ?>
-    <section class="liste-gruppe">
-        <h2>Aktive Mitglieder <span class="muted">(<?= count($aktive) ?>)</span></h2>
+    <details class="liste-gruppe" open>
+        <summary>Aktive Mitglieder <span class="muted">(<?= count($aktive) ?>)</span></summary>
         <?php $tabelle($aktive); ?>
-    </section>
+    </details>
 
-    <section class="liste-gruppe">
-        <h2>Fördermitglieder <span class="muted">(<?= count($foerder) ?>)</span></h2>
+    <details class="liste-gruppe" open>
+        <summary>Fördermitglieder <span class="muted">(<?= count($foerder) ?>)</span></summary>
         <?php $tabelle($foerder); ?>
-    </section>
+    </details>
 
     <p class="muted"><?= count($liste) ?> Datensätze gesamt</p>
 <?php endif; ?>
