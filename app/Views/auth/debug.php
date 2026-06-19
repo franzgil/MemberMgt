@@ -25,7 +25,17 @@
 </section>
 
 <section class="panel">
-    <h2>Erlaubte Gruppen (config/auth.php)</h2>
+    <h2>Konfiguration (woher liest die App?)</h2>
+    <div class="kv"><span class="k">Konfig-Verzeichnis (CONFIG_DIR)</span><span class="val"><?= e(defined('CONFIG_DIR') ? CONFIG_DIR : '(nicht gesetzt)') ?></span></div>
+    <div class="kv"><span class="k">auth.php gefunden</span><span class="val"><?= (defined('CONFIG_DIR') && is_file(CONFIG_DIR . '/auth.php')) ? '✅ ja' : '❌ nein' ?></span></div>
+    <div class="kv"><span class="k">card_url</span><span class="val"><?= !empty($config['card_url']) ? e($config['card_url']) : '<em class="muted">❌ fehlt – kein Karten-Button</em>' ?></span></div>
+    <p class="muted">Die App liest <code>auth.php</code> und <code>database.php</code> aus dem
+        oben genannten Verzeichnis. Ist ein <code>config/secrets-dir.php</code> gesetzt, zeigt
+        CONFIG_DIR dorthin – dann muss <code>card_url</code> in <em>jener</em> auth.php stehen.</p>
+</section>
+
+<section class="panel">
+    <h2>Erlaubte Gruppen</h2>
     <div class="kv"><span class="k">Namen</span><span class="val"><?= e(implode(' · ', $config['allowed_groups'] ?? [])) ?: '<em class="muted">–</em>' ?></span></div>
     <div class="kv"><span class="k">IDs</span><span class="val"><?= e(implode(', ', $config['allowed_group_ids'] ?? [])) ?: '<em class="muted">–</em>' ?></span></div>
     <div class="kv"><span class="k">Trésorier-Gruppen</span><span class="val"><?= e(implode(' · ', $config['tresorier_groups'] ?? [])) ?: '<em class="muted">–</em>' ?></span></div>
