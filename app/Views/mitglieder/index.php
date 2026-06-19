@@ -62,7 +62,7 @@ $tabelle = static function (array $rows, bool $mitMatricule = false) use ($guelt
             <tr>
                 <th>Nr.</th><th>Name</th>
                 <?php if ($mitMatricule): ?><th>Matricule</th><?php endif; ?>
-                <th>E-Mail</th><th>Forum</th>
+                <th>E-Mail</th><th>Forum</th><th>WoltLab-ID</th>
                 <th>Status</th><th>Gültig</th><th class="num">Vollst.</th><th></th>
             </tr>
         </thead>
@@ -74,6 +74,7 @@ $tabelle = static function (array $rows, bool $mitMatricule = false) use ($guelt
                 <?php if ($mitMatricule): ?><td><?= e($m['matricule']) ?></td><?php endif; ?>
                 <td><?= e($m['email']) ?></td>
                 <td><?= e($m['forum_name']) ?></td>
+                <td class="num"><?= e((string) ($m['wcf_user_id'] ?? '')) ?></td>
                 <td><span class="badge badge-<?= e($m['status']) ?>"><?= e($m['status']) ?></span></td>
                 <td><?= $gueltigBadge($gueltigkeit[(int) $m['id']] ?? null) ?></td>
                 <td class="num"><?= e($m['vollstaendigkeit']) ?>%</td>
