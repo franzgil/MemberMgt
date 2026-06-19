@@ -1,0 +1,377 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AFOL.lu – Mitgliederverwaltung · Benutzerhandbuch</title>
+<style>
+    /* WoltLab Suite 5.5 inspired styling – matches afol55.afol.lu look & feel */
+    :root {
+        --wcfContentBackground: #ffffff;
+        --wcfContentBorder: #e1e1e1;
+        --wcfContentBorderInner: #ededed;
+        --wcfContentText: #2c2e30;
+        --wcfContentLink: #0a4a66;
+        --wcfContentLinkActive: #04293c;
+        --wcfHeadlineText: #1c1d1f;
+        --wcfPageBackground: #f5f6f7;
+        --wcfButtonPrimary: #0a4a66;
+        --wcfButtonPrimaryHover: #04293c;
+        --wcfNavBackground: #1c2833;
+        --wcfNavText: #ffffff;
+        --wcfBoxAccent: #c8a951;
+        --wcfGreen: #1a7f37;
+        --wcfRed: #c0392b;
+        --wcfAmber: #b54708;
+    }
+    * { box-sizing: border-box; }
+    html, body { margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+    body {
+        font-family: "Segoe UI", "Liberation Sans", Arial, sans-serif;
+        font-size: 14px; line-height: 1.6; color: var(--wcfContentText);
+        background: var(--wcfPageBackground);
+    }
+    a { color: var(--wcfContentLink); text-decoration: none; }
+    a:hover { color: var(--wcfContentLinkActive); text-decoration: underline; }
+
+    /* HEADER */
+    .pageHeader { background: var(--wcfNavBackground); color: var(--wcfNavText); border-bottom: 3px solid var(--wcfBoxAccent); }
+    .pageHeaderInner { max-width: 1200px; margin: 0 auto; padding: 18px 20px; display: flex; align-items: center; gap: 14px; }
+    .logoMark { width: 52px; height: 52px; background: var(--wcfBoxAccent); border-radius: 8px; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 18px; color: #1c2833; box-shadow: 0 2px 6px rgba(0,0,0,0.25); }
+    .pageHeaderTitle { display: flex; flex-direction: column; line-height: 1.15; }
+    .pageHeaderTitle .siteTitle { font-size: 21px; font-weight: 600; }
+    .pageHeaderTitle .siteSubtitle { font-size: 12px; color: #b8c2cc; text-transform: uppercase; letter-spacing: .5px; margin-top: 2px; }
+
+    /* MAIN NAV */
+    .mainMenu { background: #243340; border-bottom: 1px solid #1a242e; }
+    .mainMenuInner { max-width: 1200px; margin: 0 auto; padding: 0 20px; }
+    .mainMenuList { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; }
+    .mainMenuList a { display: block; padding: 10px 16px; color: #d4dce3; font-size: 13px; font-weight: 500; border-right: 1px solid #1a242e; }
+    .mainMenuList a:hover { background: #1c2833; color: #fff; text-decoration: none; }
+    .mainMenuList .active a { background: var(--wcfBoxAccent); color: #1c2833; }
+
+    /* LAYOUT */
+    .pageWrapper { max-width: 1200px; margin: 0 auto; padding: 24px 20px; display: grid; grid-template-columns: 250px 1fr; gap: 24px; align-items: start; }
+    @media (max-width: 900px) { .pageWrapper { grid-template-columns: 1fr; } }
+
+    /* TOC SIDEBAR */
+    .toc { position: sticky; top: 16px; }
+    .tocBox { background: var(--wcfContentBackground); border: 1px solid var(--wcfContentBorder); border-radius: 4px; overflow: hidden; }
+    .tocBox h2 { background: linear-gradient(180deg, #fafbfc 0%, #f0f2f4 100%); margin: 0; padding: 10px 14px; font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: .5px; color: var(--wcfHeadlineText); border-bottom: 1px solid var(--wcfContentBorder); }
+    .tocBox ol { list-style: none; margin: 0; padding: 8px 0; counter-reset: toc; }
+    .tocBox li { counter-increment: toc; }
+    .tocBox a { display: block; padding: 6px 14px 6px 38px; font-size: 13px; position: relative; color: var(--wcfContentText); }
+    .tocBox a::before { content: counter(toc); position: absolute; left: 14px; top: 6px; width: 18px; height: 18px; background: var(--wcfBoxAccent); color: #1c2833; border-radius: 3px; font-size: 11px; font-weight: 700; display: grid; place-items: center; }
+    .tocBox a:hover { background: #fafbfc; text-decoration: none; color: var(--wcfContentLinkActive); }
+    @media (max-width: 900px) { .toc { position: static; } }
+
+    /* CONTENT */
+    .hero { background: linear-gradient(135deg, #1c2833 0%, #2c3e50 60%, #34495e 100%); color: #fff; border-radius: 4px; padding: 28px; margin-bottom: 22px; position: relative; overflow: hidden; border: 1px solid #1a242e; }
+    .hero::before { content: ""; position: absolute; top: -40px; right: -40px; width: 200px; height: 200px; background: var(--wcfBoxAccent); opacity: .08; border-radius: 50%; }
+    .hero .heroBadge { display: inline-block; background: var(--wcfBoxAccent); color: #1c2833; font-size: 11px; font-weight: 700; letter-spacing: 1px; padding: 4px 10px; border-radius: 3px; text-transform: uppercase; margin-bottom: 12px; position: relative; z-index: 1; }
+    .hero h1 { font-size: 26px; margin: 0 0 6px; position: relative; z-index: 1; }
+    .hero p { margin: 0; color: #c8d1da; position: relative; z-index: 1; }
+
+    .contentBox { background: var(--wcfContentBackground); border: 1px solid var(--wcfContentBorder); border-radius: 4px; margin-bottom: 20px; box-shadow: 0 1px 2px rgba(0,0,0,0.03); scroll-margin-top: 16px; }
+    .contentBoxHeader { background: linear-gradient(180deg, #fafbfc 0%, #f0f2f4 100%); border-bottom: 1px solid var(--wcfContentBorder); padding: 12px 18px; font-size: 16px; font-weight: 600; color: var(--wcfHeadlineText); border-radius: 4px 4px 0 0; display: flex; align-items: center; gap: 10px; }
+    .contentBoxHeader .num { width: 24px; height: 24px; background: var(--wcfBoxAccent); color: #1c2833; border-radius: 4px; font-size: 13px; font-weight: 700; display: grid; place-items: center; flex-shrink: 0; }
+    .contentBoxBody { padding: 18px 22px; }
+    .contentBoxBody h3 { font-size: 15px; font-weight: 600; color: var(--wcfHeadlineText); margin: 18px 0 8px; }
+    .contentBoxBody h3:first-child { margin-top: 0; }
+    .contentBoxBody p { margin: 0 0 12px; }
+    .contentBoxBody ul, .contentBoxBody ol { margin: 8px 0 14px; padding-left: 22px; }
+    .contentBoxBody li { margin-bottom: 6px; }
+    .contentBoxBody ol.steps { counter-reset: step; list-style: none; padding-left: 0; }
+    .contentBoxBody ol.steps > li { counter-increment: step; position: relative; padding: 0 0 10px 38px; margin: 0; }
+    .contentBoxBody ol.steps > li::before { content: counter(step); position: absolute; left: 0; top: -1px; width: 24px; height: 24px; background: var(--wcfButtonPrimary); color: #fff; border-radius: 50%; font-size: 12px; font-weight: 700; display: grid; place-items: center; }
+
+    code { background: #f0f2f4; border: 1px solid var(--wcfContentBorderInner); border-radius: 3px; padding: 1px 5px; font-size: 12.5px; }
+    kbd { background: #1c2833; color: #fff; border-radius: 3px; padding: 1px 7px; font-size: 12px; }
+
+    /* Badges wie in der App */
+    .badge { display: inline-block; padding: 2px 9px; border-radius: 999px; font-size: 11px; font-weight: 700; text-transform: uppercase; }
+    .b-green { background: #e7f6ec; color: var(--wcfGreen); }
+    .b-red { background: #fdecec; color: var(--wcfRed); }
+    .b-amber { background: #fff5e6; color: var(--wcfAmber); }
+    .b-blue { background: #eef3ff; color: #1d4ed8; }
+    .b-gray { background: #eef0f2; color: #66707a; }
+
+    /* Hinweis-Boxen */
+    .note { border-left: 4px solid var(--wcfBoxAccent); background: #fdf8ec; padding: 10px 14px; border-radius: 3px; margin: 12px 0; font-size: 13.5px; }
+    .note.tip { border-left-color: var(--wcfGreen); background: #eefaf0; }
+    .note.warn { border-left-color: var(--wcfRed); background: #fdecec; }
+    .note strong { color: var(--wcfHeadlineText); }
+
+    table.tbl { width: 100%; border-collapse: collapse; margin: 10px 0 14px; font-size: 13px; }
+    table.tbl th, table.tbl td { border: 1px solid var(--wcfContentBorderInner); padding: 7px 10px; text-align: left; vertical-align: top; }
+    table.tbl th { background: #fafbfc; font-weight: 600; }
+
+    .pageFooter { background: #1c2833; color: #b8c2cc; padding: 26px 20px 16px; margin-top: 24px; border-top: 3px solid var(--wcfBoxAccent); }
+    .pageFooterInner { max-width: 1200px; margin: 0 auto; }
+    .footerNote { font-size: 11px; color: #8a949e; line-height: 1.6; }
+    .footerNote a { color: var(--wcfBoxAccent); }
+</style>
+</head>
+<body>
+
+<header class="pageHeader">
+    <div class="pageHeaderInner">
+        <div class="logoMark">A.lu</div>
+        <div class="pageHeaderTitle">
+            <span class="siteTitle">AFOL.lu · Mitgliederverwaltung</span>
+            <span class="siteSubtitle">Benutzerhandbuch</span>
+        </div>
+    </div>
+</header>
+
+<nav class="mainMenu">
+    <div class="mainMenuInner">
+        <ul class="mainMenuList">
+            <li class="active"><a href="#start">Handbuch</a></li>
+            <li><a href="#login">Anmeldung</a></li>
+            <li><a href="#dashboard">Dashboard</a></li>
+            <li><a href="#mitglieder">Mitglieder</a></li>
+            <li><a href="#antraege">Anträge</a></li>
+            <li><a href="#beitraege">Beiträge</a></li>
+        </ul>
+    </div>
+</nav>
+
+<div class="pageWrapper">
+
+    <!-- INHALTSVERZEICHNIS -->
+    <aside class="toc">
+        <div class="tocBox">
+            <h2>Inhalt</h2>
+            <ol>
+                <li><a href="#login">Anmeldung &amp; Zugriff</a></li>
+                <li><a href="#dashboard">Das Dashboard</a></li>
+                <li><a href="#mitglieder">Mitglieder verwalten</a></li>
+                <li><a href="#gueltigkeit">Mitgliedschaft &amp; Gültigkeit</a></li>
+                <li><a href="#antraege">Online-Anträge</a></li>
+                <li><a href="#beitraege">Beiträge bestätigen</a></li>
+                <li><a href="#rollen">Rollen &amp; Rechte</a></li>
+                <li><a href="#faq">Fragen &amp; Hilfe</a></li>
+            </ol>
+        </div>
+    </aside>
+
+    <main>
+        <section class="hero" id="start">
+            <span class="heroBadge">Benutzerhandbuch</span>
+            <h1>Mitgliederverwaltung der AFOL.lu</h1>
+            <p>So pflegst du Mitglieder, bearbeitest Online-Anträge und bestätigst Beiträge.</p>
+        </section>
+
+        <!-- 1 ANMELDUNG -->
+        <article class="contentBox" id="login">
+            <div class="contentBoxHeader"><span class="num">1</span>Anmeldung &amp; Zugriff</div>
+            <div class="contentBoxBody">
+                <p>Die Mitgliederverwaltung nutzt deine <strong>bestehende WoltLab-Anmeldung</strong> –
+                   ein zweites Passwort gibt es nicht.</p>
+                <ol class="steps">
+                    <li>Die Adresse der App öffnen (vom Vorstand erhalten, z. B.
+                        <code>…/apps/MemberMgt/public/</code>).</li>
+                    <li>Bist du nicht eingeloggt, wirst du automatisch zur <strong>WoltLab-Anmeldung</strong>
+                        geleitet. Dort wie gewohnt anmelden.</li>
+                    <li>Danach landest du direkt im <strong>Dashboard</strong>.</li>
+                </ol>
+                <div class="note">
+                    <strong>Wer hat Zugriff?</strong> Nur Mitglieder der Gruppe
+                    <em>„AFOL.lu a.s.b.l. Vorsitz"</em>. Bist du angemeldet, aber nicht berechtigt,
+                    erscheint ein Hinweis „Kein Zugriff".
+                </div>
+                <p>Oben rechts in der Navigationsleiste siehst du deinen Benutzernamen – so erkennst du,
+                   dass du angemeldet bist.</p>
+            </div>
+        </article>
+
+        <!-- 2 DASHBOARD -->
+        <article class="contentBox" id="dashboard">
+            <div class="contentBoxHeader"><span class="num">2</span>Das Dashboard</div>
+            <div class="contentBoxBody">
+                <p>Die Startseite zeigt die wichtigsten Kennzahlen als Kacheln:</p>
+                <table class="tbl">
+                    <tr><th>Kachel</th><th>Bedeutung</th></tr>
+                    <tr><td>Datensätze gesamt</td><td>Alle erfassten Mitglieder &amp; Anträge.</td></tr>
+                    <tr><td>aktive Mitglieder</td><td>Mitglieder mit Status <em>aktiv</em>.</td></tr>
+                    <tr><td>Online-Anträge</td><td>Eingegangene Anträge aus dem WoltLab-Formular. Klick führt zu den Anträgen.</td></tr>
+                    <tr><td>abgelaufen</td><td>Aktive Mitglieder, deren Mitgliedschaft erneuert werden muss. Klick öffnet direkt die gefilterte Liste.</td></tr>
+                    <tr><td>Beitrag &lt;Jahr&gt; bezahlt</td><td>Wie viele für das laufende Jahr bezahlt haben.</td></tr>
+                    <tr><td>Fördermitglieder</td><td>Anzahl der Fördermitglieder.</td></tr>
+                </table>
+                <p>Darunter findest du die Verteilung „Mitglieder nach Status" und Hinweise zur
+                   Datenqualität (z. B. fehlende E-Mail oder Adresse).</p>
+            </div>
+        </article>
+
+        <!-- 3 MITGLIEDER -->
+        <article class="contentBox" id="mitglieder">
+            <div class="contentBoxHeader"><span class="num">3</span>Mitglieder verwalten</div>
+            <div class="contentBoxBody">
+                <h3>Die Liste</h3>
+                <p>Über <strong>Mitglieder</strong> in der Navigation öffnest du die Liste. Sie ist in drei
+                   einklappbare Gruppen unterteilt (auf die Überschrift klicken zum Ein-/Ausklappen):</p>
+                <ul>
+                    <li><strong>Vorstand</strong> – alle mit ausgefüllter <em>Matricule</em>.</li>
+                    <li><strong>Aktive Mitglieder</strong></li>
+                    <li><strong>Fördermitglieder</strong></li>
+                </ul>
+
+                <h3>Suchen &amp; Filtern</h3>
+                <p>Über der Liste:</p>
+                <ul>
+                    <li><strong>Suche</strong>: Name, E-Mail, Nummer oder Forenname.</li>
+                    <li><strong>Status</strong>: z. B. nur <em>aktiv</em> oder <em>antrag</em>.</li>
+                    <li><strong>Gültigkeit</strong>: <em>gültig</em>, <em>abgelaufen</em> oder <em>ohne Angabe</em>.</li>
+                </ul>
+                <p>Mit <kbd>Filtern</kbd> bestätigen. Die Filter wirken auf alle drei Gruppen.</p>
+
+                <h3>Ein Mitglied ansehen</h3>
+                <p>Mit <strong>Details</strong> öffnest du die Mitgliedsseite: Stammdaten, Gültigkeit,
+                   Beitragshistorie und – für Trésoriers – die Beitragsbestätigung.</p>
+
+                <h3>Neu anlegen</h3>
+                <ol class="steps">
+                    <li>Oben rechts auf <kbd>+ Neuer Antrag</kbd>.</li>
+                    <li>Felder ausfüllen (Pflicht: Vor- und Nachname). Typ <em>Aktiv</em> oder <em>Förder</em> wählen.</li>
+                    <li><kbd>Speichern</kbd>. Der Eintrag erscheint mit Status <em>antrag</em>.</li>
+                </ol>
+
+                <h3>Bearbeiten &amp; Austritt</h3>
+                <p>Auf der Detailseite: <kbd>Bearbeiten</kbd> ändert die Daten. Ein Austritt wird über
+                   <strong>Archivieren</strong> gesetzt – das Mitglied bleibt erhalten, erhält aber den
+                   Status <em>ausgetreten</em>.</p>
+            </div>
+        </article>
+
+        <!-- 4 GÜLTIGKEIT -->
+        <article class="contentBox" id="gueltigkeit">
+            <div class="contentBoxHeader"><span class="num">4</span>Mitgliedschaft &amp; Gültigkeit</div>
+            <div class="contentBoxBody">
+                <p>In der Spalte <strong>Gültig</strong> siehst du auf einen Blick, ob die Mitgliedschaft
+                   noch läuft:</p>
+                <table class="tbl">
+                    <tr><th>Anzeige</th><th>Bedeutung</th></tr>
+                    <tr><td><span class="badge b-green">gültig 2026</span></td><td>Gedeckt für das laufende Mitgliedsjahr.</td></tr>
+                    <tr><td><span class="badge b-red">erneuern</span></td><td>Abgelaufen – Beitrag fürs neue Jahr fehlt.</td></tr>
+                    <tr><td><span class="badge b-gray">?</span></td><td>Kein Beitritts-/Beitragsjahr bekannt.</td></tr>
+                    <tr><td>–</td><td>Kein aktives Mitglied (z. B. Antrag, ausgetreten).</td></tr>
+                </table>
+                <h3>Die Regeln</h3>
+                <ul>
+                    <li>Die Mitgliedsausweise werden jährlich zur <strong>Generalversammlung im März</strong>
+                        erstellt; das Mitgliedsjahr läuft von GV zu GV.</li>
+                    <li>Wer im laufenden Jahr beitritt, ist <strong>auch im Folgejahr</strong> Mitglied
+                        (das erste Beitrittsjahr deckt zwei Jahre ab).</li>
+                    <li>Danach wird die Mitgliedschaft <strong>jährlich</strong> durch den bestätigten Beitrag
+                        erneuert.</li>
+                </ul>
+                <div class="note tip">
+                    <strong>Tipp:</strong> Die Kachel <span class="badge b-red">abgelaufen</span> im Dashboard
+                    führt direkt zu allen, die zur nächsten GV erneuern müssen.
+                </div>
+            </div>
+        </article>
+
+        <!-- 5 ANTRÄGE -->
+        <article class="contentBox" id="antraege">
+            <div class="contentBoxHeader"><span class="num">5</span>Online-Anträge</div>
+            <div class="contentBoxBody">
+                <p>Unter <strong>Anträge</strong> erscheinen die Anmeldungen aus dem WoltLab-Formular –
+                   <strong>live</strong>, ohne Import. Jeder Antrag ist markiert:</p>
+                <table class="tbl">
+                    <tr><th>Markierung</th><th>Bedeutung</th></tr>
+                    <tr><td><span class="badge b-amber">neu</span></td><td>Noch nicht in der Verwaltung.</td></tr>
+                    <tr><td><span class="badge b-green">erfasst</span></td><td>Person ist bereits Mitglied/erfasst.</td></tr>
+                    <tr><td><span class="badge b-red">unlesbar</span></td><td>Antrag konnte nicht gelesen werden (selten).</td></tr>
+                </table>
+                <h3>Einen Antrag übernehmen</h3>
+                <ol class="steps">
+                    <li>In der Antragsliste auf <strong>Details</strong> klicken.</li>
+                    <li>Daten prüfen (Name, Adresse, E-Mail, Sprachen …).</li>
+                    <li>Auf <kbd>In die Mitgliederverwaltung übernehmen</kbd> klicken.</li>
+                    <li>Die Person wird als Mitglied mit Status <em>antrag</em> angelegt – die
+                        Zahlungsbestätigung folgt durch den Trésorier.</li>
+                </ol>
+                <p>Mit <kbd>Alle neuen übernehmen</kbd> kannst du sämtliche neuen Anträge auf einmal übernehmen.</p>
+            </div>
+        </article>
+
+        <!-- 6 BEITRÄGE -->
+        <article class="contentBox" id="beitraege">
+            <div class="contentBoxHeader"><span class="num">6</span>Beiträge bestätigen (Trésorier)</div>
+            <div class="contentBoxBody">
+                <p>Auf der Detailseite eines Mitglieds steht der Bereich <strong>„Zahlung bestätigen"</strong>.
+                   Nur Mitglieder der Trésorier-Gruppe sehen das Formular.</p>
+                <ol class="steps">
+                    <li><strong>Jahr</strong> wählen (Standard: laufendes Jahr).</li>
+                    <li><strong>Betrag</strong> eintragen (z. B. <code>25,00</code>).</li>
+                    <li><strong>Art</strong> wählen: Überweisung oder Bar.</li>
+                    <li><kbd>Bestätigen</kbd> klicken.</li>
+                </ol>
+                <p>Die Wirkung:</p>
+                <ul>
+                    <li>Aus einem <em>Antrag</em> wird ein <strong>aktives Mitglied</strong>.</li>
+                    <li>Bei einem bereits aktiven Mitglied wird die Mitgliedschaft <strong>verlängert</strong>.</li>
+                    <li>Der Beitrag erscheint in der Historie – mit Jahr, Betrag, Art und
+                        <strong>„bestätigt durch"</strong> (dein WoltLab-Name).</li>
+                </ul>
+                <div class="note">
+                    <strong>Kein Formular sichtbar?</strong> Dann fehlt dir die Trésorier-Rolle.
+                    Der Vorstand kann dich der WoltLab-Gruppe <em>Tresorier</em> hinzufügen.
+                </div>
+            </div>
+        </article>
+
+        <!-- 7 ROLLEN -->
+        <article class="contentBox" id="rollen">
+            <div class="contentBoxHeader"><span class="num">7</span>Rollen &amp; Rechte</div>
+            <div class="contentBoxBody">
+                <table class="tbl">
+                    <tr><th>WoltLab-Gruppe</th><th>Darf …</th></tr>
+                    <tr><td>AFOL.lu a.s.b.l. Vorsitz</td><td>die Verwaltung öffnen, Mitglieder &amp; Anträge bearbeiten.</td></tr>
+                    <tr><td>Tresorier</td><td>zusätzlich Beiträge/Zahlungen bestätigen.</td></tr>
+                </table>
+                <p>Die Zuordnung erfolgt über die WoltLab-Benutzergruppen. Wer in keiner berechtigten
+                   Gruppe ist, hat keinen Zugriff.</p>
+            </div>
+        </article>
+
+        <!-- 8 FAQ -->
+        <article class="contentBox" id="faq">
+            <div class="contentBoxHeader"><span class="num">8</span>Fragen &amp; Hilfe</div>
+            <div class="contentBoxBody">
+                <h3>Ich sehe „Kein Zugriff".</h3>
+                <p>Dein Konto ist nicht in der Gruppe <em>„AFOL.lu a.s.b.l. Vorsitz"</em>. Bitte beim
+                   Vorstand melden.</p>
+
+                <h3>Ein Mitglied steht auf <span class="badge b-red">erneuern</span>, hat aber bezahlt.</h3>
+                <p>Dann ist der Beitrag fürs laufende Jahr noch nicht bestätigt. Der Trésorier bestätigt
+                   ihn auf der Detailseite (Abschnitt 6) – danach steht es auf <span class="badge b-green">gültig</span>.</p>
+
+                <h3>Ein Antrag wird als <span class="badge b-red">unlesbar</span> angezeigt.</h3>
+                <p>Sehr selten. Bitte die Person erneut anlegen (Abschnitt 3) oder beim Vorstand melden.</p>
+
+                <h3>Warum steht im Dashboard eine andere Antrags-Zahl als bei „Status: Antrag"?</h3>
+                <p>„Online-Anträge" zählt die Formular-Eingänge; „Antrag" in der Status-Übersicht zählt
+                   Mitglieder aus dem Altbestand mit Status <em>antrag</em>. Das sind zwei verschiedene Listen.</p>
+            </div>
+        </article>
+
+    </main>
+</div>
+
+<footer class="pageFooter">
+    <div class="pageFooterInner">
+        <div class="footerNote">
+            AFOL.lu a.s.b.l. · Mitgliederverwaltung – Benutzerhandbuch ·
+            Bei Problemen den Vorstand kontaktieren: <a href="https://afol55.afol.lu/">afol55.afol.lu</a><br>
+            LEGO® ist eine Marke der LEGO Gruppe, die dieses Projekt weder sponsert noch unterstützt.
+        </div>
+    </div>
+</footer>
+
+</body>
+</html>
