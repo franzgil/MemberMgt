@@ -172,7 +172,11 @@ class MitgliederController extends Controller
         $art = $_POST['art'] ?? 'virement';
         $betrag = trim($_POST['betrag'] ?? '');
         $betrag = $betrag === '' ? null : (float) str_replace(',', '.', $betrag);
+        // Zahldatum auflösen (leer/ungültig -> heute); auch fürs Beitrittsdatum.
         $bezahltAm = trim($_POST['bezahlt_am'] ?? '');
+        if (!preg_match('/^\d{4}-\d{2}-\d{2}$/', $bezahltAm)) {
+            $bezahltAm = date('Y-m-d');
+        }
 
         // Beitrag verbuchen – bestätigt durch den eingeloggten Trésorier (WoltLab)
         $tresorier = \App\Core\Auth::user()['userID'] ?? null;
@@ -183,7 +187,7 @@ class MitgliederController extends Controller
 
         $update = ['status' => 'aktiv'];
         if (empty($mitglied['beitrittsdatum'])) {
-            $update['beitrittsdatum'] = date('Y-m-d');
+            $update['beitrittsdatum'] = $bezahltAm;
         }
         // bestehende Pflichtfelder mitschreiben, damit validate() nicht greift:
         $update = array_merge($mitglied, $update);
