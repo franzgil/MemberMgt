@@ -83,7 +83,7 @@ $tabelle = static function (array $rows, bool $mitMatricule = false) use ($guelt
                     <?php if (!empty($cardUrl) && !empty($m['wcf_user_id'])): ?>
                         <a class="card-link" target="_blank" rel="noopener"
                            title="Mitgliedskarte erzeugen" aria-label="Mitgliedskarte erzeugen"
-                           href="<?= e($cardUrl) ?>?page=home&amp;userID=<?= e((string) $m['wcf_user_id']) ?>">🪪</a>
+                           href="<?= e($cardUrl) ?>?page=card&amp;userID=<?= e((string) $m['wcf_user_id']) ?>">🪪</a>
                     <?php endif; ?>
                 </td>
             </tr>

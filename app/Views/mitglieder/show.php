@@ -13,7 +13,7 @@ function feld($label, $value) {
     <div>
         <?php if (!empty($cardUrl) && !empty($m['wcf_user_id'])): ?>
             <a class="btn" target="_blank" rel="noopener"
-               href="<?= e($cardUrl) ?>?page=home&amp;userID=<?= e((string) $m['wcf_user_id']) ?>">Mitgliedskarte</a>
+               href="<?= e($cardUrl) ?>?page=card&amp;userID=<?= e((string) $m['wcf_user_id']) ?>">Mitgliedskarte (PDF)</a>
         <?php endif; ?>
         <a class="btn" href="<?= url('/mitglieder/edit/' . $m['id']) ?>">Bearbeiten</a>
         <a class="btn" href="<?= url('/mitglieder') ?>">Zurück</a>

@@ -719,7 +719,7 @@ function card_render_wallet(array $m): void {
       . '<div class="actions">'
       . '<button class="btn" onclick="window.print()">Als PDF / drucken</button>'
       . '<a class="btn alt" href="' . htmlspecialchars(CARD_BASE_URL, ENT_QUOTES)
-      . '?page=card">PDF-Version</a>'
+      . '?page=card&amp;userID=' . (int) $m['userID'] . '">PDF-Version</a>'
       . '</div>';
 
     // Web-App-Verhalten beim Ablegen auf dem Startbildschirm
@@ -745,6 +745,8 @@ function card_render_home(array $m): void {
 
     $base = htmlspecialchars(CARD_BASE_URL, ENT_QUOTES);
     $name = htmlspecialchars($m['displayName'], ENT_QUOTES);
+    // Ziel-userID an die Auswahl-Buttons weiterreichen (sonst eigene Karte)
+    $uidParam = '&amp;userID=' . (int) $m['userID'];
 
     // Logo als data-URI
     $logoDataUri = '';
@@ -831,13 +833,13 @@ function card_render_home(array $m): void {
       . '<div class="tag" data-i="w_tag"></div>'
       . '<h3 data-i="w_title"></h3>'
       . '<ul><li data-i="w1"></li><li data-i="w2"></li><li data-i="w3"></li><li data-i="w4"></li></ul>'
-      . '<a class="btn" href="' . $base . '?page=wallet" data-i="w_btn"></a></div>';
+      . '<a class="btn" href="' . $base . '?page=wallet' . $uidParam . '" data-i="w_btn"></a></div>';
     // PDF
     $h .= '<div class="opt pdf"><span class="ico">🖨️</span>'
       . '<div class="tag" data-i="p_tag"></div>'
       . '<h3 data-i="p_title"></h3>'
       . '<ul><li data-i="p1"></li><li data-i="p2"></li><li data-i="p3"></li><li data-i="p4"></li></ul>'
-      . '<a class="btn" href="' . $base . '?page=card" data-i="p_btn"></a></div>';
+      . '<a class="btn" href="' . $base . '?page=card' . $uidParam . '" data-i="p_btn"></a></div>';
     $h .= '</div></section>';
 
     // So geht es
