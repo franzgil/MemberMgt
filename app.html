@@ -166,6 +166,14 @@
     }
     .appDesc { font-size: 12.5px; color: #66707a; flex: 1; margin-bottom: 14px; }
 
+    .appAccess {
+        display: inline-flex; align-items: center; gap: 5px;
+        font-size: 11px; font-weight: 600; color: #66707a;
+        background: #eef1f5; border-radius: 999px;
+        padding: 3px 9px; margin-bottom: 12px;
+        align-self: flex-start;
+    }
+
     .appOpen {
         display: inline-flex;
         align-items: center;
@@ -298,6 +306,7 @@
             <div class="appIcon ico-members">👥</div>
             <div class="appName">Mitgliederverwaltung</div>
             <div class="appDesc">Mitglieder &amp; Online-Anträge pflegen, Beiträge im Blick, Dashboard mit Kennzahlen.</div>
+            <span class="appAccess">🔒 Nur Vorsitz</span>
             <span class="appOpen">Öffnen →</span>
         </a>
 
@@ -330,8 +339,10 @@
         <span class="ii">🔐</span>
         <div>
             <strong>Anmeldung erforderlich.</strong> Alle Apps nutzen die bestehende
-            WoltLab-Anmeldung. Zugriff erhalten Mitglieder der Gruppen „AFOL.lu a.s.b.l. Vorsitz"
-            und „AFOL.lu a.s.b.l. Vorstand" – kein zweites Login nötig.
+            WoltLab-Anmeldung. Zugriff erhalten in der Regel Mitglieder der Gruppen
+            „AFOL.lu a.s.b.l. Vorsitz" und „AFOL.lu a.s.b.l. Vorstand" – kein zweites Login nötig.
+            Die <strong>Mitgliederverwaltung</strong> ist aus Datenschutzgründen ausschließlich
+            dem Vorsitz vorbehalten.
         </div>
     </div>
 
