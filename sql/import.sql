@@ -91,26 +91,16 @@ FROM `gf_membres` g;
 -- ------------------------------------------------------------------
 -- 1b) WoltLab-Konto verknüpfen: wcf_user_id über die E-Mail setzen.
 --     Nötig u. a. für den Mitgliedskarten-Button (braucht die WoltLab-userID)
---     und die Namensauflösung. Nur bei E-Mails, die in mitglieder EINDEUTIG
---     sind, damit der UNIQUE-Schlüssel uq_wcf_user_id nicht verletzt wird.
+--     und die Namensauflösung. UPDATE IGNORE überspringt etwaige Dubletten,
+--     ohne den UNIQUE-Schlüssel uq_wcf_user_id zu verletzen.
 -- ------------------------------------------------------------------
-UPDATE `mitglieder` m
+UPDATE IGNORE `mitglieder` m
 JOIN `wcf1_user` u
   ON CONVERT(LOWER(TRIM(u.`email`)) USING utf8mb4) COLLATE utf8mb4_unicode_ci
    = CONVERT(LOWER(TRIM(m.`email`)) USING utf8mb4) COLLATE utf8mb4_unicode_ci
 SET m.`wcf_user_id` = u.`userID`
-WHERE m.`quelle` = 'gf_membres'
-  AND m.`wcf_user_id` IS NULL
-  AND TRIM(COALESCE(m.`email`, '')) <> ''
-  AND LOWER(TRIM(m.`email`)) IN (
-        SELECT `e` FROM (
-            SELECT LOWER(TRIM(`email`)) AS `e`
-            FROM `mitglieder`
-            WHERE `email` IS NOT NULL AND TRIM(`email`) <> ''
-            GROUP BY LOWER(TRIM(`email`))
-            HAVING COUNT(*) = 1
-        ) uniq
-  );
+WHERE m.`wcf_user_id` IS NULL
+  AND TRIM(COALESCE(m.`email`, '')) <> '';
 
 -- ------------------------------------------------------------------
 -- 2) Jahresbeiträge aus den Cot-Spalten (nur wenn Betrag > 0)
