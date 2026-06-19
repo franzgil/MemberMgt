@@ -84,7 +84,7 @@ CREATE TABLE `beitraege` (
   `jahr`             SMALLINT(4)    NOT NULL COMMENT 'Beitragsjahr, z.B. 2026',
   `betrag`           DECIMAL(7,2)   DEFAULT NULL COMMENT 'Betrag in EUR (Einheit final zu klären)',
   `ist_komitee`      TINYINT(1)     NOT NULL DEFAULT 0 COMMENT 'aus gf_membres.Cot Comite (zu bestätigen)',
-  `art`              ENUM('ueberweisung','bar') DEFAULT NULL,
+  `art`              ENUM('cash','virement','payconiq','sumup') DEFAULT NULL,
   `bezahlt_am`       DATE           DEFAULT NULL,
   `bestaetigt_durch` INT(11)        DEFAULT NULL COMMENT 'wcf_user_id des Trésorier',
   `bemerkung`        VARCHAR(255)   DEFAULT NULL,

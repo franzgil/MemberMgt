@@ -168,7 +168,7 @@ class MitgliederController extends Controller
         }
 
         $jahr = (int) ($_POST['jahr'] ?? AKTUELLES_JAHR);
-        $art = $_POST['art'] ?? 'ueberweisung';
+        $art = $_POST['art'] ?? 'virement';
         $betrag = trim($_POST['betrag'] ?? '');
         $betrag = $betrag === '' ? null : (float) str_replace(',', '.', $betrag);
 

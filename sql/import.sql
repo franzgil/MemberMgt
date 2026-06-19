@@ -90,25 +90,52 @@ FROM `gf_membres` g;
 
 -- ------------------------------------------------------------------
 -- 2) Jahresbeiträge aus den Cot-Spalten (nur wenn Betrag > 0)
---    bezahlt_am = 1. Januar des jeweiligen Jahres (Bestand gilt als bezahlt)
+--    bezahlt_am = Date_de_payement_<Jahr> (Fallback: 1. Januar des Jahres)
+--    art        = moyen_de_payement_<Jahr> (cash/virement/payconiq/sumup)
+--    Jahre 2024–2029. Voraussetzung: gf_membres hat diese Spalten (siehe
+--    sql/alter_gf_membres_zahlungen*.sql).
 -- ------------------------------------------------------------------
-INSERT INTO `beitraege` (`mitglied_id`, `jahr`, `betrag`, `ist_komitee`, `bezahlt_am`)
-SELECT m.`id`, 2024, g.`Cot 2024`, 0, MAKEDATE(2024, 1)
+INSERT INTO `beitraege` (`mitglied_id`, `jahr`, `betrag`, `ist_komitee`, `bezahlt_am`, `art`)
+SELECT m.`id`, 2024, g.`Cot 2024`, 0,
+       COALESCE(g.`Date_de_payement_2024`, MAKEDATE(2024, 1)), g.`moyen_de_payement_2024`
 FROM `gf_membres` g
 JOIN `mitglieder` m ON m.`quelle` = 'gf_membres' AND m.`legacy_no` = g.`id`
 WHERE g.`Cot 2024` IS NOT NULL AND g.`Cot 2024` > 0;
 
-INSERT INTO `beitraege` (`mitglied_id`, `jahr`, `betrag`, `ist_komitee`, `bezahlt_am`)
-SELECT m.`id`, 2025, g.`Cot 2025`, 0, MAKEDATE(2025, 1)
+INSERT INTO `beitraege` (`mitglied_id`, `jahr`, `betrag`, `ist_komitee`, `bezahlt_am`, `art`)
+SELECT m.`id`, 2025, g.`Cot 2025`, 0,
+       COALESCE(g.`Date_de_payement_2025`, MAKEDATE(2025, 1)), g.`moyen_de_payement_2025`
 FROM `gf_membres` g
 JOIN `mitglieder` m ON m.`quelle` = 'gf_membres' AND m.`legacy_no` = g.`id`
 WHERE g.`Cot 2025` IS NOT NULL AND g.`Cot 2025` > 0;
 
-INSERT INTO `beitraege` (`mitglied_id`, `jahr`, `betrag`, `ist_komitee`, `bezahlt_am`)
-SELECT m.`id`, 2026, g.`Cot 2026`, 0, MAKEDATE(2026, 1)
+INSERT INTO `beitraege` (`mitglied_id`, `jahr`, `betrag`, `ist_komitee`, `bezahlt_am`, `art`)
+SELECT m.`id`, 2026, g.`Cot 2026`, 0,
+       COALESCE(g.`Date_de_payement_2026`, MAKEDATE(2026, 1)), g.`moyen_de_payement_2026`
 FROM `gf_membres` g
 JOIN `mitglieder` m ON m.`quelle` = 'gf_membres' AND m.`legacy_no` = g.`id`
 WHERE g.`Cot 2026` IS NOT NULL AND g.`Cot 2026` > 0;
+
+INSERT INTO `beitraege` (`mitglied_id`, `jahr`, `betrag`, `ist_komitee`, `bezahlt_am`, `art`)
+SELECT m.`id`, 2027, g.`Cot 2027`, 0,
+       COALESCE(g.`Date_de_payement_2027`, MAKEDATE(2027, 1)), g.`moyen_de_payement_2027`
+FROM `gf_membres` g
+JOIN `mitglieder` m ON m.`quelle` = 'gf_membres' AND m.`legacy_no` = g.`id`
+WHERE g.`Cot 2027` IS NOT NULL AND g.`Cot 2027` > 0;
+
+INSERT INTO `beitraege` (`mitglied_id`, `jahr`, `betrag`, `ist_komitee`, `bezahlt_am`, `art`)
+SELECT m.`id`, 2028, g.`Cot 2028`, 0,
+       COALESCE(g.`Date_de_payement_2028`, MAKEDATE(2028, 1)), g.`moyen_de_payement_2028`
+FROM `gf_membres` g
+JOIN `mitglieder` m ON m.`quelle` = 'gf_membres' AND m.`legacy_no` = g.`id`
+WHERE g.`Cot 2028` IS NOT NULL AND g.`Cot 2028` > 0;
+
+INSERT INTO `beitraege` (`mitglied_id`, `jahr`, `betrag`, `ist_komitee`, `bezahlt_am`, `art`)
+SELECT m.`id`, 2029, g.`Cot 2029`, 0,
+       COALESCE(g.`Date_de_payement_2029`, MAKEDATE(2029, 1)), g.`moyen_de_payement_2029`
+FROM `gf_membres` g
+JOIN `mitglieder` m ON m.`quelle` = 'gf_membres' AND m.`legacy_no` = g.`id`
+WHERE g.`Cot 2029` IS NOT NULL AND g.`Cot 2029` > 0;
 
 -- ------------------------------------------------------------------
 -- 3) Online-Anträge  ->  jetzt im App-Modul „Anträge"

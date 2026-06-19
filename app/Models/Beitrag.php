@@ -11,7 +11,7 @@ use App\Core\Model;
  */
 class Beitrag extends Model
 {
-    public const ARTEN = ['ueberweisung', 'bar'];
+    public const ARTEN = ['cash', 'virement', 'payconiq', 'sumup'];
 
     /** Alle Beiträge eines Mitglieds (neueste zuerst). */
     public function forMitglied(int $mitgliedId): array
@@ -62,7 +62,7 @@ class Beitrag extends Model
     public function confirm(int $mitgliedId, int $jahr, ?float $betrag, string $art, ?int $bestaetigtDurch): void
     {
         if (!in_array($art, self::ARTEN, true)) {
-            $art = 'ueberweisung';
+            $art = 'virement';
         }
         $sql = 'INSERT INTO beitraege (mitglied_id, jahr, betrag, art, bezahlt_am, bestaetigt_durch)
                 VALUES (:id, :jahr, :betrag, :art, CURDATE(), :durch)

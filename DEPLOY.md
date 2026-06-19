@@ -51,8 +51,12 @@ Aufruf später: `https://afol55.afol.lu/apps/MemberMgt/public/`
 2. Reiter **SQL** → den **gesamten Inhalt von `sql/schema.sql`** einfügen → **OK**.
    (Erstellt die Tabellen `mitglieder` und `beitraege`.)
 3. Erneut Reiter **SQL** → den Inhalt von **`sql/import.sql`** einfügen → **OK**.
-   (Übernimmt die Mitglieder aus `gf_membres`.)
+   (Übernimmt die Mitglieder aus `gf_membres` inkl. Zahlungsdatum + Zahlungsmittel
+   je Jahr 2024–2029.)
    > `sql/seed.sql` ist nur für lokale Tests – auf dem Server **nicht** ausführen.
+   > Falls `beitraege` schon mit dem alten Schema bestand: vorher einmal
+   > `sql/alter_beitraege_art.sql` ausführen (stellt `art` auf cash/virement/
+   > payconiq/sumup um).
 
 ## 5. `config/auth.php` anlegen (WoltLab-Login + Trésorier)
 
