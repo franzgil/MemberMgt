@@ -97,6 +97,41 @@ ob die Mitgliedschaft noch läuft. Regeln (AFOL.lu a.s.b.l.):
 Das Gnadenjahr (+1) greift nur bei bekanntem Beitritts-/Antragsdatum; bei reinen
 Altdaten (nur Cot-Jahre) zählt das zuletzt bestätigte Beitragsjahr.
 
+## Sicheres Deployment (welche Dateien dürfen ins Web?)
+
+**Grundregel:** Nur der Ordner **`public/`** (Front Controller + `assets/`) darf über
+das Web erreichbar sein. Alles andere – `config/` (DB-Passwort!), `app/`, `sql/`,
+`.git/`, Doku – muss **unerreichbar** bleiben.
+
+Liegt die App unter `…/public_html/afol55/apps/MemberMgt`, ist standardmäßig der
+ganze Ordner im Web. Drei Schutzebenen (von best zu Minimum):
+
+1. **Am besten – Document-Root auf `public/` zeigen.**
+   In cPanel eine (Sub-)Domain anlegen, deren *Document Root* auf
+   `…/apps/MemberMgt/public` zeigt. Dann liegen `config/`, `app/`, `sql/`, `.git/`
+   physisch **oberhalb** des Web-Roots und sind nie erreichbar – außerdem saubere
+   URLs (ohne `/public/`).
+
+2. **Geheimnisse ganz aus `public_html` auslagern.**
+   `config/database.php` und `config/auth.php` an einen Ort außerhalb des Web-Roots
+   legen, z. B. `/home/vid10000/afol-secrets/`, und der App den Pfad per
+   Umgebungsvariable mitgeben:
+   ```apache
+   # in der .htaccess der Domain oder via cPanel „MultiPHP INI/Env"
+   SetEnv MEMBERMGT_CONFIG_DIR /home/vid10000/afol-secrets
+   ```
+   Die App lädt `database.php`/`auth.php` dann von dort (siehe `CONFIG_DIR`).
+
+3. **Schon enthalten – `.htaccess`-Sperren (Defense-in-Depth).**
+   `config/`, `app/`, `sql/` enthalten je eine `.htaccess` mit `Require all denied`;
+   die Wurzel-`.htaccess` sperrt `.git`, Punktdateien sowie `*.md/*.sql/*.example.php`
+   und schaltet das Verzeichnis-Listing ab (Apache 2.4/2.2). Wirkt auch, wenn die App
+   unter `public_html` liegt und über `…/apps/MemberMgt/public/` aufgerufen wird.
+
+> Empfehlung: **1 + 2** umsetzen; **3** ist die automatische Absicherung, falls 1
+> (noch) nicht eingerichtet ist. `config/database.php` und `config/auth.php` sind
+> zudem per `.gitignore` vom Repo ausgeschlossen.
+
 ## Zugriffsschutz über WoltLab
 
 Die Verwaltung wird über die bestehende **WoltLab-Anmeldung** geschützt – kein

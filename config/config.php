@@ -16,6 +16,13 @@ $base = str_replace('\\', '/', dirname($scriptName));
 $base = rtrim($base, '/');
 define('BASE_URL', ($base === '' || $base === '.') ? '' : $base);
 
+// Verzeichnis für umgebungsspezifische Konfiguration MIT Geheimnissen
+// (database.php, auth.php). Standard: ROOT/config. Für mehr Sicherheit kann es
+// per Umgebungsvariable MEMBERMGT_CONFIG_DIR auf einen Ort AUSSERHALB von
+// public_html gelegt werden – dann sind die Zugangsdaten nie über das Web erreichbar.
+$cfgDir = getenv('MEMBERMGT_CONFIG_DIR') ?: (ROOT . '/config');
+define('CONFIG_DIR', rtrim(str_replace('\\', '/', $cfgDir), '/'));
+
 // Aktuelles Beitragsjahr (für „Mitglied = bezahlt im laufenden Jahr")
 define('AKTUELLES_JAHR', (int) date('Y'));
 

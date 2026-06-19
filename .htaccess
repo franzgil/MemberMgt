@@ -1,0 +1,20 @@
+# Wurzel der Anwendung. Im Idealfall ist NICHT dieser Ordner, sondern der
+# Unterordner `public/` das Document-Root. Solange das nicht eingerichtet ist,
+# verhindern die folgenden Regeln den Zugriff auf Quellcode und Geheimnisse.
+
+# Kein Verzeichnis-Listing
+Options -Indexes
+
+# Versteckte Ordner/Dateien (.git, .env, .htpasswd …) -> 404
+RedirectMatch 404 (?i)/\.(git|env|htpasswd|htaccess|gitignore)
+
+# Quellcode-, Doku- und SQL-Dateien nicht ausliefern
+<FilesMatch "\.(md|sql|ya?ml|yml|ini|lock|log|dist)$|example\.php$">
+    <IfModule mod_authz_core.c>
+        Require all denied
+    </IfModule>
+    <IfModule !mod_authz_core.c>
+        Order allow,deny
+        Deny from all
+    </IfModule>
+</FilesMatch>

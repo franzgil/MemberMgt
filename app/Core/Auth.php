@@ -23,7 +23,8 @@ class Auth
     public static function config(): array
     {
         if (self::$config === null) {
-            $file = ROOT . '/config/auth.php';
+            $dir = defined('CONFIG_DIR') ? CONFIG_DIR : ROOT . '/config';
+            $file = $dir . '/auth.php';
             self::$config = is_file($file) ? (array) require $file : ['enabled' => false];
         }
         return self::$config;

@@ -16,10 +16,11 @@ class Database
     public static function getConnection(): PDO
     {
         if (self::$instance === null) {
-            $configFile = ROOT . '/config/database.php';
+            $dir = defined('CONFIG_DIR') ? CONFIG_DIR : ROOT . '/config';
+            $configFile = $dir . '/database.php';
             if (!is_file($configFile)) {
                 throw new RuntimeException(
-                    'config/database.php fehlt – bitte config/database.example.php kopieren und anpassen.'
+                    'database.php fehlt – bitte config/database.example.php kopieren und anpassen.'
                 );
             }
             $c = require $configFile;
