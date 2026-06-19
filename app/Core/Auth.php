@@ -58,8 +58,11 @@ class Auth
                 $global = (string) self::findGlobal();
             }
             if ($global === '' || !is_file($global)) {
+                $dir = defined('CONFIG_DIR') ? CONFIG_DIR : ROOT . '/config';
                 throw new RuntimeException(
-                    'WoltLab global.php nicht gefunden. Bitte "woltlab_global" in config/auth.php setzen.'
+                    'WoltLab global.php nicht gefunden. Bitte "woltlab_global" in '
+                    . $dir . '/auth.php auf den absoluten Pfad setzen '
+                    . '(z. B. /home/<user>/public_html/afol55/global.php).'
                 );
             }
 
@@ -178,7 +181,10 @@ class Auth
             if ($dir === '' || $dir === '/' || $dir === '.') {
                 break;
             }
-            if (is_file($dir . '/global.php') && is_dir($dir . '/wcf')) {
+            // WoltLab-Root erkennen: global.php plus ein typischer Core-Ordner
+            // (Layout variiert: mal 'wcf/', mal 'lib/'/'acp/' direkt im Root).
+            if (is_file($dir . '/global.php')
+                && (is_dir($dir . '/wcf') || is_dir($dir . '/lib') || is_dir($dir . '/acp'))) {
                 return $dir . '/global.php';
             }
         }
