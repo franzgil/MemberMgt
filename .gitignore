@@ -7,6 +7,10 @@
 # Zeiger auf ausgelagerten Geheimnis-Ordner (umgebungsspezifisch)
 /config/secrets-dir.php
 
+# Geheimnis der Mitgliedskarte (nie einchecken)
+card-secret.txt
+/woltlab/fpdf.php
+
 # Composer
 /vendor/
 

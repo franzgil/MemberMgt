@@ -163,6 +163,12 @@ class Auth
         return $base;
     }
 
+    /** Adresse des Mitgliedskarten-Skripts (oder '' wenn nicht konfiguriert). */
+    public static function cardUrl(): string
+    {
+        return rtrim((string) (self::config()['card_url'] ?? ''), '/');
+    }
+
     /** global.php in den übergeordneten Verzeichnissen suchen. */
     private static function findGlobal(): string
     {

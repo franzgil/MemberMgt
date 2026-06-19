@@ -76,6 +76,7 @@ class MitgliederController extends Controller
             'bestaetiger' => $bestaetiger,
             'gueltigkeit' => Mitgliedschaft::bewerten($mitglied, $bezahlteJahre),
             'darfBestaetigen' => \App\Core\Auth::darfBeitragBestaetigen(),
+            'cardUrl'  => \App\Core\Auth::cardUrl(),
             'arten'    => Beitrag::ARTEN,
             'jahr'     => AKTUELLES_JAHR,
         ]);

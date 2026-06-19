@@ -27,4 +27,8 @@ return [
 
     // WoltLab-Login-Seite (Weiterleitung, wenn nicht eingeloggt)
     'login_url' => 'https://afol55.afol.lu/index.php?login/',
+
+    // Adresse des Mitgliedskarten-Skripts (woltlab/membercard.php im WoltLab-Root).
+    // Leer lassen, um die Karten-Buttons in der App auszublenden.
+    'card_url' => 'https://afol55.afol.lu/membercard.php',
 ];

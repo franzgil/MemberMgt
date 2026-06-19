@@ -1,6 +1,6 @@
 <?php
 /** @var array $m @var array $beitraege @var array $bestaetiger @var array $gueltigkeit
- *  @var bool $darfBestaetigen @var array $arten @var int $jahr @var string $csrf */
+ *  @var bool $darfBestaetigen @var string $cardUrl @var array $arten @var int $jahr @var string $csrf */
 function feld($label, $value) {
     echo '<div class="kv"><span class="k">' . e($label) . '</span><span class="val">'
         . ($value !== null && $value !== '' ? e($value) : '<em class="muted">–</em>') . '</span></div>';
@@ -11,6 +11,10 @@ function feld($label, $value) {
         <span class="badge badge-<?= e($m['status']) ?>"><?= e($m['status']) ?></span>
     </h1>
     <div>
+        <?php if (!empty($cardUrl) && !empty($m['wcf_user_id'])): ?>
+            <a class="btn" target="_blank" rel="noopener"
+               href="<?= e($cardUrl) ?>?page=home&amp;userID=<?= e((string) $m['wcf_user_id']) ?>">Mitgliedskarte</a>
+        <?php endif; ?>
         <a class="btn" href="<?= url('/mitglieder/edit/' . $m['id']) ?>">Bearbeiten</a>
         <a class="btn" href="<?= url('/mitglieder') ?>">Zurück</a>
     </div>
