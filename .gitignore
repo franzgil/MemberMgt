@@ -4,6 +4,9 @@
 # Login-/WoltLab-Konfiguration (umgebungsspezifisch)
 /config/auth.php
 
+# Zeiger auf ausgelagerten Geheimnis-Ordner (umgebungsspezifisch)
+/config/secrets-dir.php
+
 # Composer
 /vendor/
 

@@ -106,31 +106,42 @@ das Web erreichbar sein. Alles andere – `config/` (DB-Passwort!), `app/`, `sql
 Liegt die App unter `…/public_html/afol55/apps/MemberMgt`, ist standardmäßig der
 ganze Ordner im Web. Drei Schutzebenen (von best zu Minimum):
 
-1. **Am besten – Document-Root auf `public/` zeigen.**
-   In cPanel eine (Sub-)Domain anlegen, deren *Document Root* auf
-   `…/apps/MemberMgt/public` zeigt. Dann liegen `config/`, `app/`, `sql/`, `.git/`
-   physisch **oberhalb** des Web-Roots und sind nie erreichbar – außerdem saubere
-   URLs (ohne `/public/`).
-
-2. **Geheimnisse ganz aus `public_html` auslagern.**
-   `config/database.php` und `config/auth.php` an einen Ort außerhalb des Web-Roots
-   legen, z. B. `/home/vid10000/afol-secrets/`, und der App den Pfad per
-   Umgebungsvariable mitgeben:
-   ```apache
-   # in der .htaccess der Domain oder via cPanel „MultiPHP INI/Env"
-   SetEnv MEMBERMGT_CONFIG_DIR /home/vid10000/afol-secrets
-   ```
-   Die App lädt `database.php`/`auth.php` dann von dort (siehe `CONFIG_DIR`).
-
-3. **Schon enthalten – `.htaccess`-Sperren (Defense-in-Depth).**
+1. **Schon enthalten – `.htaccess`-Sperren (auf cPanel/Apache ausreichend).**
    `config/`, `app/`, `sql/` enthalten je eine `.htaccess` mit `Require all denied`;
    die Wurzel-`.htaccess` sperrt `.git`, Punktdateien sowie `*.md/*.sql/*.example.php`
-   und schaltet das Verzeichnis-Listing ab (Apache 2.4/2.2). Wirkt auch, wenn die App
-   unter `public_html` liegt und über `…/apps/MemberMgt/public/` aufgerufen wird.
+   und schaltet das Verzeichnis-Listing ab (Apache 2.4/2.2). Das wirkt auch, wenn die
+   App unter `public_html` liegt und über `…/apps/MemberMgt/public/` aufgerufen wird –
+   **ohne Subdomain und ohne Umgebungsvariablen**. Hinweis: `*.php`-Konfigdateien geben
+   bei direktem Aufruf ohnehin nichts aus (PHP führt sie aus), die Sperren sind
+   zusätzlicher Schutz.
 
-> Empfehlung: **1 + 2** umsetzen; **3** ist die automatische Absicherung, falls 1
-> (noch) nicht eingerichtet ist. `config/database.php` und `config/auth.php` sind
-> zudem per `.gitignore` vom Repo ausgeschlossen.
+2. **Geheimnisse aus `public_html` auslagern – ohne Umgebungsvariablen.**
+   Ordner außerhalb des Web-Roots anlegen (per cPanel File Manager eine Ebene über
+   `public_html`), z. B. `/home/vid10000/afol-secrets/`, und dorthin `database.php`
+   (und ggf. `auth.php`) verschieben. Dann `config/secrets-dir.example.php` nach
+   `config/secrets-dir.php` kopieren und den Pfad eintragen – fertig. (Alternativ per
+   Umgebungsvariable `MEMBERMGT_CONFIG_DIR`, falls doch verfügbar.)
+
+3. **Am besten, falls je möglich – Document-Root auf `public/`.**
+   Zeigt eine (Sub-)Domain mit *Document Root* `…/apps/MemberMgt/public`, liegt alles
+   andere physisch oberhalb des Web-Roots. Aktuell nicht möglich → Schritt 1 (+2).
+
+> **Wichtig – `.git` nicht hochladen:** Lade die Dateien per File Manager hoch, **nicht**
+> per `git clone` in `public_html` (sonst wäre `…/apps/MemberMgt/.git/` ladbar; die
+> Wurzel-`.htaccess` blockt es zwar, aber besser gar nicht erst hochladen).
+> `config/database.php`, `config/auth.php` und `config/secrets-dir.php` sind per
+> `.gitignore` ausgeschlossen und auf dem Server manuell anzulegen.
+
+### Schutz prüfen (im Browser/per curl)
+
+Diese URLs dürfen **kein** Klartext/Inhalt liefern (erwartet 403 oder 404):
+
+```
+https://afol55.afol.lu/apps/MemberMgt/sql/schema.sql        -> 403/404 (NICHT der SQL-Text)
+https://afol55.afol.lu/apps/MemberMgt/config/database.php   -> 403 oder leere Seite
+https://afol55.afol.lu/apps/MemberMgt/.git/config           -> 404
+https://afol55.afol.lu/apps/MemberMgt/app/Core/Database.php -> 403 oder leere Seite
+```
 
 ## Zugriffsschutz über WoltLab
 
