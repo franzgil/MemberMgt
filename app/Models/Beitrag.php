@@ -13,6 +13,20 @@ class Beitrag extends Model
 {
     public const ARTEN = ['cash', 'virement', 'payconiq', 'sumup'];
 
+    /** Klartext-Bezeichnungen der Zahlungsmittel für die Anzeige. */
+    public const ART_LABELS = [
+        'cash'     => 'Bar',
+        'virement' => 'Überweisung',
+        'payconiq' => 'Payconiq',
+        'sumup'    => 'SumUp',
+    ];
+
+    /** Label zu einem Zahlungsmittel (Rohwert -> Klartext). */
+    public static function artLabel(?string $art): string
+    {
+        return self::ART_LABELS[$art] ?? (string) $art;
+    }
+
     /** Alle Beiträge eines Mitglieds (neueste zuerst). */
     public function forMitglied(int $mitgliedId): array
     {

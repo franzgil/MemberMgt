@@ -73,7 +73,7 @@ endif;
                     <tr>
                         <td><?= e($b['jahr']) ?></td>
                         <td><?= $b['betrag'] !== null ? e(number_format((float) $b['betrag'], 2, ',', '.')) . ' €' : '–' ?></td>
-                        <td><?= e($b['art']) ?></td>
+                        <td><?= $b['art'] ? e(\App\Models\Beitrag::artLabel($b['art'])) : '<span class="muted">–</span>' ?></td>
                         <td><?= e($b['bezahlt_am']) ?></td>
                         <td><?php
                             if ($bd && isset($bestaetiger[$bd])) {
@@ -98,7 +98,7 @@ endif;
             <label>Art
                 <select name="art">
                     <?php foreach ($arten as $a): ?>
-                        <option value="<?= e($a) ?>"><?= e(ucfirst($a)) ?></option>
+                        <option value="<?= e($a) ?>"><?= e(\App\Models\Beitrag::artLabel($a)) ?></option>
                     <?php endforeach; ?>
                 </select>
             </label>
