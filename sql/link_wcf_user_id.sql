@@ -9,9 +9,7 @@
 -- ------------------------------------------------------------------
 
 UPDATE IGNORE `mitglieder` m
-JOIN `wcf1_user` u
-  ON CONVERT(LOWER(TRIM(u.`email`)) USING utf8mb4) COLLATE utf8mb4_unicode_ci
-   = CONVERT(LOWER(TRIM(m.`email`)) USING utf8mb4) COLLATE utf8mb4_unicode_ci
+JOIN `wcf1_user` u ON LOWER(TRIM(u.`email`)) = LOWER(TRIM(m.`email`))
 SET m.`wcf_user_id` = u.`userID`
 WHERE m.`wcf_user_id` IS NULL
   AND TRIM(COALESCE(m.`email`, '')) <> '';
