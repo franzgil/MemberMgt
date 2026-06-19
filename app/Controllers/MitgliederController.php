@@ -46,6 +46,7 @@ class MitgliederController extends Controller
             'titel'  => 'Mitglieder',
             'liste'  => $liste,
             'gueltigkeit' => $gueltigkeit,
+            'cardUrl' => \App\Core\Auth::cardUrl(),
             'filters' => $filters,
             'status' => Mitglied::STATUS,
         ]);

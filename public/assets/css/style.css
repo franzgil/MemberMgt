@@ -86,6 +86,8 @@ tr.warn td { color: var(--warn); }
 .badge-abgelehnt { background: #fdecec; color: var(--rot); }
 .badge-foerder { background: #eef3ff; color: #1d4ed8; }
 .badge-erneuern { background: #fdecec; color: var(--rot); }
+.row-actions a { margin-right: .7rem; white-space: nowrap; }
+.row-actions a:last-child { margin-right: 0; }
 .liste-gruppe { margin-bottom: 1.8rem; }
 .liste-gruppe h2 { font-size: 1.05rem; margin: 0 0 .5rem; }
 .liste-gruppe > summary {

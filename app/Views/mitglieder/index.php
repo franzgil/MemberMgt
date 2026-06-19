@@ -1,5 +1,5 @@
 <?php
-/** @var array $liste @var array $gueltigkeit @var array $filters @var array $status */
+/** @var array $liste @var array $gueltigkeit @var string $cardUrl @var array $filters @var array $status */
 use App\Core\Mitgliedschaft;
 
 /** Kleine Badge-Hilfe für die Gültigkeit der Mitgliedschaft. */
@@ -51,7 +51,7 @@ $gueltigBadge = static function (?array $g): string {
 
 <?php
 /** Tabelle für eine Mitglieder-Teilmenge rendern. */
-$tabelle = static function (array $rows, bool $mitMatricule = false) use ($gueltigBadge, $gueltigkeit): void {
+$tabelle = static function (array $rows, bool $mitMatricule = false) use ($gueltigBadge, $gueltigkeit, $cardUrl): void {
     if (!$rows) {
         echo '<p class="muted">Keine Einträge in dieser Gruppe.</p>';
         return;
@@ -77,7 +77,13 @@ $tabelle = static function (array $rows, bool $mitMatricule = false) use ($guelt
                 <td><span class="badge badge-<?= e($m['status']) ?>"><?= e($m['status']) ?></span></td>
                 <td><?= $gueltigBadge($gueltigkeit[(int) $m['id']] ?? null) ?></td>
                 <td class="num"><?= e($m['vollstaendigkeit']) ?>%</td>
-                <td><a href="<?= url('/mitglieder/show/' . $m['id']) ?>">Details</a></td>
+                <td class="row-actions">
+                    <a href="<?= url('/mitglieder/show/' . $m['id']) ?>">Details</a>
+                    <?php if (!empty($cardUrl) && !empty($m['wcf_user_id'])): ?>
+                        <a target="_blank" rel="noopener"
+                           href="<?= e($cardUrl) ?>?page=home&amp;userID=<?= e((string) $m['wcf_user_id']) ?>">Karte</a>
+                    <?php endif; ?>
+                </td>
             </tr>
         <?php endforeach; ?>
         </tbody>
