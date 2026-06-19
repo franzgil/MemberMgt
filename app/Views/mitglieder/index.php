@@ -80,8 +80,9 @@ $tabelle = static function (array $rows, bool $mitMatricule = false) use ($guelt
                 <td class="row-actions">
                     <a href="<?= url('/mitglieder/show/' . $m['id']) ?>">Details</a>
                     <?php if (!empty($cardUrl) && !empty($m['wcf_user_id'])): ?>
-                        <a target="_blank" rel="noopener"
-                           href="<?= e($cardUrl) ?>?page=home&amp;userID=<?= e((string) $m['wcf_user_id']) ?>">Karte</a>
+                        <a class="card-link" target="_blank" rel="noopener"
+                           title="Mitgliedskarte erzeugen" aria-label="Mitgliedskarte erzeugen"
+                           href="<?= e($cardUrl) ?>?page=home&amp;userID=<?= e((string) $m['wcf_user_id']) ?>">🪪</a>
                     <?php endif; ?>
                 </td>
             </tr>
