@@ -52,6 +52,10 @@ define('CARD_LOGO', __DIR__ . '/images/afol-logo.png');
 // Gültigkeitsdauer des Tokens in Sekunden (z. B. 1 Jahr). 0 = unbegrenzt.
 define('CARD_TOKEN_TTL', 365 * 24 * 3600);
 
+// Monat der Generalversammlung – dort werden die Karten neu ausgegeben.
+// Muss zur App-Konstante GV_MONAT passen: das Mitgliedsjahr läuft von GV zu GV.
+define('CARD_GV_MONTH', 3);
+
 // --- Mitgliedsnummer aus eigener Tabelle gf_membres (verknüpft über E-Mail) ---
 // Nummer auf der Karte = erster Buchstabe aus Membre (groß) + No, 3-stellig
 // mit führenden Nullen. Bei allen Typen außer "A" wird von No 1000 abgezogen.
@@ -261,7 +265,11 @@ function card_load_member(int $userID): ?array {
                 }
 
                 // Gültigkeit: ein Jahr gilt als bezahlt, wenn Cot JJJJ > 0.
-                // "gültig bis" = letztes bezahltes Jahr + 1, zum 31.12.
+                // Wie in der App (Mitgliedschaft): gedeckt bis zur General-
+                // versammlung (Monat CARD_GV_MONTH) im Jahr nach dem letzten
+                // bezahlten Jahr. Kein Gnadenjahr, da gf_membres kein
+                // Beitrittsdatum führt (entspricht dem App-Zweig ohne Beitritts-/
+                // Antragsdatum).
                 $lastPaid = 0;
                 foreach ($cotYears as $y) {
                     $key = 'cot' . $y;
@@ -273,8 +281,10 @@ function card_load_member(int $userID): ?array {
                     }
                 }
                 if ($lastPaid > 0) {
-                    // Ende des Folgejahres: 31.12. (lastPaid + 1), 23:59:59
-                    $validUntil = mktime(23, 59, 59, 12, 31, $lastPaid + 1);
+                    // Gültig bis zur GV (Monat CARD_GV_MONTH) im Jahr lastPaid+1
+                    // – identisch zur App: valid solange currentMembershipYear
+                    // (= Jahr ab GV-Monat, sonst Vorjahr) <= lastPaid.
+                    $validUntil = mktime(0, 0, 0, CARD_GV_MONTH, 1, $lastPaid + 1);
                     // Zahldatum des letzten bezahlten Jahres (informativ)
                     $pk = 'pay' . $lastPaid;
                     if (isset($mrow[$pk]) && $mrow[$pk] && $mrow[$pk] !== '0000-00-00') {
