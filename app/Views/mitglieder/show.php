@@ -94,6 +94,7 @@ endif;
         <form class="form-inline" method="post" action="<?= url('/mitglieder/bestaetigen/' . $m['id']) ?>">
             <input type="hidden" name="csrf" value="<?= e($csrf) ?>">
             <label>Jahr<input type="number" name="jahr" value="<?= e($jahr) ?>" style="width:5em"></label>
+            <label>Bezahlt am<input type="date" name="bezahlt_am" value="<?= e(date('Y-m-d')) ?>"></label>
             <label>Betrag €<input name="betrag" placeholder="z. B. 25,00" style="width:7em"></label>
             <label>Art
                 <select name="art">

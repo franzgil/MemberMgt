@@ -172,10 +172,11 @@ class MitgliederController extends Controller
         $art = $_POST['art'] ?? 'virement';
         $betrag = trim($_POST['betrag'] ?? '');
         $betrag = $betrag === '' ? null : (float) str_replace(',', '.', $betrag);
+        $bezahltAm = trim($_POST['bezahlt_am'] ?? '');
 
         // Beitrag verbuchen – bestätigt durch den eingeloggten Trésorier (WoltLab)
         $tresorier = \App\Core\Auth::user()['userID'] ?? null;
-        $this->beitraege->confirm($id, $jahr, $betrag, $art, $tresorier);
+        $this->beitraege->confirm($id, $jahr, $betrag, $art, $tresorier, $bezahltAm);
 
         // War es eine Aktivierung (aus Antrag) oder eine Erneuerung (schon aktiv)?
         $warAktiv = ($mitglied['status'] ?? '') === 'aktiv';

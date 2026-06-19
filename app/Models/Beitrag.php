@@ -72,25 +72,30 @@ class Beitrag extends Model
 
     /**
      * Beitrag fürs Jahr bestätigen (Upsert). Trésorier-Aktion.
+     * $bezahltAm: Zahldatum (YYYY-MM-DD); leer/ungültig -> heute.
      */
-    public function confirm(int $mitgliedId, int $jahr, ?float $betrag, string $art, ?int $bestaetigtDurch): void
+    public function confirm(int $mitgliedId, int $jahr, ?float $betrag, string $art, ?int $bestaetigtDurch, ?string $bezahltAm = null): void
     {
         if (!in_array($art, self::ARTEN, true)) {
             $art = 'virement';
         }
+        if (!$bezahltAm || !preg_match('/^\d{4}-\d{2}-\d{2}$/', $bezahltAm)) {
+            $bezahltAm = date('Y-m-d');
+        }
         $sql = 'INSERT INTO beitraege (mitglied_id, jahr, betrag, art, bezahlt_am, bestaetigt_durch)
-                VALUES (:id, :jahr, :betrag, :art, CURDATE(), :durch)
+                VALUES (:id, :jahr, :betrag, :art, :bezahlt, :durch)
                 ON DUPLICATE KEY UPDATE
                     betrag = VALUES(betrag),
                     art = VALUES(art),
-                    bezahlt_am = CURDATE(),
+                    bezahlt_am = VALUES(bezahlt_am),
                     bestaetigt_durch = VALUES(bestaetigt_durch)';
         $this->db->prepare($sql)->execute([
-            'id'     => $mitgliedId,
-            'jahr'   => $jahr,
-            'betrag' => $betrag,
-            'art'    => $art,
-            'durch'  => $bestaetigtDurch,
+            'id'      => $mitgliedId,
+            'jahr'    => $jahr,
+            'betrag'  => $betrag,
+            'art'     => $art,
+            'bezahlt' => $bezahltAm,
+            'durch'   => $bestaetigtDurch,
         ]);
     }
 
