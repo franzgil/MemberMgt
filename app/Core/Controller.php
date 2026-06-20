@@ -24,6 +24,11 @@ abstract class Controller
         require ROOT . '/app/Views/layout/header.php';
         require $viewFile;
         require ROOT . '/app/Views/layout/footer.php';
+
+        // Alte Formulareingaben (old()) sind nur für genau diese eine
+        // (Fehler-)Anzeige gedacht. Danach verwerfen, sonst überlagern sie
+        // spätere Bearbeiten-/Anlegen-Formulare mit fremden Daten.
+        unset($_SESSION['old']);
     }
 
     protected function redirect(string $path): void
