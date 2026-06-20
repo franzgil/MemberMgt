@@ -287,43 +287,68 @@ function card_load_member(int $userID): ?array {
         }
     }
 
-    // Auch in der App bestätigte Beiträge (Tabelle beitraege) berücksichtigen,
-    // verknüpft über mitglieder.wcf_user_id. So zählt jede Zahlungsquelle mit
-    // (App-Bestätigung ODER gf_membres) und Karte/App bleiben konsistent.
+    // Maßgeblich ist die App (mitglieder/beitraege) – dieselbe Quelle wie
+    // Dashboard und Trésorier-Bestätigung. gf_membres dient nur als Fallback,
+    // falls das Mitglied (noch) nicht mit der App verknüpft ist (wcf_user_id).
+    $appLinked     = false;
+    $appPaid       = [];
+    $beitrittsjahr = null;   // für das Gnadenjahr (wie in der App)
     try {
-        $bst = WCF::getDB()->prepareStatement(
-            "SELECT b.jahr, b.bezahlt_am
-             FROM   beitraege b
-             JOIN   mitglieder m ON m.id = b.mitglied_id
-             WHERE  b.bezahlt_am IS NOT NULL AND m.wcf_user_id = ?"
+        $ms = WCF::getDB()->prepareStatement(
+            "SELECT id, beitrittsdatum, antragsdatum FROM mitglieder WHERE wcf_user_id = ? LIMIT 1"
         );
-        $bst->execute([(int)$row['userID']]);
-        while ($br = $bst->fetchArray()) {
-            $y = (int)$br['jahr'];
-            if ($y <= 0) {
-                continue;
+        $ms->execute([(int)$row['userID']]);
+        if ($mr2 = $ms->fetchArray()) {
+            $appLinked = true;
+            foreach (['beitrittsdatum', 'antragsdatum'] as $df) {
+                if (!empty($mr2[$df]) && $mr2[$df] !== '0000-00-00') {
+                    $beitrittsjahr = (int)substr((string)$mr2[$df], 0, 4);
+                    break;
+                }
             }
-            if (!in_array($y, $paidYears, true)) {
-                $paidYears[] = $y;
-            }
-            if (!empty($br['bezahlt_am']) && $br['bezahlt_am'] !== '0000-00-00') {
-                $payDates[$y] = (string)$br['bezahlt_am'];
+            $bs = WCF::getDB()->prepareStatement(
+                "SELECT jahr, bezahlt_am FROM beitraege WHERE mitglied_id = ? AND bezahlt_am IS NOT NULL"
+            );
+            $bs->execute([(int)$mr2['id']]);
+            while ($br = $bs->fetchArray()) {
+                $y = (int)$br['jahr'];
+                if ($y <= 0) {
+                    continue;
+                }
+                if (!in_array($y, $appPaid, true)) {
+                    $appPaid[] = $y;
+                }
+                if (!empty($br['bezahlt_am']) && $br['bezahlt_am'] !== '0000-00-00') {
+                    $payDates[$y] = (string)$br['bezahlt_am'];
+                }
             }
         }
     } catch (\Throwable $e) {
-        // App-Tabellen evtl. nicht vorhanden -> ignorieren
+        // App-Tabellen evtl. nicht vorhanden -> gf_membres-Fallback bleibt
     }
 
-    // Gültigkeit aus allen Quellen: gedeckt bis zur Generalversammlung
-    // (Monat CARD_GV_MONTH) im Jahr nach dem letzten bezahlten Jahr – exakt die
-    // App-Regel (gültig solange aktuelles Mitgliedsjahr <= letztes bezahltes Jahr).
+    // Verknüpftes Mitglied: App-Daten sind maßgeblich; sonst gf_membres-Fallback.
+    if ($appLinked) {
+        $paidYears = $appPaid;
+    }
+
+    // Gültigkeit (App-Regel): gedeckt bis zur Generalversammlung (CARD_GV_MONTH)
+    // im Jahr nach dem letzten bezahlten Jahr; Beitrittsjahr + 1 ist als
+    // Gnadenjahr gedeckt (nur bei bekanntem Beitritts-/Antragsdatum).
+    $bisJahr = null;
+    if ($beitrittsjahr !== null) {
+        $bisJahr = $beitrittsjahr + 1;
+    }
     if (!empty($paidYears)) {
         sort($paidYears);
-        $lastPaid   = (int)max($paidYears);
-        $validUntil = mktime(0, 0, 0, CARD_GV_MONTH, 1, $lastPaid + 1);
-        if (!empty($payDates[$lastPaid])) {
-            $lastPaidDate = $payDates[$lastPaid];
+        $maxPaid = (int)max($paidYears);
+        $bisJahr = max((int)$bisJahr, $maxPaid);
+        if (!empty($payDates[$maxPaid])) {
+            $lastPaidDate = $payDates[$maxPaid];
         }
+    }
+    if ($bisJahr !== null) {
+        $validUntil = mktime(0, 0, 0, CARD_GV_MONTH, 1, $bisJahr + 1);
     }
 
     // Gesamtaktiv = WoltLab-Status UND gf_membres-Status
@@ -976,7 +1001,7 @@ $page = $_GET['page'] ?? 'card';
 if ($page === 'qrtest') {
     // Diagnose: zeigt, ob die QR-Erzeugung funktioniert
     header('Content-Type: text/plain; charset=utf-8');
-    echo "DIAGNOSE-VERSION: 2026-06-20-multisource\n";
+    echo "DIAGNOSE-VERSION: 2026-06-20-beitraege\n";
     echo "Empfangene GET-Parameter: " . json_encode($_GET) . "\n";
     // Welche userID würde die Routing-Logik wählen?
     $dbgTarget = (int)WCF::getUser()->userID;
