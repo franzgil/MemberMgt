@@ -1011,8 +1011,12 @@ if ($page === 'qrtest') {
     echo (is_file(CARD_LOGO) ? '[gefunden] ' : '[fehlt]    ') . CARD_LOGO . "\n";
 
     echo "\n-- gf_membres / Mitgliedsnummer --\n";
-    $uid = (int)WCF::getUser()->userID;
-    echo "Eingeloggte userID: " . ($uid ?: '(nicht eingeloggt)') . "\n";
+    // Diagnose für die ANGEFRAGTE userID (sofern Berechtigung), sonst eigene.
+    $ownUid = (int)WCF::getUser()->userID;
+    $uid = card_user_may_manage() ? $dbgTarget : $ownUid;
+    echo "Eingeloggte userID: " . ($ownUid ?: '(nicht eingeloggt)') . "\n";
+    echo "Geprüfte userID:    " . ($uid ?: '(keine)')
+       . ($uid !== $ownUid ? "  (angefragte fremde userID)" : "  (eigene)") . "\n";
     if ($uid) {
         // WoltLab-E-Mail holen
         $est = WCF::getDB()->prepareStatement(
