@@ -327,10 +327,9 @@ function card_load_member(int $userID): ?array {
         // App-Tabellen evtl. nicht vorhanden -> gf_membres-Fallback bleibt
     }
 
-    // Verknüpftes Mitglied: App-Daten sind maßgeblich; sonst gf_membres-Fallback.
-    if ($appLinked) {
-        $paidYears = $appPaid;
-    }
+    // Bezahlte Jahre vereinen: App-Beiträge (beitraege – wirken sofort) UND
+    // gf_membres (Sicherheitsnetz, damit keine Zahlung verloren geht).
+    $paidYears = array_values(array_unique(array_merge($paidYears, $appPaid)));
 
     // Gültigkeit (App-Regel): gedeckt bis zur Generalversammlung (CARD_GV_MONTH)
     // im Jahr nach dem letzten bezahlten Jahr; Beitrittsjahr + 1 ist als
@@ -1001,7 +1000,7 @@ $page = $_GET['page'] ?? 'card';
 if ($page === 'qrtest') {
     // Diagnose: zeigt, ob die QR-Erzeugung funktioniert
     header('Content-Type: text/plain; charset=utf-8');
-    echo "DIAGNOSE-VERSION: 2026-06-20-beitraege\n";
+    echo "DIAGNOSE-VERSION: 2026-06-20-quellen\n";
     echo "Empfangene GET-Parameter: " . json_encode($_GET) . "\n";
     // Welche userID würde die Routing-Logik wählen?
     $dbgTarget = (int)WCF::getUser()->userID;
