@@ -947,7 +947,7 @@ $page = $_GET['page'] ?? 'card';
 if ($page === 'qrtest') {
     // Diagnose: zeigt, ob die QR-Erzeugung funktioniert
     header('Content-Type: text/plain; charset=utf-8');
-    echo "DIAGNOSE-VERSION: 2026-06-19-paramfix\n";
+    echo "DIAGNOSE-VERSION: 2026-06-20-gv-ablauf\n";
     echo "Empfangene GET-Parameter: " . json_encode($_GET) . "\n";
     // Welche userID würde die Routing-Logik wählen?
     $dbgTarget = (int)WCF::getUser()->userID;
