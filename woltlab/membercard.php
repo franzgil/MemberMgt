@@ -184,6 +184,7 @@ function card_load_member(int $userID): ?array {
     $memberNumber = (string)$row['userID'];
     $validUntil   = 0;   // Unix-Zeit; 0 = unbekannt / kein Beitrag erfasst
     $paidYears    = [];  // Liste der bezahlten Jahre (für Diagnose/Anzeige)
+    $payDates     = [];  // Jahr => Zahldatum (aus gf_membres oder beitraege)
     $email = trim((string)$row['email']);
     $statusActive = true;   // aus gf_membres.status; Standard aktiv
     $statusValue  = '';
@@ -264,36 +265,64 @@ function card_load_member(int $userID): ?array {
                     }
                 }
 
-                // Gültigkeit: ein Jahr gilt als bezahlt, wenn Cot JJJJ > 0.
-                // Wie in der App (Mitgliedschaft): gedeckt bis zur General-
-                // versammlung (Monat CARD_GV_MONTH) im Jahr nach dem letzten
-                // bezahlten Jahr. Kein Gnadenjahr, da gf_membres kein
-                // Beitrittsdatum führt (entspricht dem App-Zweig ohne Beitritts-/
-                // Antragsdatum).
-                $lastPaid = 0;
+                // Ein Jahr gilt als bezahlt, wenn Cot JJJJ > 0 ODER ein
+                // Date_de_payement_JJJJ gesetzt ist. (Die finale Gültigkeit
+                // wird weiter unten aus allen Quellen berechnet.)
                 foreach ($cotYears as $y) {
-                    $key = 'cot' . $y;
-                    if (isset($mrow[$key]) && (int)$mrow[$key] > 0) {
-                        $paidYears[] = $y;
-                        if ($y > $lastPaid) {
-                            $lastPaid = $y;
+                    $cotOk  = isset($mrow['cot' . $y]) && (int)$mrow['cot' . $y] > 0;
+                    $dateOk = isset($mrow['pay' . $y]) && $mrow['pay' . $y]
+                              && $mrow['pay' . $y] !== '0000-00-00';
+                    if ($cotOk || $dateOk) {
+                        if (!in_array($y, $paidYears, true)) {
+                            $paidYears[] = $y;
                         }
-                    }
-                }
-                if ($lastPaid > 0) {
-                    // Gültig bis zur GV (Monat CARD_GV_MONTH) im Jahr lastPaid+1
-                    // – identisch zur App: valid solange currentMembershipYear
-                    // (= Jahr ab GV-Monat, sonst Vorjahr) <= lastPaid.
-                    $validUntil = mktime(0, 0, 0, CARD_GV_MONTH, 1, $lastPaid + 1);
-                    // Zahldatum des letzten bezahlten Jahres (informativ)
-                    $pk = 'pay' . $lastPaid;
-                    if (isset($mrow[$pk]) && $mrow[$pk] && $mrow[$pk] !== '0000-00-00') {
-                        $lastPaidDate = (string)$mrow[$pk];
+                        if ($dateOk) {
+                            $payDates[$y] = (string)$mrow['pay' . $y];
+                        }
                     }
                 }
             }
         } catch (\Throwable $e) {
             // Tabelle/Spalte nicht vorhanden -> still auf userID-Fallback bleiben
+        }
+    }
+
+    // Auch in der App bestätigte Beiträge (Tabelle beitraege) berücksichtigen,
+    // verknüpft über mitglieder.wcf_user_id. So zählt jede Zahlungsquelle mit
+    // (App-Bestätigung ODER gf_membres) und Karte/App bleiben konsistent.
+    try {
+        $bst = WCF::getDB()->prepareStatement(
+            "SELECT b.jahr, b.bezahlt_am
+             FROM   beitraege b
+             JOIN   mitglieder m ON m.id = b.mitglied_id
+             WHERE  b.bezahlt_am IS NOT NULL AND m.wcf_user_id = ?"
+        );
+        $bst->execute([(int)$row['userID']]);
+        while ($br = $bst->fetchArray()) {
+            $y = (int)$br['jahr'];
+            if ($y <= 0) {
+                continue;
+            }
+            if (!in_array($y, $paidYears, true)) {
+                $paidYears[] = $y;
+            }
+            if (!empty($br['bezahlt_am']) && $br['bezahlt_am'] !== '0000-00-00') {
+                $payDates[$y] = (string)$br['bezahlt_am'];
+            }
+        }
+    } catch (\Throwable $e) {
+        // App-Tabellen evtl. nicht vorhanden -> ignorieren
+    }
+
+    // Gültigkeit aus allen Quellen: gedeckt bis zur Generalversammlung
+    // (Monat CARD_GV_MONTH) im Jahr nach dem letzten bezahlten Jahr – exakt die
+    // App-Regel (gültig solange aktuelles Mitgliedsjahr <= letztes bezahltes Jahr).
+    if (!empty($paidYears)) {
+        sort($paidYears);
+        $lastPaid   = (int)max($paidYears);
+        $validUntil = mktime(0, 0, 0, CARD_GV_MONTH, 1, $lastPaid + 1);
+        if (!empty($payDates[$lastPaid])) {
+            $lastPaidDate = $payDates[$lastPaid];
         }
     }
 
@@ -947,7 +976,7 @@ $page = $_GET['page'] ?? 'card';
 if ($page === 'qrtest') {
     // Diagnose: zeigt, ob die QR-Erzeugung funktioniert
     header('Content-Type: text/plain; charset=utf-8');
-    echo "DIAGNOSE-VERSION: 2026-06-20-gv-ablauf\n";
+    echo "DIAGNOSE-VERSION: 2026-06-20-multisource\n";
     echo "Empfangene GET-Parameter: " . json_encode($_GET) . "\n";
     // Welche userID würde die Routing-Logik wählen?
     $dbgTarget = (int)WCF::getUser()->userID;
