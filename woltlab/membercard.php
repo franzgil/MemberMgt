@@ -522,12 +522,22 @@ function card_render_pdf(array $m): void {
     $pdf->SetTextColor(255, 255, 255);
     $pdf->Text($MARGIN, $H - 11, $enc($m['displayName']));
 
-    // Gültig-bis (aus Beiträgen), dezent über der Fußzeile
+    // Gültigkeit (aus Beiträgen), dezent über der Fußzeile.
+    // Gültig nur, wenn Konto aktiv UND Deckung noch nicht abgelaufen.
     $vu = (int)($m['validUntil'] ?? 0);
-    if ($vu > 0) {
+    $gueltig = !empty($m['active']) && $vu > time();
+    if ($gueltig) {
         $pdf->SetFont('Helvetica', '', 5);
         $pdf->SetTextColor(180, 180, 180);
         $pdf->Text($MARGIN, $H - 7, $enc('Gültig bis ' . date('d.m.Y', $vu)));
+    } else {
+        // Abgelaufen / kein aktueller Beitrag -> deutlich in Rot
+        $pdf->SetFont('Helvetica', 'B', 5.5);
+        $pdf->SetTextColor(200, 40, 40);
+        $label = ($vu > 0)
+            ? ('ABGELAUFEN seit ' . date('d.m.Y', $vu))
+            : 'KEIN AKTUELLER BEITRAG';
+        $pdf->Text($MARGIN, $H - 7, $enc($label));
     }
 
     // Fußzeile: rechtliche Angabe, dezent
@@ -696,6 +706,15 @@ function card_render_wallet(array $m): void {
       . '}'
       . '</style></head><body>';
 
+    // Gültigkeit für die Anzeige (gleiche Regel wie PDF/Verify)
+    $wVu = (int)($m['validUntil'] ?? 0);
+    $wGueltig = !empty($m['active']) && $wVu > time();
+    $wBadge = $wGueltig
+        ? '<span style="color:#7bd88f">Gültig bis ' . date('d.m.Y', $wVu) . '</span>'
+        : '<span style="color:#ff6b6b;font-weight:700">'
+          . ($wVu > 0 ? 'Abgelaufen seit ' . date('d.m.Y', $wVu) : 'Kein aktueller Beitrag')
+          . '</span>';
+
     // Karte
     $html .= '<div class="card" id="card">'
       . '<div class="title">CARTE DE MEMBRE</div>'
@@ -709,7 +728,7 @@ function card_render_wallet(array $m): void {
       . '<div class="nm">' . $name . '</div></div>'
       . ($qrDataUri ? '<div class="qr"><img src="' . $qrDataUri . '" alt="QR"></div>' : '')
       . '</div>'
-      . '<div class="foot">AFOL.lu a.s.b.l.  ·  RCS F14202</div>'
+      . '<div class="foot">' . $wBadge . '  ·  AFOL.lu a.s.b.l.</div>'
       . '</div>';
 
     // Hinweistext + Aktionen
