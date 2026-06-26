@@ -42,6 +42,8 @@ define('ANTRAG_BANK',         '');                          // optional, Name de
 define('ANTRAG_BEITRAG',      '20,00 €');                   // <-- Jahresbeitrag
 // Verwendungszweck: {name} -> "Vorname Nachname", {jahr} -> Jahr.
 define('ANTRAG_VERWENDUNG',   'Mitgliedsbeitrag {jahr} – {name}');
+// Alternative Online-Zahlung per SumUp-Link (leer = ausgeblendet).
+define('ANTRAG_SUMUP_URL',    'https://pay.sumup.com/b2c/Q3MX52O5');
 
 // --- E-Mail -----------------------------------------------------------------
 define('ANTRAG_MAIL_FROM',     '');   // leer = WoltLab-Standardabsender (empfohlen)
@@ -116,6 +118,8 @@ function antrag_T(): array
             'ty_title' => 'Merci fir deng Demande!',
             'ty_mail_ok' => 'Mir hunn der eng Bestätegung op {email} geschéckt.',
             'ty_mail_fail' => 'Hiweis: D\'Bestätegungs-E-Mail konnt grad net geschéckt ginn – d\'Kontosdonnéeën fënns du awer hei drënner.',
+            'pay_alt' => 'Oder bezuel bequem online mat der Kaart:',
+            'pay_sumup_btn' => 'Online mat SumUp bezuelen',
             'ty_pay_intro' => 'Fir datt deng Memberschaft wierksam gëtt, iwwerweis w.e.g. de Joresbäitrag op eist Veräinskonto:',
             'ty_after' => 'Soubal d\'Bezuelung do ass a bestätegt ass, bass du offiziell Member a kriss deng Memberskaart.',
             'ty_storno_title' => 'Verseenlech ugefrot?',
@@ -170,6 +174,8 @@ function antrag_T(): array
             'ty_title' => 'Danke für deinen Antrag!',
             'ty_mail_ok' => 'Wir haben dir eine Bestätigung an {email} geschickt.',
             'ty_mail_fail' => 'Hinweis: Die Bestätigungs-E-Mail konnte gerade nicht versendet werden – die Überweisungsdaten findest du aber unten.',
+            'pay_alt' => 'Oder bezahle bequem online mit Karte:',
+            'pay_sumup_btn' => 'Online mit SumUp bezahlen',
             'ty_pay_intro' => 'Damit deine Mitgliedschaft wirksam wird, überweise bitte den Jahresbeitrag auf unser Vereinskonto:',
             'ty_after' => 'Sobald die Zahlung eingegangen und bestätigt ist, bist du offizielles Mitglied und erhältst deine Mitgliedskarte.',
             'ty_storno_title' => 'Versehentlich beantragt?',
@@ -224,6 +230,8 @@ function antrag_T(): array
             'ty_title' => 'Merci pour ta demande !',
             'ty_mail_ok' => 'Nous t\'avons envoyé une confirmation à {email}.',
             'ty_mail_fail' => 'Remarque : l\'e-mail de confirmation n\'a pas pu être envoyé – tu trouveras les coordonnées bancaires ci-dessous.',
+            'pay_alt' => 'Ou paie facilement en ligne par carte :',
+            'pay_sumup_btn' => 'Payer en ligne avec SumUp',
             'ty_pay_intro' => 'Pour que ton adhésion prenne effet, vire la cotisation annuelle sur le compte de l\'association :',
             'ty_after' => 'Dès que le paiement est reçu et confirmé, tu es membre officiel et reçois ta carte de membre.',
             'ty_storno_title' => 'Demande par erreur ?',
@@ -278,6 +286,8 @@ function antrag_T(): array
             'ty_title' => 'Thanks for your application!',
             'ty_mail_ok' => 'We\'ve sent a confirmation to {email}.',
             'ty_mail_fail' => 'Note: the confirmation e-mail could not be sent right now – the bank details are below.',
+            'pay_alt' => 'Or pay easily online by card:',
+            'pay_sumup_btn' => 'Pay online with SumUp',
             'ty_pay_intro' => 'To activate your membership, please transfer the annual fee to our association account:',
             'ty_after' => 'Once the payment is received and confirmed, you are an official member and receive your membership card.',
             'ty_storno_title' => 'Applied by mistake?',
@@ -456,10 +466,15 @@ function antrag_mail_inhalt(array $d, string $stornoUrl, string $lang): array
     foreach ($konto as $z) {
         $kontoText .= str_pad($z[0] . ':', 18) . $z[1] . "\n";
     }
+    $sumupText = ANTRAG_SUMUP_URL !== ''
+        ? antrag_tr($lang, 'pay_alt') . "\n" . ANTRAG_SUMUP_URL . "\n\n"
+        : '';
+
     $text =
         antrag_tr($lang, 'mail_hello', ['{name}' => $name]) . "\n\n" .
         antrag_tr($lang, 'mail_thanks') . "\n\n" .
         antrag_tr($lang, 'mail_pay') . "\n\n" . $kontoText . "\n" .
+        $sumupText .
         antrag_tr($lang, 'mail_after') . "\n\n" .
         antrag_tr($lang, 'mail_storno') . "\n" . $stornoUrl . "\n\n" .
         antrag_tr($lang, 'mail_contact') . "\n\n" .
@@ -477,6 +492,12 @@ function antrag_mail_inhalt(array $d, string $stornoUrl, string $lang): array
         '<p>' . antrag_e(antrag_tr($lang, 'mail_thanks')) . '</p>' .
         '<p>' . antrag_e(antrag_tr($lang, 'mail_pay')) . '</p>' .
         '<table style="border-collapse:collapse;margin:12px 0;background:#f5f6f7;padding:8px;">' . $kontoHtml . '</table>' .
+        (ANTRAG_SUMUP_URL !== ''
+            ? '<p style="margin:4px 0 14px;">' . antrag_e(antrag_tr($lang, 'pay_alt')) . '<br>' .
+              '<a href="' . antrag_e(ANTRAG_SUMUP_URL) . '" style="display:inline-block;margin-top:6px;' .
+              'background:#0f766e;color:#fff;text-decoration:none;font-weight:bold;padding:10px 18px;border-radius:6px;">' .
+              antrag_e(antrag_tr($lang, 'pay_sumup_btn')) . '</a></p>'
+            : '') .
         '<p>' . antrag_e(antrag_tr($lang, 'mail_after')) . '</p>' .
         '<p style="margin-top:18px;padding:12px;background:#fff6f6;border:1px solid #f0c0c0;border-radius:6px;">' .
         antrag_e(antrag_tr($lang, 'mail_storno')) . '<br>' .
@@ -861,9 +882,16 @@ function antrag_handle_post(): void
         ? '<div class="alert ok">' . antrag_e(antrag_tr($lang, 'ty_mail_ok', ['{email}' => $daten['email']])) . '</div>'
         : '<div class="alert note">' . antrag_e(antrag_tr($lang, 'ty_mail_fail')) . '</div>';
 
+    $sumupHtml = ANTRAG_SUMUP_URL !== ''
+        ? '<p style="margin-top:16px;">' . antrag_e(antrag_tr($lang, 'pay_alt')) . '</p>'
+          . '<p><a class="btn" style="background:#0f766e;" href="' . antrag_e(ANTRAG_SUMUP_URL)
+          . '" target="_blank" rel="noopener">' . antrag_e(antrag_tr($lang, 'pay_sumup_btn')) . '</a></p>'
+        : '';
+
     $inhalt = $mailHinweis
         . '<p>' . antrag_e(antrag_tr($lang, 'ty_pay_intro')) . '</p>'
         . antrag_konto_html($daten, $lang)
+        . $sumupHtml
         . '<p style="margin-top:10px;">' . antrag_e(antrag_tr($lang, 'ty_after')) . '</p>'
         . '<div class="alert note" style="margin-top:18px;"><strong>' . antrag_e(antrag_tr($lang, 'ty_storno_title')) . '</strong><br>'
         . antrag_e(antrag_tr($lang, 'ty_storno_text')) . '<br>'
@@ -941,7 +969,7 @@ function antrag_handle_test(): void
         return;
     }
     echo "AFOL Mitgliedsantrag – Diagnose\n";
-    echo "DIAGNOSE-VERSION: 2026-06-26-antrag5\n\n";
+    echo "DIAGNOSE-VERSION: 2026-06-26-antrag6\n\n";
     echo "Verein:        " . ANTRAG_VEREIN_NAME . "\n";
     echo "IBAN gesetzt:  " . (strpos(ANTRAG_IBAN, 'x') === false ? 'ja' : 'NEIN – bitte echte IBAN eintragen') . "\n";
     echo "Beitrag:       " . ANTRAG_BEITRAG . "\n";

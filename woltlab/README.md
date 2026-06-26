@@ -98,6 +98,8 @@ Antrag erhält den neuen Status `zurueckgezogen`.
 3. Im **KONFIGURATION**-Block oben anpassen:
    - **Vereinskonto:** `ANTRAG_IBAN`, `ANTRAG_KONTO_INHABER`, optional `ANTRAG_BIC`/`ANTRAG_BANK`
    - **Beitrag:** `ANTRAG_BEITRAG`, ggf. `ANTRAG_VERWENDUNG`
+   - **SumUp (optional):** `ANTRAG_SUMUP_URL` – Online-Kartenzahlung als Alternative
+     zur Überweisung (leer = ausgeblendet). Erscheint auf Danke-Seite und in der Mail.
    - **E-Mail:** `ANTRAG_KONTAKT_EMAIL` (Vorstand), optional `ANTRAG_MAIL_FROM`
 4. `card-secret.txt` muss gesetzt sein (wie bei der Mitgliedskarte).
 5. Im Forum den **alten Plugin-Link** durch `…/afol55/mitgliedsantrag.php` ersetzen.
