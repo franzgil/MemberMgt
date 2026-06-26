@@ -48,7 +48,7 @@ define('ANTRAG_SUMUP_URL',    'https://pay.sumup.com/b2c/Q3MX52O5');
 // --- E-Mail -----------------------------------------------------------------
 define('ANTRAG_MAIL_FROM',     '');   // leer = WoltLab-Standardabsender (empfohlen)
 define('ANTRAG_MAIL_FROM_NAME','AFOL.lu');
-define('ANTRAG_KONTAKT_EMAIL', 'vorstand@afol.lu');         // <-- anpassen
+define('ANTRAG_KONTAKT_EMAIL', 'comite@afol.lu');           // Vorstand / Comité
 
 // --- Sonstiges --------------------------------------------------------------
 define('ANTRAG_FORUM_URL', rtrim(WCF::getPath(), '/') . '/');
@@ -975,7 +975,7 @@ function antrag_handle_test(): void
         return;
     }
     echo "AFOL Mitgliedsantrag – Diagnose\n";
-    echo "DIAGNOSE-VERSION: 2026-06-26-antrag8\n\n";
+    echo "DIAGNOSE-VERSION: 2026-06-26-antrag9\n\n";
     echo "Verein:        " . ANTRAG_VEREIN_NAME . "\n";
     echo "IBAN gesetzt:  " . (strpos(ANTRAG_IBAN, 'x') === false ? 'ja' : 'NEIN – bitte echte IBAN eintragen') . "\n";
     echo "Beitrag:       " . ANTRAG_BEITRAG . "\n";
