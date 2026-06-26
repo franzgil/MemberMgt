@@ -118,3 +118,12 @@ endif;
     <button type="submit" class="btn-danger">Austritt / archivieren</button>
 </form>
 <?php endif; ?>
+
+<?php if (!empty($darfLoeschen)): ?>
+<form method="post" action="<?= url('/mitglieder/loeschen/' . $m['id']) ?>"
+      onsubmit="return confirm('Diesen Datensatz (<?= e(addslashes($m['vorname'] . ' ' . $m['nachname'])) ?>) ENDGÜLTIG löschen? Das kann nicht rückgängig gemacht werden und entfernt auch die zugehörigen Beiträge.');"
+      class="danger-zone" style="margin-top:.5rem;">
+    <input type="hidden" name="csrf" value="<?= e($csrf) ?>">
+    <button type="submit" class="btn-danger">Datensatz löschen (Dublette/Fehler)</button>
+</form>
+<?php endif; ?>

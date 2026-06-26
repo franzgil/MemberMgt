@@ -77,6 +77,7 @@ class MitgliederController extends Controller
             'bestaetiger' => $bestaetiger,
             'gueltigkeit' => Mitgliedschaft::bewerten($mitglied, $bezahlteJahre),
             'darfBestaetigen' => \App\Core\Auth::darfBeitragBestaetigen(),
+            'darfLoeschen' => \App\Core\Auth::darfLoeschen(),
             'cardUrl'  => \App\Core\Auth::cardUrl(),
             'arten'    => Beitrag::ARTEN,
             'jahr'     => AKTUELLES_JAHR,
@@ -197,6 +198,29 @@ class MitgliederController extends Controller
             ? "Beitrag für $jahr bestätigt – Mitgliedschaft verlängert."
             : "Zahlung für $jahr bestätigt – Mitglied ist jetzt aktiv.");
         $this->redirect('/mitglieder/show/' . $id);
+    }
+
+    /**
+     * Hartes Löschen eines Datensatzes (Admin/Trésorier) – z. B. doppelter
+     * Antrag oder Fehleingabe. Entfernt auch die zugehörigen Beiträge (FK CASCADE).
+     */
+    public function loeschen(string $id = '0'): void
+    {
+        $this->verifyCsrf();
+        $id = (int) $id;
+
+        if (!\App\Core\Auth::darfLoeschen()) {
+            flash('errors', 'Keine Berechtigung zum Löschen.');
+            $this->redirect('/mitglieder/show/' . $id);
+            return;
+        }
+        if ($this->mitglieder->find($id) === null) {
+            $this->notFound();
+            return;
+        }
+        $this->mitglieder->delete($id);
+        flash('success', 'Datensatz wurde endgültig gelöscht.');
+        $this->redirect('/mitglieder');
     }
 
     /** Austritt: archivieren. */

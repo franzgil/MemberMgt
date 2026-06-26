@@ -137,6 +137,30 @@ class Auth
         return self::inGruppe($cfg['tresorier_groups'] ?? [], $cfg['tresorier_group_ids'] ?? []);
     }
 
+    /**
+     * Darf der aktuelle Benutzer Datensätze hart löschen (z. B. Dublette/
+     * Fehleingabe)? Erlaubt für die Trésorier-Gruppe ODER WoltLab-Administratoren.
+     * Bei deaktiviertem Schutz (lokale Entwicklung) immer true.
+     */
+    public static function darfLoeschen(): bool
+    {
+        self::boot();
+        if (!self::enabled()) {
+            return true;
+        }
+        if (self::$user === null) {
+            return false;
+        }
+        if (self::darfBeitragBestaetigen()) {
+            return true;
+        }
+        try {
+            return (bool) \wcf\system\WCF::getSession()->getPermission('admin.user.canEditUser');
+        } catch (Throwable $e) {
+            return false;
+        }
+    }
+
     /** Ist der aktuelle Benutzer in einer der genannten Gruppen (Name oder ID)? */
     private static function inGruppe(array $namen, array $ids): bool
     {
