@@ -12,7 +12,7 @@ use PDO;
 class Mitglied extends Model
 {
     /** Gültige Statuswerte (entsprechen dem ENUM in schema.sql). */
-    public const STATUS = ['antrag', 'aktiv', 'pausiert', 'inaktiv', 'ausgetreten', 'abgelehnt'];
+    public const STATUS = ['antrag', 'aktiv', 'pausiert', 'inaktiv', 'ausgetreten', 'abgelehnt', 'zurueckgezogen'];
 
     /** Mitglieds-Typen: aktiv = Aktives Mitglied, foerder = Fördermitglied. */
     public const TYPEN = ['aktiv' => 'Aktives Mitglied', 'foerder' => 'Fördermitglied'];

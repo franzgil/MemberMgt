@@ -51,3 +51,46 @@ sobald in `config/auth.php` `card_url` gesetzt ist und das Mitglied eine
 - `…/afol55/membercard.php?page=qrtest` (als Vorstand/Trésorier eingeloggt) zeigt,
   ob QR-Bibliothek, FPDF, Logo und der `gf_membres`-Abgleich funktionieren.
 - Hinweis: `fpdf.php` und `card-secret.txt` sind per `.gitignore` ausgeschlossen.
+
+---
+
+# Mitgliedsantrag (`mitgliedsantrag.php`)
+
+Eigenständiges **Antragsformular**, das das fehlerhafte WoltLab-Formular-Plugin
+(`form-user-response/3-mitgliedsantrag`) ersetzt und dessen Mängel behebt:
+
+- **Bestätigung:** Der Absender erhält eine E-Mail.
+- **Zahlung:** Die Mail enthält die Aufforderung, den Jahresbeitrag aufs
+  Vereinskonto zu überweisen (IBAN, Betrag, Verwendungszweck).
+- **Storno:** Ein persönlicher Link erlaubt, den Antrag zurückzuziehen.
+
+Seiten:
+
+- `mitgliedsantrag.php` – öffentliches Antragsformular (POST = absenden)
+- `mitgliedsantrag.php?page=storno&t=…` – Antrag zurückziehen (HMAC-Link aus der Mail)
+- `mitgliedsantrag.php?page=test` – Diagnose (nur Admin), `&mail=1` sendet eine Test-Mail
+
+Der Antrag wird direkt in die App-Tabelle `mitglieder` geschrieben (Status
+`antrag`) und erscheint in der Mitgliederverwaltung. Wie gehabt wird daraus durch
+die **Trésorier-Zahlungsbestätigung** ein aktives Mitglied. Ein zurückgezogener
+Antrag erhält den neuen Status `zurueckgezogen`.
+
+> Läuft **im WoltLab-Root** (neben `global.php`) und nutzt WoltLabs Mailsystem.
+> Das HMAC-Geheimnis ist dasselbe wie bei `membercard.php` (`card-secret.txt`).
+
+## Installation
+
+1. **`mitgliedsantrag.php`** nach `…/public_html/afol55/` hochladen.
+2. Einmalig **`sql/alter_mitglieder_zurueckgezogen.sql`** ausführen (neuer Status).
+3. Im **KONFIGURATION**-Block oben anpassen:
+   - **Vereinskonto:** `ANTRAG_IBAN`, `ANTRAG_KONTO_INHABER`, optional `ANTRAG_BIC`/`ANTRAG_BANK`
+   - **Beitrag:** `ANTRAG_BEITRAG`, ggf. `ANTRAG_VERWENDUNG`
+   - **E-Mail:** `ANTRAG_KONTAKT_EMAIL` (Vorstand), optional `ANTRAG_MAIL_FROM`
+4. `card-secret.txt` muss gesetzt sein (wie bei der Mitgliedskarte).
+5. Im Forum den **alten Plugin-Link** durch `…/afol55/mitgliedsantrag.php` ersetzen.
+
+## Prüfen
+
+- `…/afol55/mitgliedsantrag.php?page=test` (als Admin) zeigt die Konfiguration;
+  `…?page=test&mail=1` sendet eine Test-Mail an die eigene Adresse.
+- Danach das Formular selbst absenden und die Bestätigungsmail + Storno-Link prüfen.
