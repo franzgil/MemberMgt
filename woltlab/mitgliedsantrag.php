@@ -251,11 +251,12 @@ function antrag_send_mail(string $toEmail, string $toName, string $betreff, stri
     try {
         $email = new Email();
         $email->addRecipient(new Mailbox($toEmail, $toName !== '' ? $toName : null));
-        if (ANTRAG_MAIL_FROM !== '') {
+        // setSender/setReplyTo gibt es nicht in allen WCF-Versionen -> defensiv.
+        if (ANTRAG_MAIL_FROM !== '' && method_exists($email, 'setSender')) {
             $email->setSender(new Mailbox(ANTRAG_MAIL_FROM, ANTRAG_MAIL_FROM_NAME));
         }
-        if (ANTRAG_KONTAKT_EMAIL !== '') {
-            $email->addReplyTo(new Mailbox(ANTRAG_KONTAKT_EMAIL, ANTRAG_MAIL_FROM_NAME));
+        if (ANTRAG_KONTAKT_EMAIL !== '' && method_exists($email, 'setReplyTo')) {
+            $email->setReplyTo(new Mailbox(ANTRAG_KONTAKT_EMAIL, ANTRAG_MAIL_FROM_NAME));
         }
         $email->setSubject($betreff);
         $email->setBody(new MimePartFacade([
@@ -597,7 +598,7 @@ function antrag_handle_test(): void
         return;
     }
     echo "AFOL Mitgliedsantrag – Diagnose\n";
-    echo "DIAGNOSE-VERSION: 2026-06-26-antrag\n\n";
+    echo "DIAGNOSE-VERSION: 2026-06-26-antrag2\n\n";
     echo "Verein:        " . ANTRAG_VEREIN_NAME . "\n";
     echo "IBAN gesetzt:  " . (strpos(ANTRAG_IBAN, 'x') === false ? 'ja' : 'NEIN – bitte echte IBAN eintragen') . "\n";
     echo "Beitrag:       " . ANTRAG_BEITRAG . "\n";
