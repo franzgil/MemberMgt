@@ -443,13 +443,24 @@ function antrag_is_admin(): bool
     }
 }
 
-function antrag_find_existing(string $email): ?array
+function antrag_find_existing(string $email, ?int $wcfUserId = null): ?array
 {
-    if ($email === '') {
+    $conds = [];
+    $params = [];
+    if ($email !== '') {
+        $conds[] = 'LOWER(email) = ?';
+        $params[] = mb_strtolower($email);
+    }
+    if ($wcfUserId) {
+        $conds[] = 'wcf_user_id = ?';
+        $params[] = $wcfUserId;
+    }
+    if (!$conds) {
         return null;
     }
-    $stmt = WCF::getDB()->prepareStatement("SELECT id, status FROM mitglieder WHERE LOWER(email) = ? LIMIT 1");
-    $stmt->execute([mb_strtolower($email)]);
+    $stmt = WCF::getDB()->prepareStatement(
+        "SELECT id, status FROM mitglieder WHERE " . implode(' OR ', $conds) . " LIMIT 1");
+    $stmt->execute($params);
     $row = $stmt->fetchArray();
     return $row ? ['id' => (int) $row['id'], 'status' => (string) $row['status']] : null;
 }
@@ -885,7 +896,11 @@ function antrag_handle_post(): void
         return;
     }
 
-    $existing = antrag_find_existing($alt['email']);
+    // Eingeloggten Nutzer früh ermitteln (auch für die Dublettenprüfung).
+    $user = antrag_current_user();
+
+    // Dublette über E-Mail ODER (bei eingeloggtem Nutzer) wcf_user_id.
+    $existing = antrag_find_existing($alt['email'], $user['userID'] ?? null);
     if ($existing !== null) {
         $msg = $existing['status'] === 'aktiv' ? antrag_tr($lang, 'dup_aktiv') : antrag_tr($lang, 'dup_antrag');
         antrag_layout($lang, antrag_tr($lang, 'dup_title'),
@@ -906,7 +921,6 @@ function antrag_handle_post(): void
                  . '; Newsletter: ' . ($nlConsent ? 'ja (' . $nlLang . ')' : 'nein');
     $bemerkung = trim(($alt['bemerkung'] !== '' ? $alt['bemerkung'] . "\n" : '') . $consentNote);
 
-    $user = antrag_current_user();
     $daten = [
         'vorname' => $alt['vorname'], 'nachname' => $alt['nachname'], 'email' => $alt['email'],
         'telefon' => $alt['telefon'] ?: null, 'geburtsdatum' => $geb,
@@ -921,8 +935,13 @@ function antrag_handle_post(): void
     try {
         $id = antrag_insert($daten);
     } catch (\Throwable $e) {
+        // Für Admins den echten Fehler zeigen (z. B. fehlende Spalte/Migration).
+        $detail = antrag_is_admin()
+            ? '<p class="consent" style="margin-top:10px;"><strong>[Admin]</strong> '
+              . antrag_e($e->getMessage()) . '</p>'
+            : '';
         antrag_layout($lang, antrag_tr($lang, 'save_err_title'),
-            '<div class="alert err">' . antrag_e(antrag_tr($lang, 'save_err')) . '</div>');
+            '<div class="alert err">' . antrag_e(antrag_tr($lang, 'save_err')) . '</div>' . $detail);
         return;
     }
 
@@ -1038,7 +1057,7 @@ function antrag_handle_test(): void
         return;
     }
     echo "AFOL Mitgliedsantrag – Diagnose\n";
-    echo "DIAGNOSE-VERSION: 2026-06-26-antrag10\n\n";
+    echo "DIAGNOSE-VERSION: 2026-06-26-antrag11\n\n";
     echo "Verein:        " . ANTRAG_VEREIN_NAME . "\n";
     echo "IBAN gesetzt:  " . (strpos(ANTRAG_IBAN, 'x') === false ? 'ja' : 'NEIN – bitte echte IBAN eintragen') . "\n";
     echo "Beitrag:       " . ANTRAG_BEITRAG . "\n";
