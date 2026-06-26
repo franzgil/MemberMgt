@@ -264,9 +264,34 @@ function antrag_send_mail(string $toEmail, string $toName, string $betreff, stri
             new HtmlTextMimePart($html),
         ]));
         $email->send();
+        // WoltLab legt Mails in die Hintergrund-Warteschlange. Ohne System-Cron
+        // (cron.php) wird die ggf. nicht abgearbeitet -> hier sofort anstoßen,
+        // damit die Bestätigungsmail noch im selben Request rausgeht.
+        antrag_flush_queue();
         return true;
     } catch (\Throwable $e) {
         return $e->getMessage();
+    }
+}
+
+/** WoltLab-Hintergrund-Warteschlange inline abarbeiten (best effort). */
+function antrag_flush_queue(): void
+{
+    try {
+        $cls = '\wcf\system\background\BackgroundQueueHandler';
+        if (!class_exists($cls)) {
+            return;
+        }
+        $bq = $cls::getInstance();
+        if (method_exists($bq, 'performNextJob')) {
+            for ($i = 0; $i < 8; $i++) {
+                $bq->performNextJob();
+            }
+        } elseif (method_exists($bq, 'forceCheck')) {
+            $bq->forceCheck();
+        }
+    } catch (\Throwable $e) {
+        // unkritisch – der Cron holt es sonst nach
     }
 }
 
@@ -598,7 +623,7 @@ function antrag_handle_test(): void
         return;
     }
     echo "AFOL Mitgliedsantrag – Diagnose\n";
-    echo "DIAGNOSE-VERSION: 2026-06-26-antrag2\n\n";
+    echo "DIAGNOSE-VERSION: 2026-06-26-antrag3\n\n";
     echo "Verein:        " . ANTRAG_VEREIN_NAME . "\n";
     echo "IBAN gesetzt:  " . (strpos(ANTRAG_IBAN, 'x') === false ? 'ja' : 'NEIN – bitte echte IBAN eintragen') . "\n";
     echo "Beitrag:       " . ANTRAG_BEITRAG . "\n";
@@ -606,16 +631,51 @@ function antrag_handle_test(): void
     echo "Secret gesetzt: " . (ANTRAG_SECRET !== 'BITTE-LANGES-ZUFALLSGEHEIMNIS-SETZEN' ? 'ja' : 'NEIN') . "\n";
     echo "Self-URL:      " . ANTRAG_SELF_URL . "\n\n";
 
+    // WoltLab-Mail-Konfiguration (häufigste Ursache, wenn Mails nicht ankommen)
+    $sendMethod = defined('MAIL_SEND_METHOD') ? MAIL_SEND_METHOD : '(unbekannt)';
+    echo "--- WoltLab-Mail ---\n";
+    echo "Versandmethode: " . $sendMethod . "\n";
+    if ($sendMethod === 'debug') {
+        echo "  >> ACHTUNG: 'debug' = Mails werden NUR protokolliert, NICHT versendet!\n";
+        echo "     ACP > Konfiguration > Allgemein > E-Mail > Versandmethode auf 'PHP' oder 'SMTP' stellen.\n";
+    }
+    echo "Absender:       " . (defined('MAIL_FROM_ADDRESS') ? MAIL_FROM_ADDRESS : '?') .
+         (defined('MAIL_FROM_NAME') ? ' (' . MAIL_FROM_NAME . ')' : '') . "\n";
+    if ($sendMethod === 'smtp') {
+        echo "SMTP-Host:      " . (defined('MAIL_SMTP_HOST') ? MAIL_SMTP_HOST : '?') .
+             ':' . (defined('MAIL_SMTP_PORT') ? MAIL_SMTP_PORT : '?') . "\n";
+        echo "SMTP-User:      " . (defined('MAIL_SMTP_USER') && MAIL_SMTP_USER !== '' ? '(gesetzt)' : '(leer)') . "\n";
+    }
+    // Hintergrund-Warteschlange (Mails gehen hierüber raus)
+    try {
+        $cls = '\wcf\system\background\BackgroundQueueHandler';
+        if (class_exists($cls) && method_exists($cls::getInstance(), 'getRunnableCount')) {
+            echo "Warteschlange:  " . (int) $cls::getInstance()->getRunnableCount() . " offene Jobs\n";
+        }
+    } catch (\Throwable $e) {
+    }
+    echo "\n";
+
     $u = antrag_current_user();
     echo "Eingeloggt als: " . ($u ? $u['username'] . ' <' . $u['email'] . '>' : '(niemand)') . "\n\n";
 
-    // Test-Mail an die Admin-Adresse
+    // Direkter PHP-mail()-Vergleichstest (umgeht WoltLab komplett)
+    if (isset($_GET['phpmail']) && $u) {
+        $ok = @mail($u['email'], 'AFOL PHP-mail() Test',
+            "Direkter PHP-mail()-Test (umgeht WoltLab).",
+            'From: ' . (defined('MAIL_FROM_ADDRESS') ? MAIL_FROM_ADDRESS : 'no-reply@afol.lu'));
+        echo "PHP-mail()-Test an " . $u['email'] . ": " . ($ok ? 'angenommen' : 'ABGELEHNT (mail() schlug fehl)') . "\n";
+        echo "  (Kommt diese an, aber die WoltLab-Mail nicht -> WoltLab-Mailkonfig. Umgekehrt -> Serverproblem.)\n\n";
+    }
+
+    // Test-Mail an die Admin-Adresse (über WoltLab)
     if (isset($_GET['mail']) && $u) {
         $r = antrag_send_mail($u['email'], $u['username'], 'AFOL Test-Mail (Mitgliedsantrag)',
             "Dies ist eine Test-Mail des Mitgliedsantrag-Skripts.", '<p>Dies ist eine <strong>Test-Mail</strong>.</p>');
-        echo "Test-Mail an " . $u['email'] . ": " . ($r === true ? 'gesendet (Posteingang prüfen)' : 'FEHLER: ' . $r) . "\n";
+        echo "Test-Mail (WoltLab) an " . $u['email'] . ": " . ($r === true ? 'in Queue gelegt + abgearbeitet (Posteingang/Spam prüfen)' : 'FEHLER: ' . $r) . "\n";
     } else {
-        echo "Test-Mail: mitgliedsantrag.php?page=test&mail=1 aufrufen (sendet an deine Adresse).\n";
+        echo "Test-Mail:        mitgliedsantrag.php?page=test&mail=1    (über WoltLab)\n";
+        echo "PHP-mail()-Test:  mitgliedsantrag.php?page=test&phpmail=1 (Vergleich, umgeht WoltLab)\n";
     }
 }
 
