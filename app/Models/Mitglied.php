@@ -25,6 +25,7 @@ class Mitglied extends Model
         'wcf_user_id', 'forum_name',
         'status', 'typ', 'antragsart', 'antragsdatum', 'beitrittsdatum',
         'austrittsdatum', 'karte_ausgestellt', 'quelle', 'bemerkung',
+        'newsletter_sprache',
     ];
 
     /** Felder, die in die Vollständigkeit einfließen. */

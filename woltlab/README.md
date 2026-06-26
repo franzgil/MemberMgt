@@ -64,10 +64,19 @@ Eigenständiges **Antragsformular**, das das fehlerhafte WoltLab-Formular-Plugin
   Vereinskonto zu überweisen (IBAN, Betrag, Verwendungszweck).
 - **Storno:** Ein persönlicher Link erlaubt, den Antrag zurückzuziehen.
 
+Weitere Eigenschaften:
+
+- **4 Sprachen** (🇱🇺 Lëtzebuergesch, 🇩🇪 Deutsch, 🇫🇷 Français, 🇬🇧 English) mit
+  Umschalter – Formular, Danke-/Storno-Seiten und E-Mail. Eine einzige
+  Übersetzungstabelle versorgt Formular-JS, Server-Seiten und Mail.
+- **AFOL.lu-Design** (Palette/Hero/Logo wie `membercard.php`).
+- Feld **„Bevorzugte Sprache für Newsletter"** → Spalte `mitglieder.newsletter_sprache`.
+  Die Bestätigungsmail wird in dieser Sprache verschickt.
+
 Seiten:
 
 - `mitgliedsantrag.php` – öffentliches Antragsformular (POST = absenden)
-- `mitgliedsantrag.php?page=storno&t=…` – Antrag zurückziehen (HMAC-Link aus der Mail)
+- `mitgliedsantrag.php?page=storno&t=…&lang=…` – Antrag zurückziehen (HMAC-Link aus der Mail)
 - `mitgliedsantrag.php?page=test` – Diagnose (nur Admin), `&mail=1` sendet eine Test-Mail
 
 Der Antrag wird direkt in die App-Tabelle `mitglieder` geschrieben (Status
@@ -81,7 +90,8 @@ Antrag erhält den neuen Status `zurueckgezogen`.
 ## Installation
 
 1. **`mitgliedsantrag.php`** nach `…/public_html/afol55/` hochladen.
-2. Einmalig **`sql/alter_mitglieder_zurueckgezogen.sql`** ausführen (neuer Status).
+2. Einmalig ausführen: **`sql/alter_mitglieder_zurueckgezogen.sql`** (neuer Status)
+   und **`sql/alter_mitglieder_newsletter_sprache.sql`** (Newsletter-Sprachfeld).
 3. Im **KONFIGURATION**-Block oben anpassen:
    - **Vereinskonto:** `ANTRAG_IBAN`, `ANTRAG_KONTO_INHABER`, optional `ANTRAG_BIC`/`ANTRAG_BANK`
    - **Beitrag:** `ANTRAG_BEITRAG`, ggf. `ANTRAG_VERWENDUNG`

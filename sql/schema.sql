@@ -60,6 +60,8 @@ CREATE TABLE `mitglieder` (
   `quelle`           VARCHAR(50)    DEFAULT NULL COMMENT 'z.B. gf_membres, woltlab_form, papier',
   `vollstaendigkeit` TINYINT        DEFAULT NULL COMMENT 'berechneter Vollständigkeits-% (Cache)',
   `bemerkung`        TEXT           DEFAULT NULL,
+  `newsletter_sprache` ENUM('lb','de','fr','en') DEFAULT NULL
+                                    COMMENT 'Bevorzugte Newsletter-Sprache (Mitgliedsantrag)',
 
   `created_at`       DATETIME       NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `updated_at`       DATETIME       NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
