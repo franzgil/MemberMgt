@@ -79,6 +79,11 @@ Weitere Eigenschaften:
   sympathisant, 15 €) angelegt. Aktivmitglied (`typ='aktiv'`) macht der Vorstand
   später (frühestens nach 6 Monaten). Das Formular weist darauf hin.
 - **SumUp:** Online-Kartenzahlung als Alternative zur Überweisung (`ANTRAG_SUMUP_URL`).
+- **DSGVO/GDPR:** Pflicht-Einwilligung in die Datenverarbeitung mit Link zur
+  Datenschutzerklärung (`ANTRAG_DATENSCHUTZ_URL`, Standard: WoltLab-Datenschutzseite);
+  separate **freiwillige** Newsletter-Einwilligung (Opt-in) – die Sprache wird nur
+  bei Zustimmung gespeichert; Transparenz-Hinweis auf Formular und in der Mail;
+  Einwilligung wird mit Zeitstempel in `bemerkung` dokumentiert.
 
 Seiten:
 

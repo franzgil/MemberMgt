@@ -55,6 +55,8 @@ define('ANTRAG_FORUM_URL', rtrim(WCF::getPath(), '/') . '/');
 define('ANTRAG_SELF_URL',  rtrim(WCF::getPath(), '/') . '/mitgliedsantrag.php');
 define('ANTRAG_LAND_DEFAULT', 'Luxembourg');
 define('ANTRAG_LOGO', __DIR__ . '/images/afol-logo.png');   // optional (wie membercard)
+// Link zur Datenschutzerklärung (DSGVO). Standard: WoltLab-Datenschutzseite.
+define('ANTRAG_DATENSCHUTZ_URL', rtrim(WCF::getPath(), '/') . '/index.php?privacy-policy/');
 
 // --- Geheimnis (HMAC für Storno-/Formular-Token) ----------------------------
 $antragSecret = getenv('AFOL_CARD_SECRET') ?: '';
@@ -105,6 +107,12 @@ function antrag_T(): array
             'newsletter' => 'Bevorzugt Sprooch fir den Newsletter',
             'bemerkung' => 'Bemierkung (fakultativ)',
             'consent' => 'Mat dem Ofschécken freet du d\'Memberschaft un. Si gëtt eréischt mam Agang vum Joresbäitrag wierksam.',
+            'privacy_pre' => 'Ech hunn d\'', 'privacy_link' => 'Dateschutzerklärung',
+            'privacy_post' => 'gelies an averstanen mat der Veraarbechtung vu menge Donnéeën fir d\'Bearbechtung vu menger Demande.',
+            'err_privacy' => 'Stëmm w.e.g. der Dateschutzerklärung zou.',
+            'nl_consent' => 'Ech wëll den Newsletter kréien (fakultativ).',
+            'privacy_info' => 'Deng Donnéeën gi just fir d\'Verwaltung vu denger Memberschaft veraarbecht an net un Drëtter weiderginn. Du kanns zu all Moment Auskunft, Berichtegung oder Läschung froen – schreif un {mail}.',
+            'mail_privacy' => 'Dateschutz: Mir veraarbechten deng Donnéeën just fir d\'Memberverwaltung. Auskunft/Läschung: {mail}.',
             'submit' => 'Demande ofschécken', 'req' => '* Flichtfeld',
             'err_title' => 'Iwwerpréif w.e.g. deng Agaben:',
             'err_vorname' => 'Virnumm feelt.', 'err_nachname' => 'Numm feelt.',
@@ -162,6 +170,12 @@ function antrag_T(): array
             'newsletter' => 'Bevorzugte Sprache für Newsletter',
             'bemerkung' => 'Bemerkung (optional)',
             'consent' => 'Mit dem Absenden beantragst du die Mitgliedschaft. Sie wird erst mit Eingang des Jahresbeitrags wirksam.',
+            'privacy_pre' => 'Ich habe die', 'privacy_link' => 'Datenschutzerklärung',
+            'privacy_post' => 'gelesen und willige in die Verarbeitung meiner Daten zur Bearbeitung meines Antrags ein.',
+            'err_privacy' => 'Bitte stimme der Datenschutzerklärung zu.',
+            'nl_consent' => 'Ich möchte den Newsletter erhalten (optional).',
+            'privacy_info' => 'Deine Daten werden ausschließlich zur Verwaltung deiner Mitgliedschaft verarbeitet und nicht an Dritte weitergegeben. Du kannst jederzeit Auskunft, Berichtigung oder Löschung verlangen – schreib an {mail}.',
+            'mail_privacy' => 'Datenschutz: Wir verarbeiten deine Daten nur zur Mitgliederverwaltung. Auskunft/Löschung: {mail}.',
             'submit' => 'Antrag absenden', 'req' => '* Pflichtfeld',
             'err_title' => 'Bitte prüfe deine Eingaben:',
             'err_vorname' => 'Vorname fehlt.', 'err_nachname' => 'Nachname fehlt.',
@@ -219,6 +233,12 @@ function antrag_T(): array
             'newsletter' => 'Langue préférée pour la newsletter',
             'bemerkung' => 'Remarque (facultatif)',
             'consent' => 'En envoyant ce formulaire, tu demandes l\'adhésion. Elle ne prend effet qu\'à la réception de la cotisation annuelle.',
+            'privacy_pre' => 'J\'ai lu la', 'privacy_link' => 'politique de confidentialité',
+            'privacy_post' => 'et je consens au traitement de mes données pour le traitement de ma demande.',
+            'err_privacy' => 'Merci d\'accepter la politique de confidentialité.',
+            'nl_consent' => 'Je souhaite recevoir la newsletter (facultatif).',
+            'privacy_info' => 'Tes données sont traitées uniquement pour la gestion de ton adhésion et ne sont pas transmises à des tiers. Tu peux à tout moment demander l\'accès, la rectification ou la suppression – écris à {mail}.',
+            'mail_privacy' => 'Confidentialité : nous traitons tes données uniquement pour la gestion des membres. Accès/suppression : {mail}.',
             'submit' => 'Envoyer la demande', 'req' => '* Champ obligatoire',
             'err_title' => 'Merci de vérifier tes données :',
             'err_vorname' => 'Le prénom manque.', 'err_nachname' => 'Le nom manque.',
@@ -276,6 +296,12 @@ function antrag_T(): array
             'newsletter' => 'Preferred language for the newsletter',
             'bemerkung' => 'Note (optional)',
             'consent' => 'By submitting, you apply for membership. It only takes effect once the annual fee is received.',
+            'privacy_pre' => 'I have read the', 'privacy_link' => 'privacy policy',
+            'privacy_post' => 'and consent to the processing of my data to handle my application.',
+            'err_privacy' => 'Please accept the privacy policy.',
+            'nl_consent' => 'I would like to receive the newsletter (optional).',
+            'privacy_info' => 'Your data is processed solely to manage your membership and is not shared with third parties. You can request access, correction or deletion at any time – write to {mail}.',
+            'mail_privacy' => 'Privacy: we process your data only for membership administration. Access/deletion: {mail}.',
             'submit' => 'Submit application', 'req' => '* Required field',
             'err_title' => 'Please check your entries:',
             'err_vorname' => 'First name is missing.', 'err_nachname' => 'Last name is missing.',
@@ -482,7 +508,8 @@ function antrag_mail_inhalt(array $d, string $stornoUrl, string $lang): array
         antrag_tr($lang, 'mail_after') . "\n\n" .
         antrag_tr($lang, 'mail_storno') . "\n" . $stornoUrl . "\n\n" .
         antrag_tr($lang, 'mail_contact') . "\n\n" .
-        antrag_tr($lang, 'mail_greeting') . "\n" . ANTRAG_VEREIN_NAME . "\n";
+        antrag_tr($lang, 'mail_greeting') . "\n" . ANTRAG_VEREIN_NAME . "\n\n" .
+        '— ' . antrag_tr($lang, 'mail_privacy') . "\n";
 
     $kontoHtml = '';
     foreach ($konto as $z) {
@@ -510,6 +537,10 @@ function antrag_mail_inhalt(array $d, string $stornoUrl, string $lang): array
             '<a href="mailto:' . antrag_e(ANTRAG_KONTAKT_EMAIL) . '">' . antrag_e(ANTRAG_KONTAKT_EMAIL) . '</a>',
             antrag_e(antrag_tr($lang, 'mail_contact'))) . '</p>' .
         '<p>' . antrag_e(antrag_tr($lang, 'mail_greeting')) . '<br>' . antrag_e(ANTRAG_VEREIN_NAME) . '</p>' .
+        '<p style="margin-top:16px;border-top:1px solid #e1e1e1;padding-top:10px;color:#888;font-size:12px;">' .
+        str_replace(antrag_e(ANTRAG_KONTAKT_EMAIL),
+            '<a href="mailto:' . antrag_e(ANTRAG_KONTAKT_EMAIL) . '">' . antrag_e(ANTRAG_KONTAKT_EMAIL) . '</a>',
+            antrag_e(antrag_tr($lang, 'mail_privacy'))) . '</p>' .
         '</div>';
 
     return ['betreff' => $betreff, 'text' => $text, 'html' => $html];
@@ -593,6 +624,12 @@ function antrag_css(): string
       . '.row{display:flex;gap:14px;flex-wrap:wrap}.row>div{flex:1;min-width:120px}'
       . '.req{color:#7a7e82;font-size:12.5px;margin-top:14px}'
       . '.consent{color:#5a5e62;font-size:13px;margin-top:16px}'
+      . '.check{display:flex;gap:9px;align-items:flex-start;margin-top:14px;font-size:13.5px;'
+      . 'font-weight:400;color:#3a3e42;line-height:1.45}'
+      . '.check input{width:auto;margin:3px 0 0;accent-color:var(--blue);flex:0 0 auto}'
+      . '.check a{color:var(--blue)}'
+      . '.privacy-info{background:#f5f8fb;border:1px solid var(--border);border-radius:8px;'
+      . 'padding:11px 13px;margin-top:16px;font-size:12.5px;color:#5a5e62;line-height:1.5}'
       . '.nl{display:flex;gap:10px;flex-wrap:wrap;margin-top:4px}'
       . '.nl label{display:flex;align-items:center;gap:7px;margin:0;padding:9px 13px;border:1px solid var(--border);'
       . 'border-radius:8px;cursor:pointer;font-weight:600;font-size:14px;background:#fff;transition:all .12s}'
@@ -696,6 +733,7 @@ function antrag_show_form(array $errors = [], array $alt = []): void
              . antrag_e($name) . '</label>';
     }
     $nl .= '</div>';
+    $nlConsentChecked = !empty($alt['nl_consent']) ? ' checked' : '';
 
     header('Content-Type: text/html; charset=utf-8');
     echo '<!DOCTYPE html><html lang="' . antrag_e($lang) . '"><head><meta charset="utf-8">'
@@ -743,7 +781,10 @@ function antrag_show_form(array $errors = [], array $alt = []): void
        . '<div><label data-i="geburtsdatum"></label>'
        . '<input type="date" name="geburtsdatum" value="' . $val('geburtsdatum') . '"></div></div>'
 
-       . '<label data-i="newsletter"></label>' . $nl
+       . '<label class="check" style="font-weight:600;margin-top:16px;">'
+       . '<input type="checkbox" name="nl_consent" value="1"' . $nlConsentChecked . '> '
+       . '<span data-i="nl_consent"></span></label>'
+       . '<label style="margin-top:10px;" data-i="newsletter"></label>' . $nl
 
        . '<h2 style="margin-top:22px;" data-i="sec_address"></h2>'
        . '<div class="row"><div style="flex:3"><label data-i="strasse"></label>'
@@ -761,6 +802,11 @@ function antrag_show_form(array $errors = [], array $alt = []): void
        . '<textarea name="bemerkung" rows="2">' . $val('bemerkung') . '</textarea>'
 
        . '<p class="req" data-i="req"></p>'
+       . '<div class="privacy-info" data-i="privacy_info"></div>'
+       . '<label class="check"><input type="checkbox" name="privacy" value="1" required> '
+       . '<span><span data-i="privacy_pre"></span> '
+       . '<a href="' . antrag_e(ANTRAG_DATENSCHUTZ_URL) . '" target="_blank" rel="noopener" data-i="privacy_link"></a> '
+       . '<span data-i="privacy_post"></span> *</span></label>'
        . '<p class="consent" data-i="consent"></p>'
        . '<p style="margin-top:16px;"><button class="btn" type="submit" data-i="submit"></button></p>'
        . '</form></section>';
@@ -812,6 +858,8 @@ function antrag_handle_post(): void
         'strasse' => $g('strasse'), 'hausnummer' => $g('hausnummer'),
         'plz' => $g('plz'), 'ort' => $g('ort'), 'land' => $g('land'),
         'bemerkung' => $g('bemerkung'), 'newsletter' => $g('newsletter'),
+        'nl_consent' => !empty($_POST['nl_consent']) ? '1' : '',
+        'privacy' => !empty($_POST['privacy']) ? '1' : '',
     ];
 
     $errors = [];
@@ -828,6 +876,10 @@ function antrag_handle_post(): void
             $errors[] = antrag_tr($lang, 'err_geb');
         }
     }
+    // DSGVO: Einwilligung in die Datenverarbeitung ist Pflicht.
+    if (empty($_POST['privacy'])) {
+        $errors[] = antrag_tr($lang, 'err_privacy');
+    }
     if ($errors) {
         antrag_show_form($errors, $alt);
         return;
@@ -842,7 +894,18 @@ function antrag_handle_post(): void
         return;
     }
 
-    $nlLang = in_array($alt['newsletter'], ANTRAG_LANGS, true) ? $alt['newsletter'] : $lang;
+    // DSGVO: Newsletter nur bei ausdrücklicher Einwilligung (Opt-in) speichern.
+    $nlConsent = !empty($_POST['nl_consent']);
+    $nlLang = ($nlConsent && in_array($alt['newsletter'], ANTRAG_LANGS, true)) ? $alt['newsletter'] : null;
+    // Transaktionale Bestätigungsmail/Storno-Seite in der Formularsprache
+    // (bzw. gewählter Newsletter-Sprache, falls vorhanden).
+    $mailLang = $nlLang ?: $lang;
+
+    // Einwilligung dokumentieren (Nachweispflicht, Art. 7 DSGVO).
+    $consentNote = 'Datenschutz zugestimmt am ' . date('d.m.Y H:i')
+                 . '; Newsletter: ' . ($nlConsent ? 'ja (' . $nlLang . ')' : 'nein');
+    $bemerkung = trim(($alt['bemerkung'] !== '' ? $alt['bemerkung'] . "\n" : '') . $consentNote);
+
     $user = antrag_current_user();
     $daten = [
         'vorname' => $alt['vorname'], 'nachname' => $alt['nachname'], 'email' => $alt['email'],
@@ -852,7 +915,7 @@ function antrag_handle_post(): void
         'land' => $alt['land'] ?: ANTRAG_LAND_DEFAULT,
         'wcf_user_id' => $user['userID'] ?? null, 'forum_name' => $user['username'] ?? null,
         'newsletter_sprache' => $nlLang,
-        'antragsdatum' => date('Y-m-d'), 'bemerkung' => $alt['bemerkung'] ?: null,
+        'antragsdatum' => date('Y-m-d'), 'bemerkung' => $bemerkung,
     ];
 
     try {
@@ -863,12 +926,12 @@ function antrag_handle_post(): void
         return;
     }
 
-    // Storno-Link (in der Newsletter-Sprache)
-    $stornoUrl = ANTRAG_SELF_URL . '?page=storno&lang=' . $nlLang
+    // Storno-Link (in der Mail-/Formularsprache)
+    $stornoUrl = ANTRAG_SELF_URL . '?page=storno&lang=' . $mailLang
                . '&t=' . rawurlencode(antrag_make_token('storno', (string) $id));
 
-    // Bestätigungsmail (Newsletter-Sprache)
-    $mail = antrag_mail_inhalt($daten, $stornoUrl, $nlLang);
+    // Bestätigungsmail (transaktional, in der Mail-/Formularsprache)
+    $mail = antrag_mail_inhalt($daten, $stornoUrl, $mailLang);
     $mailResult = antrag_send_mail($daten['email'], trim($daten['vorname'] . ' ' . $daten['nachname']),
         $mail['betreff'], $mail['text'], $mail['html']);
 
@@ -876,7 +939,7 @@ function antrag_handle_post(): void
     if (ANTRAG_KONTAKT_EMAIL !== '') {
         $info = "Neuer Mitgliedsantrag:\n\n" . trim($daten['vorname'] . ' ' . $daten['nachname']) . "\n"
               . $daten['email'] . ($daten['telefon'] ? ' / ' . $daten['telefon'] : '') . "\n"
-              . 'Newsletter-Sprache: ' . $nlLang . "\n"
+              . 'Newsletter: ' . ($nlConsent ? 'ja (' . $nlLang . ')' : 'nein') . "\n"
               . 'Eingegangen: ' . date('d.m.Y H:i') . "\n\nIn der Mitgliederverwaltung als Status 'antrag' sichtbar.";
         antrag_send_mail(ANTRAG_KONTAKT_EMAIL, ANTRAG_MAIL_FROM_NAME,
             'Neuer Mitgliedsantrag: ' . trim($daten['vorname'] . ' ' . $daten['nachname']),
@@ -975,7 +1038,7 @@ function antrag_handle_test(): void
         return;
     }
     echo "AFOL Mitgliedsantrag – Diagnose\n";
-    echo "DIAGNOSE-VERSION: 2026-06-26-antrag9\n\n";
+    echo "DIAGNOSE-VERSION: 2026-06-26-antrag10\n\n";
     echo "Verein:        " . ANTRAG_VEREIN_NAME . "\n";
     echo "IBAN gesetzt:  " . (strpos(ANTRAG_IBAN, 'x') === false ? 'ja' : 'NEIN – bitte echte IBAN eintragen') . "\n";
     echo "Beitrag:       " . ANTRAG_BEITRAG . "\n";
