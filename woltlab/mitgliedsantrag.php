@@ -35,9 +35,9 @@ require_once(__DIR__ . '/global.php');
 
 // --- Vereinskonto (für die Überweisungsaufforderung in der E-Mail) ----------
 define('ANTRAG_VEREIN_NAME',  'AFOL.lu a.s.b.l.');
-define('ANTRAG_KONTO_INHABER','AFOL.lu a.s.b.l.');
-define('ANTRAG_IBAN',         'LUxx xxxx xxxx xxxx xxxx');  // <-- echte IBAN eintragen
-define('ANTRAG_BIC',          '');                          // optional, z. B. 'BCEELULL'
+define('ANTRAG_KONTO_INHABER','AFOL.LU A.S.B.L.');
+define('ANTRAG_IBAN',         'LU34 0099 7800 0129 6664');
+define('ANTRAG_BIC',          'CCRALULL');                  // Banque Raiffeisen
 define('ANTRAG_BANK',         '');                          // optional, Name der Bank
 define('ANTRAG_BEITRAG',      '15,00 €');                   // <-- Jahresbeitrag (Fördermitglied)
 // Verwendungszweck: {name} -> "Vorname Nachname", {jahr} -> Jahr.
@@ -975,7 +975,7 @@ function antrag_handle_test(): void
         return;
     }
     echo "AFOL Mitgliedsantrag – Diagnose\n";
-    echo "DIAGNOSE-VERSION: 2026-06-26-antrag7\n\n";
+    echo "DIAGNOSE-VERSION: 2026-06-26-antrag8\n\n";
     echo "Verein:        " . ANTRAG_VEREIN_NAME . "\n";
     echo "IBAN gesetzt:  " . (strpos(ANTRAG_IBAN, 'x') === false ? 'ja' : 'NEIN – bitte echte IBAN eintragen') . "\n";
     echo "Beitrag:       " . ANTRAG_BEITRAG . "\n";
