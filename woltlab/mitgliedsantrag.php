@@ -465,23 +465,53 @@ function antrag_find_existing(string $email, ?int $wcfUserId = null): ?array
     return $row ? ['id' => (int) $row['id'], 'status' => (string) $row['status']] : null;
 }
 
-/** Antrag in `mitglieder` anlegen. Rückgabe: neue id. */
+/** Nächste freie Mitgliedsnummer = größte numerische Nummer + 1 (mind. 1). */
+function antrag_next_mitgliedsnummer(): int
+{
+    $stmt = WCF::getDB()->prepareStatement(
+        "SELECT MAX(CAST(mitgliedsnummer AS UNSIGNED)) AS mx
+         FROM   mitglieder
+         WHERE  mitgliedsnummer REGEXP '^[0-9]+$'");
+    $stmt->execute();
+    $row = $stmt->fetchArray();
+    return ((int) ($row['mx'] ?? 0)) + 1;
+}
+
+/**
+ * Antrag in `mitglieder` anlegen. Rückgabe: neue id.
+ * Die Mitgliedsnummer wird automatisch als „größte + 1" vergeben; bei einer
+ * Kollision auf dem UNIQUE-Schlüssel (gleichzeitige Anträge) wird erneut versucht.
+ */
 function antrag_insert(array $d): int
 {
     $sql = "INSERT INTO mitglieder
-              (vorname, nachname, email, telefon, geburtsdatum,
+              (mitgliedsnummer, vorname, nachname, email, telefon, geburtsdatum,
                hausnummer, strasse, plz, ort, land,
                wcf_user_id, forum_name, newsletter_sprache,
                status, typ, antragsart, antragsdatum, quelle, bemerkung)
-            VALUES (?,?,?,?,?, ?,?,?,?,?, ?,?,?, 'antrag','foerder','online',?, 'mitgliedsantrag', ?)";
-    $stmt = WCF::getDB()->prepareStatement($sql);
-    $stmt->execute([
-        $d['vorname'], $d['nachname'], $d['email'], $d['telefon'], $d['geburtsdatum'],
-        $d['hausnummer'], $d['strasse'], $d['plz'], $d['ort'], $d['land'],
-        $d['wcf_user_id'], $d['forum_name'], $d['newsletter_sprache'],
-        $d['antragsdatum'], $d['bemerkung'],
-    ]);
-    return (int) WCF::getDB()->getInsertID('mitglieder', 'id');
+            VALUES (?, ?,?,?,?,?, ?,?,?,?,?, ?,?,?, 'antrag','foerder','online',?, 'mitgliedsantrag', ?)";
+
+    for ($try = 0; $try < 6; $try++) {
+        $nr = antrag_next_mitgliedsnummer();
+        try {
+            $stmt = WCF::getDB()->prepareStatement($sql);
+            $stmt->execute([
+                (string) $nr,
+                $d['vorname'], $d['nachname'], $d['email'], $d['telefon'], $d['geburtsdatum'],
+                $d['hausnummer'], $d['strasse'], $d['plz'], $d['ort'], $d['land'],
+                $d['wcf_user_id'], $d['forum_name'], $d['newsletter_sprache'],
+                $d['antragsdatum'], $d['bemerkung'],
+            ]);
+            return (int) WCF::getDB()->getInsertID('mitglieder', 'id');
+        } catch (\Throwable $e) {
+            // Nur bei Kollision auf der Mitgliedsnummer erneut versuchen.
+            if (stripos($e->getMessage(), 'mitgliedsnummer') !== false) {
+                continue;
+            }
+            throw $e;
+        }
+    }
+    throw new \RuntimeException('Mitgliedsnummer konnte nicht vergeben werden (zu viele Kollisionen).');
 }
 
 // ===========================================================================
@@ -1057,7 +1087,7 @@ function antrag_handle_test(): void
         return;
     }
     echo "AFOL Mitgliedsantrag – Diagnose\n";
-    echo "DIAGNOSE-VERSION: 2026-06-26-antrag11\n\n";
+    echo "DIAGNOSE-VERSION: 2026-06-26-antrag12\n\n";
     echo "Verein:        " . ANTRAG_VEREIN_NAME . "\n";
     echo "IBAN gesetzt:  " . (strpos(ANTRAG_IBAN, 'x') === false ? 'ja' : 'NEIN – bitte echte IBAN eintragen') . "\n";
     echo "Beitrag:       " . ANTRAG_BEITRAG . "\n";
@@ -1072,6 +1102,11 @@ function antrag_handle_test(): void
         echo "Spalte newsletter_sprache: vorhanden\n";
     } catch (\Throwable $e) {
         echo "Spalte newsletter_sprache: FEHLT -> sql/alter_mitglieder_newsletter_sprache.sql ausführen\n";
+    }
+    try {
+        echo "Nächste Mitgliedsnummer: " . antrag_next_mitgliedsnummer() . "\n";
+    } catch (\Throwable $e) {
+        echo "Nächste Mitgliedsnummer: FEHLER – " . $e->getMessage() . "\n";
     }
 
     $sendMethod = defined('MAIL_SEND_METHOD') ? MAIL_SEND_METHOD : '(unbekannt)';
