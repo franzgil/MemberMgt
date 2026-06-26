@@ -75,6 +75,10 @@ Weitere Eigenschaften:
 - **Kein Forenkonto nötig:** Gäste können einen Antrag stellen (`wcf_user_id`
   bleibt leer). Eingeloggte Nutzer werden automatisch verknüpft – Gäste sehen
   stattdessen den Hinweis „kein Forenkonto nötig".
+- **Fördermitgliedschaft:** Neue Anträge werden als `typ='foerder'` (Membre
+  sympathisant, 15 €) angelegt. Aktivmitglied (`typ='aktiv'`) macht der Vorstand
+  später (frühestens nach 6 Monaten). Das Formular weist darauf hin.
+- **SumUp:** Online-Kartenzahlung als Alternative zur Überweisung (`ANTRAG_SUMUP_URL`).
 
 Seiten:
 

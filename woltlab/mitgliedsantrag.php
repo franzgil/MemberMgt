@@ -39,9 +39,9 @@ define('ANTRAG_KONTO_INHABER','AFOL.lu a.s.b.l.');
 define('ANTRAG_IBAN',         'LUxx xxxx xxxx xxxx xxxx');  // <-- echte IBAN eintragen
 define('ANTRAG_BIC',          '');                          // optional, z. B. 'BCEELULL'
 define('ANTRAG_BANK',         '');                          // optional, Name der Bank
-define('ANTRAG_BEITRAG',      '20,00 €');                   // <-- Jahresbeitrag
+define('ANTRAG_BEITRAG',      '15,00 €');                   // <-- Jahresbeitrag (Fördermitglied)
 // Verwendungszweck: {name} -> "Vorname Nachname", {jahr} -> Jahr.
-define('ANTRAG_VERWENDUNG',   'Mitgliedsbeitrag {jahr} – {name}');
+define('ANTRAG_VERWENDUNG',   'Fördermitgliedsbeitrag {jahr} – {name}');
 // Alternative Online-Zahlung per SumUp-Link (leer = ausgeblendet).
 define('ANTRAG_SUMUP_URL',    'https://pay.sumup.com/b2c/Q3MX52O5');
 
@@ -92,7 +92,8 @@ function antrag_T(): array
 {
     $T = [
         'lb' => [
-            'eyebrow' => 'Memberschaft', 'h1' => 'Member-Demande',
+            'eyebrow' => 'Förder-Memberschaft', 'h1' => 'Member-Demande',
+            'foerder_note' => 'Du gëss fir d\'éischt Förder-Member (Membre sympathisant). Aktive Member kann ee fréistens no 6 Méint Memberschaft ginn.',
             'intro' => 'Gëff Member bei {verein}. No der Demande kriss du eng Bestätegung per E-Mail mat de Kontosdonnéeën fir de Joresbäitrag ({beitrag}).',
             'loggedin' => 'Ageloggt – deng Demande gëtt mat dengem Forums-Kont verbonnen.',
             'guest_hint' => 'Du brauchs kee Forums-Kont fir eng Demande ze stellen. Wann s du een hues, logg dech virdrun an – da gëtt deng Demande domat verbonnen.',
@@ -148,7 +149,8 @@ function antrag_T(): array
             'mail_greeting' => 'Vill Gréiss',
         ],
         'de' => [
-            'eyebrow' => 'Mitgliedschaft', 'h1' => 'Mitgliedsantrag',
+            'eyebrow' => 'Fördermitgliedschaft', 'h1' => 'Mitgliedsantrag',
+            'foerder_note' => 'Du wirst zunächst Fördermitglied (Membre sympathisant). Aktives Mitglied kann man frühestens nach 6 Monaten Mitgliedschaft werden.',
             'intro' => 'Werde Mitglied bei {verein}. Nach dem Absenden erhältst du eine Bestätigung per E-Mail mit den Überweisungsdaten für den Jahresbeitrag ({beitrag}).',
             'loggedin' => 'Angemeldet – dein Antrag wird mit deinem Forenkonto verknüpft.',
             'guest_hint' => 'Du brauchst kein Forenkonto, um einen Antrag zu stellen. Hast du eines, melde dich vorher an – dann wird dein Antrag damit verknüpft.',
@@ -204,7 +206,8 @@ function antrag_T(): array
             'mail_greeting' => 'Viele Grüße',
         ],
         'fr' => [
-            'eyebrow' => 'Adhésion', 'h1' => 'Demande d\'adhésion',
+            'eyebrow' => 'Membre sympathisant', 'h1' => 'Demande d\'adhésion',
+            'foerder_note' => 'Tu deviens d\'abord membre sympathisant. On peut devenir membre actif au plus tôt après 6 mois d\'adhésion.',
             'intro' => 'Deviens membre d\'{verein}. Après l\'envoi, tu recevras une confirmation par e-mail avec les coordonnées bancaires pour la cotisation annuelle ({beitrag}).',
             'loggedin' => 'Connecté – ta demande sera liée à ton compte du forum.',
             'guest_hint' => 'Pas besoin de compte du forum pour faire une demande. Si tu en as un, connecte-toi d\'abord – ta demande y sera alors liée.',
@@ -260,7 +263,8 @@ function antrag_T(): array
             'mail_greeting' => 'Cordialement',
         ],
         'en' => [
-            'eyebrow' => 'Membership', 'h1' => 'Membership application',
+            'eyebrow' => 'Supporting membership', 'h1' => 'Membership application',
+            'foerder_note' => 'You first become a supporting member (membre sympathisant). You can become an active member at the earliest after 6 months of membership.',
             'intro' => 'Become a member of {verein}. After submitting, you\'ll receive an e-mail confirmation with the bank details for the annual fee ({beitrag}).',
             'loggedin' => 'Signed in – your application will be linked to your forum account.',
             'guest_hint' => 'You don\'t need a forum account to apply. If you have one, sign in first – your application will then be linked to it.',
@@ -431,8 +435,8 @@ function antrag_insert(array $d): int
               (vorname, nachname, email, telefon, geburtsdatum,
                hausnummer, strasse, plz, ort, land,
                wcf_user_id, forum_name, newsletter_sprache,
-               status, antragsart, antragsdatum, quelle, bemerkung)
-            VALUES (?,?,?,?,?, ?,?,?,?,?, ?,?,?, 'antrag','online',?, 'mitgliedsantrag', ?)";
+               status, typ, antragsart, antragsdatum, quelle, bemerkung)
+            VALUES (?,?,?,?,?, ?,?,?,?,?, ?,?,?, 'antrag','foerder','online',?, 'mitgliedsantrag', ?)";
     $stmt = WCF::getDB()->prepareStatement($sql);
     $stmt->execute([
         $d['vorname'], $d['nachname'], $d['email'], $d['telefon'], $d['geburtsdatum'],
@@ -713,6 +717,8 @@ function antrag_show_form(array $errors = [], array $alt = []): void
        . '<h1 data-i="h1"></h1><p data-i="intro"></p></header>';
 
     echo '<section class="box">';
+    // Hinweis zur Fördermitgliedschaft (6-Monats-Regel).
+    echo '<p class="consent" style="margin-top:0;font-weight:600;" data-i="foerder_note"></p>';
     // Hinweis: für Gäste „kein Forenkonto nötig", für Eingeloggte „wird verknüpft".
     echo '<div class="alert note" data-i="' . ($user ? 'loggedin' : 'guest_hint') . '"></div>';
     echo $errHtml;
@@ -969,7 +975,7 @@ function antrag_handle_test(): void
         return;
     }
     echo "AFOL Mitgliedsantrag – Diagnose\n";
-    echo "DIAGNOSE-VERSION: 2026-06-26-antrag6\n\n";
+    echo "DIAGNOSE-VERSION: 2026-06-26-antrag7\n\n";
     echo "Verein:        " . ANTRAG_VEREIN_NAME . "\n";
     echo "IBAN gesetzt:  " . (strpos(ANTRAG_IBAN, 'x') === false ? 'ja' : 'NEIN – bitte echte IBAN eintragen') . "\n";
     echo "Beitrag:       " . ANTRAG_BEITRAG . "\n";
