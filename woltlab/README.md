@@ -72,6 +72,9 @@ Weitere Eigenschaften:
 - **AFOL.lu-Design** (Palette/Hero/Logo wie `membercard.php`).
 - Feld **„Bevorzugte Sprache für Newsletter"** → Spalte `mitglieder.newsletter_sprache`.
   Die Bestätigungsmail wird in dieser Sprache verschickt.
+- **Kein Forenkonto nötig:** Gäste können einen Antrag stellen (`wcf_user_id`
+  bleibt leer). Eingeloggte Nutzer werden automatisch verknüpft – Gäste sehen
+  stattdessen den Hinweis „kein Forenkonto nötig".
 
 Seiten:
 
