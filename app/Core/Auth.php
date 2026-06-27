@@ -196,6 +196,20 @@ class Auth
         return rtrim((string) (self::config()['card_url'] ?? ''), '/');
     }
 
+    /**
+     * SumUp-API-Key (Secret). Reihenfolge: Umgebungsvariable SUMUP_API_KEY,
+     * sonst config/auth.php ('sumup_api_key'). Leer = nicht konfiguriert.
+     * Bewusst NICHT im Repository ablegen.
+     */
+    public static function sumupApiKey(): string
+    {
+        $env = getenv('SUMUP_API_KEY');
+        if (is_string($env) && trim($env) !== '') {
+            return trim($env);
+        }
+        return trim((string) (self::config()['sumup_api_key'] ?? ''));
+    }
+
     /** global.php in den übergeordneten Verzeichnissen suchen. */
     private static function findGlobal(): string
     {

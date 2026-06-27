@@ -31,4 +31,10 @@ return [
     // Adresse des Mitgliedskarten-Skripts (woltlab/membercard.php im WoltLab-Root).
     // Leer lassen, um die Karten-Buttons in der App auszublenden.
     'card_url' => 'https://afol55.afol.lu/membercard.php',
+
+    // SumUp-API-Key (Secret) für die Zahlungs-Abfrage (Menü „SumUp").
+    // Aus dem SumUp-Dashboard (Developers/API keys). Leer = Funktion aus.
+    // Alternativ über die Umgebungsvariable SUMUP_API_KEY setzen.
+    // NICHT öffentlich machen – config/auth.php ist gitignored.
+    'sumup_api_key' => '',
 ];

@@ -15,6 +15,9 @@
             <a href="<?= url('/') ?>">Dashboard</a>
             <a href="<?= url('/mitglieder') ?>">Mitglieder</a>
             <a href="<?= url('/antraege') ?>">Anträge</a>
+            <?php if (\App\Core\Auth::darfBeitragBestaetigen()): ?>
+                <a href="<?= url('/sumup') ?>">SumUp</a>
+            <?php endif; ?>
             <a class="btn-primary" href="<?= url('/mitglieder/create') ?>">+ Neu</a>
             <?php if (($au = \App\Core\Auth::user()) !== null): ?>
                 <span class="navuser"><?= e($au['username']) ?></span>
