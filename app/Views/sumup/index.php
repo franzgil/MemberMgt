@@ -26,6 +26,27 @@ weiterhin beim jeweiligen Mitglied (Detailseite → „Bestätigen → aktiv").<
         <code>sumup_api_key</code> setzen (oder Umgebungsvariable
         <code>SUMUP_API_KEY</code>).
     </div>
+    <?php if (!empty($diag)): ?>
+        <div class="alert" style="background:#f6f8fa;border:1px solid #e1e1e1;">
+            <strong>Diagnose</strong> (nur Feldnamen/Länge, nie der Key):
+            <ul style="margin:.4rem 0 0 1.1rem;">
+                <li>Config-Datei: <code><?= e($diag['file']) ?></code>
+                    <?= $diag['file_exists'] ? '✓ vorhanden' : '✗ FEHLT' ?></li>
+                <li>Schutz aktiv (enabled): <?= $diag['enabled'] ? 'ja' : 'nein' ?></li>
+                <li>Geladene Config-Schlüssel: <code><?= e(implode(', ', $diag['keys'])) ?></code></li>
+                <li>Schlüssel <code>sumup_api_key</code>/<code>SUMUP_API_KEY</code> vorhanden:
+                    <?= $diag['key_present'] ? 'ja' : 'NEIN' ?></li>
+                <li>Länge des Werts: <?= (int) $diag['key_len'] ?> Zeichen</li>
+                <li>Umgebungsvariable <code>SUMUP_API_KEY</code> gesetzt:
+                    <?= $diag['env_set'] ? 'ja' : 'nein' ?></li>
+            </ul>
+            <p class="muted" style="margin-top:.4rem;">
+                Steht <code>sumup_api_key</code> nicht in der Schlüssel-Liste, wird eine
+                andere/ältere <code>auth.php</code> geladen oder die Datei wurde nicht
+                deployt. Ist die Länge 0, ist der Wert leer.
+            </p>
+        </div>
+    <?php endif; ?>
 <?php else: ?>
     <p>
         <a class="btn-primary" href="<?= url('/sumup?abrufen=1') ?>">Zahlungen abrufen</a>

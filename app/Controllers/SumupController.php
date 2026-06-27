@@ -28,6 +28,25 @@ class SumupController extends Controller
             $result = $sumup->recentTransactions(30);
         }
 
+        // Diagnose, falls der Key nicht gefunden wird (zeigt nur Feldnamen/Länge,
+        // niemals den Key selbst).
+        $diag = null;
+        if (!$sumup->configured()) {
+            $cfg = Auth::config();
+            $dir = defined('CONFIG_DIR') ? CONFIG_DIR : ROOT . '/config';
+            $val = (string) ($cfg['sumup_api_key'] ?? ($cfg['SUMUP_API_KEY'] ?? ''));
+            $env = getenv('SUMUP_API_KEY');
+            $diag = [
+                'file'        => $dir . '/auth.php',
+                'file_exists' => is_file($dir . '/auth.php'),
+                'enabled'     => Auth::enabled(),
+                'keys'        => array_keys($cfg),
+                'key_present' => array_key_exists('sumup_api_key', $cfg) || array_key_exists('SUMUP_API_KEY', $cfg),
+                'key_len'     => strlen(trim($val)),
+                'env_set'     => is_string($env) && trim($env) !== '',
+            ];
+        }
+
         // Offene Anträge (Fördermitglieder) zur manuellen Zuordnung anzeigen.
         $offene = (new Mitglied())->all(['status' => 'antrag']);
 
@@ -36,6 +55,7 @@ class SumupController extends Controller
             'configured' => $sumup->configured(),
             'result'     => $result,
             'offene'     => $offene,
+            'diag'       => $diag,
         ]);
     }
 }
