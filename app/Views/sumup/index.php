@@ -63,7 +63,8 @@ weiterhin beim jeweiligen Mitglied (Detailseite → „Bestätigen → aktiv").<
             <thead>
                 <tr>
                     <th>Datum</th><th class="num">Betrag</th><th>Status</th>
-                    <th>Typ</th><th>Zahlart</th><th>Transaktion</th>
+                    <th>Name</th><th>Bemerkung</th>
+                    <th>Zahlart</th><th>Transaktion</th>
                 </tr>
             </thead>
             <tbody>
@@ -75,13 +76,28 @@ weiterhin beim jeweiligen Mitglied (Detailseite → „Bestätigen → aktiv").<
                         <?php $ok = strtoupper((string) $t['status']) === 'SUCCESSFUL'; ?>
                         <span class="badge badge-<?= $ok ? 'aktiv' : 'inaktiv' ?>"><?= e($t['status']) ?></span>
                     </td>
-                    <td><?= e($t['type']) ?></td>
+                    <td><?= e($t['name'] ?? '') ?: '<span class="muted">—</span>' ?></td>
+                    <td><?= e($t['note'] ?? '') ?: '<span class="muted">—</span>' ?></td>
                     <td><?= e($t['payment']) ?></td>
                     <td class="muted"><?= e($t['code']) ?></td>
                 </tr>
             <?php endforeach; ?>
             </tbody>
         </table>
+
+        <?php if (empty(array_filter($result['items'], static fn ($t) => ($t['name'] ?? '') !== '' || ($t['note'] ?? '') !== ''))): ?>
+            <p class="muted">Hinweis: SumUp liefert für diese Zahlungen offenbar
+            keinen Namen/keine Bemerkung. Das hängt davon ab, ob euer Zahlungslink
+            diese Felder erfasst. Unten siehst du die Rohdaten – sag mir, welches Feld
+            den Namen enthält, dann blende ich es gezielt ein.</p>
+        <?php endif; ?>
+
+        <?php if (!empty($result['sample'])): ?>
+            <details style="margin-top:1rem;">
+                <summary>Rohdaten der 1. Transaktion (zur Feldanalyse)</summary>
+                <pre style="white-space:pre-wrap;word-break:break-word;background:#f6f8fa;border:1px solid #e1e1e1;padding:.6rem;border-radius:6px;font-size:.8rem;max-height:380px;overflow:auto;"><?= e(json_encode($result['sample'], JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES)) ?></pre>
+            </details>
+        <?php endif; ?>
     <?php endif; ?>
 <?php endif; ?>
 
