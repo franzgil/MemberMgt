@@ -207,7 +207,14 @@ class Auth
         if (is_string($env) && trim($env) !== '') {
             return trim($env);
         }
-        return trim((string) (self::config()['sumup_api_key'] ?? ''));
+        // Tolerant: sowohl 'sumup_api_key' als auch 'SUMUP_API_KEY' im Config-Array.
+        $cfg = self::config();
+        foreach (['sumup_api_key', 'SUMUP_API_KEY'] as $k) {
+            if (!empty($cfg[$k])) {
+                return trim((string) $cfg[$k]);
+            }
+        }
+        return '';
     }
 
     /** global.php in den übergeordneten Verzeichnissen suchen. */
