@@ -108,19 +108,23 @@ class SumUp
         return $found;
     }
 
-    /** Versucht, einen Personennamen aus den Detaildaten zu lesen. */
+    /**
+     * Versucht, einen Personennamen aus den Detaildaten zu lesen.
+     * Bewusst NUR personenspezifische Felder (nicht das generische `name`,
+     * das bei SumUp die Produktbezeichnung ist).
+     */
     private function pickName(array $d): string
     {
         $f = $this->deepFind($d, [
-            'first_name', 'given_name', 'last_name', 'family_name', 'name',
-            'holder_name', 'card_holder', 'cardholder_name', 'customer_name', 'full_name',
+            'first_name', 'given_name', 'last_name', 'family_name', 'full_name',
+            'holder_name', 'card_holder', 'cardholder_name', 'customer_name', 'payer_name',
         ]);
         $first = $f['first_name'] ?? $f['given_name'] ?? '';
         $last  = $f['last_name'] ?? $f['family_name'] ?? '';
         if ($first !== '' || $last !== '') {
             return trim($first . ' ' . $last);
         }
-        foreach (['full_name', 'name', 'holder_name', 'card_holder', 'cardholder_name', 'customer_name'] as $k) {
+        foreach (['full_name', 'holder_name', 'cardholder_name', 'card_holder', 'customer_name', 'payer_name'] as $k) {
             if (!empty($f[$k])) {
                 return $f[$k];
             }
@@ -128,7 +132,11 @@ class SumUp
         return '';
     }
 
-    /** Versucht, eine Bemerkung/Beschreibung aus den Detaildaten zu lesen. */
+    /**
+     * Versucht, eine Bemerkung/Beschreibung zu lesen: zuerst eine echte
+     * Referenz/Beschreibung, sonst die Produktbezeichnung (z. B. beim Online-Link
+     * „Membre sympathisant", bei POS „Individueller Betrag").
+     */
     private function pickNote(array $d): string
     {
         $f = $this->deepFind($d, [
@@ -138,6 +146,12 @@ class SumUp
             if (!empty($f[$k])) {
                 return $f[$k];
             }
+        }
+        if (!empty($d['product_summary'])) {
+            return (string) $d['product_summary'];
+        }
+        if (!empty($d['products'][0]['name'])) {
+            return (string) $d['products'][0]['name'];
         }
         return '';
     }
