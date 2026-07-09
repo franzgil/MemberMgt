@@ -107,6 +107,7 @@ class MitgliederController extends Controller
 
         unset($_SESSION['old']);
         $id = $this->mitglieder->create($data);
+        $this->syncGruppe($id);
         flash('success', 'Datensatz angelegt.');
         $this->redirect('/mitglieder/show/' . $id);
     }
@@ -145,6 +146,7 @@ class MitgliederController extends Controller
 
         unset($_SESSION['old']);
         $this->mitglieder->update($id, $data);
+        $this->syncGruppe($id);
         flash('success', 'Änderungen gespeichert.');
         $this->redirect('/mitglieder/show/' . $id);
     }
@@ -193,6 +195,7 @@ class MitgliederController extends Controller
         // bestehende Pflichtfelder mitschreiben, damit validate() nicht greift:
         $update = array_merge($mitglied, $update);
         $this->mitglieder->update($id, $update);
+        $this->syncGruppe($id);
 
         flash('success', $warAktiv
             ? "Beitrag für $jahr bestätigt – Mitgliedschaft verlängert."
@@ -214,9 +217,18 @@ class MitgliederController extends Controller
             $this->redirect('/mitglieder/show/' . $id);
             return;
         }
-        if ($this->mitglieder->find($id) === null) {
+        $mitglied = $this->mitglieder->find($id);
+        if ($mitglied === null) {
             $this->notFound();
             return;
+        }
+        // Vor dem Löschen aus den verwalteten WoltLab-Gruppen entfernen.
+        if (!empty($mitglied['wcf_user_id'])) {
+            try {
+                (new \App\Models\GroupSync())->entferneAlle((int) $mitglied['wcf_user_id']);
+            } catch (\Throwable $e) {
+                // unkritisch
+            }
         }
         $this->mitglieder->delete($id);
         flash('success', 'Datensatz wurde endgültig gelöscht.');
@@ -233,8 +245,22 @@ class MitgliederController extends Controller
             return;
         }
         $this->mitglieder->archive($id);
+        $this->syncGruppe($id);
         flash('success', 'Mitglied wurde als ausgetreten archiviert.');
         $this->redirect('/mitglieder/show/' . $id);
+    }
+
+    /** Ein Mitglied mit seiner WoltLab-Gruppe abgleichen (Fehler unkritisch). */
+    private function syncGruppe(int $id): void
+    {
+        try {
+            $m = $this->mitglieder->find($id);
+            if ($m !== null) {
+                (new \App\Models\GroupSync())->syncMitglied($m);
+            }
+        } catch (\Throwable $e) {
+            // Gruppen-Sync ist best effort; der manuelle Abgleich holt es nach.
+        }
     }
 
     private function notFound(): void

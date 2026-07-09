@@ -18,6 +18,9 @@
             <?php if (\App\Core\Auth::darfBeitragBestaetigen()): ?>
                 <a href="<?= url('/sumup') ?>">SumUp</a>
             <?php endif; ?>
+            <?php if (\App\Core\Auth::darfLoeschen()): ?>
+                <a href="<?= url('/gruppen') ?>">Gruppen</a>
+            <?php endif; ?>
             <a class="btn-primary" href="<?= url('/mitglieder/create') ?>">+ Neu</a>
             <?php if (($au = \App\Core\Auth::user()) !== null): ?>
                 <span class="navuser"><?= e($au['username']) ?></span>

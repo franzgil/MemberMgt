@@ -196,6 +196,18 @@ class Auth
         return rtrim((string) (self::config()['card_url'] ?? ''), '/');
     }
 
+    /** WoltLab-Gruppen-ID der Aktiven Mitglieder (typ = 'aktiv'). */
+    public static function gruppeAktivId(): int
+    {
+        return (int) (self::config()['gruppe_aktiv_id'] ?? 133);
+    }
+
+    /** WoltLab-Gruppen-ID der Membres Sympathisant (typ = 'foerder'). */
+    public static function gruppeFoerderId(): int
+    {
+        return (int) (self::config()['gruppe_foerder_id'] ?? 134);
+    }
+
     /**
      * SumUp-API-Key (Secret). Reihenfolge: Umgebungsvariable SUMUP_API_KEY,
      * sonst config/auth.php ('sumup_api_key'). Leer = nicht konfiguriert.

@@ -32,6 +32,12 @@ return [
     // Leer lassen, um die Karten-Buttons in der App auszublenden.
     'card_url' => 'https://afol55.afol.lu/membercard.php',
 
+    // WoltLab-Gruppen-IDs für die automatische Gruppenpflege (Menü „Gruppen").
+    // Aktive Mitglieder (typ=aktiv, inkl. Vorstand) bzw. Membres Sympathisant
+    // (typ=foerder). Nur bestätigte Mitglieder (Status 'aktiv') kommen hinein.
+    'gruppe_aktiv_id'   => 133,
+    'gruppe_foerder_id' => 134,
+
     // SumUp-API-Key (Secret) für die Zahlungs-Abfrage (Menü „SumUp").
     // Aus dem SumUp-Dashboard (Developers/API keys). Leer = Funktion aus.
     // Alternativ über die Umgebungsvariable SUMUP_API_KEY setzen.
