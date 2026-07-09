@@ -151,8 +151,34 @@ Ablauf:
    Mitglieds-Datensatz, sonst aus dem Login.
 4. Nach der Zahlung kommt der Nutzer auf die Danke-/Status-Seite zurück
    (`?page=return`), die den Checkout-Status (bezahlt/offen/fehlgeschlagen)
-   anzeigt. Der Trésorier gleicht die Zahlung wie gewohnt über die
-   **SumUp-Übersicht** in der App ab (die Referenz erleichtert die Zuordnung).
+   live von SumUp anzeigt.
+5. Bei Status **`PAID`** verbucht das Skript den Beitrag **automatisch** (siehe
+   unten) – wie die Trésorier-Bestätigung. Zusätzlich bleibt der SumUp-Abgleich
+   in der App als Kontrolle möglich (die Referenz erleichtert die Zuordnung).
+
+### Automatische Verbuchung (Status PAID)
+
+Ist `BEITRAG_AUTO_CONFIRM = true` (Standard), spiegelt die Rückkehr-Seite bei
+erfolgreicher Zahlung genau die Trésorier-Bestätigung der App:
+
+- **`beitraege`**: Zeile für Mitglied + Beitragsjahr (Art `sumup`,
+  `bezahlt_am` = heute, `bemerkung` = SumUp-Referenz). **Nicht destruktiv** –
+  eine bereits bestätigte Zahlung wird nicht überschrieben; **idempotent** bei
+  Reload (kein Doppel-Eintrag dank `UNIQUE(mitglied_id, jahr)`).
+- **`mitglieder`**: `status='aktiv'`, `beitrittsdatum` (falls leer),
+  `wcf_user_id` verknüpft (falls leer).
+- **WoltLab-Gruppe**: Nutzer kommt in die richtige Gruppe (aktiv/foerder,
+  IDs `BEITRAG_GRUPPE_AKTIV_ID` / `BEITRAG_GRUPPE_FOERDER_ID`, müssen zu
+  `config/auth.php` passen) und wird aus der anderen entfernt.
+
+Damit gilt das Mitglied **sofort** als bezahlt/aktiv – `beitrag_already_paid()`
+und die App (`Beitrag::paidForYear()`) erkennen es unmittelbar. Alle drei
+Schritte sind *best effort* (Fehler brechen die Danke-Seite nie).
+
+> Hinweis: Die Verbuchung greift nur, wenn der Nutzer nach der Zahlung
+> **zurückkehrt** (SumUp `redirect_url`). Bricht er vorher ab, holt der
+> manuelle SumUp-Abgleich in der App die Zuordnung wie bisher nach. Mit
+> `BEITRAG_AUTO_CONFIRM = false` bleibt es beim rein manuellen Trésorier-Flow.
 
 Weitere Eigenschaften:
 
@@ -160,9 +186,8 @@ Weitere Eigenschaften:
   anderen Skripte.
 - **Fallback:** Ist kein API-Key/Merchant-Code gesetzt, können stattdessen feste
   SumUp-Bezahllinks je Typ (`BEITRAG_SUMUP_LINK_FOERDER`/`…_AKTIV`) verwendet
-  werden (fester Betrag, ohne automatische Referenz).
-- Schreibt **nicht** selbst in `beitraege` – die Bestätigung bleibt beim
-  Trésorier (unverändertes Abgleich-Prinzip).
+  werden (fester Betrag, ohne automatische Referenz **und ohne** Auto-Verbuchung,
+  da keine Rückkehr mit Referenz erfolgt).
 
 Seiten:
 

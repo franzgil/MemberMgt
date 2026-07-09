@@ -46,6 +46,19 @@ define('BEITRAG_CURRENCY', 'EUR');
 // App-Konstante GV_MONAT / CARD_GV_MONTH passen.
 define('BEITRAG_GV_MONAT', 3);
 
+// --- Automatische Verbuchung bei erfolgreicher Zahlung ----------------------
+// true  -> Bei SumUp-Status PAID verbucht beitrag.php den Beitrag direkt
+//          (Tabelle `beitraege`, Art 'sumup') UND aktiviert das Mitglied wie
+//          die Trésorier-Bestätigung: status='aktiv', beitrittsdatum (falls
+//          leer) und WoltLab-Gruppe (aktiv/foerder). Idempotent & nicht
+//          destruktiv (eine bereits bestätigte Zahlung wird nicht überschrieben).
+// false -> nur Anzeige; der Trésorier verbucht wie bisher manuell.
+define('BEITRAG_AUTO_CONFIRM', true);
+// WoltLab-Gruppen-IDs für die Auto-Aktivierung. MÜSSEN zu config/auth.php
+// passen (gruppe_aktiv_id / gruppe_foerder_id). 0 = Gruppen-Sync aus.
+define('BEITRAG_GRUPPE_AKTIV_ID',   (int) (getenv('AFOL_GRUPPE_AKTIV_ID')   ?: 133));
+define('BEITRAG_GRUPPE_FOERDER_ID', (int) (getenv('AFOL_GRUPPE_FOERDER_ID') ?: 143));
+
 // --- SumUp Hosted Checkout --------------------------------------------------
 // Merchant-Code aus dem SumUp-Dashboard (Profil / „Merchant code", Format MCxxxxxx).
 // Leer lassen -> es werden nur die statischen Links unten benutzt (falls gesetzt).
@@ -355,7 +368,7 @@ function beitrag_jahr(): int
  */
 function beitrag_load_member(array $user): ?array
 {
-    $sql = "SELECT id, mitgliedsnummer, vorname, nachname, email, typ, status
+    $sql = "SELECT id, mitgliedsnummer, vorname, nachname, email, typ, status, wcf_user_id, beitrittsdatum
             FROM mitglieder
             WHERE wcf_user_id = ? " . ($user['email'] !== '' ? "OR LOWER(email) = ?" : "") . "
             ORDER BY (wcf_user_id = ?) DESC,
@@ -385,6 +398,8 @@ function beitrag_load_member(array $user): ?array
         'email'           => (string) ($row['email'] ?? ''),
         'typ'             => (string) $row['typ'],
         'status'          => (string) $row['status'],
+        'wcf_user_id'     => (int) ($row['wcf_user_id'] ?? 0),
+        'beitrittsdatum'  => (string) ($row['beitrittsdatum'] ?? ''),
     ];
 }
 
@@ -412,6 +427,103 @@ function beitrag_already_paid(int $mitgliedId, int $jahr): bool
     } catch (\Throwable $e) {
         return false;
     }
+}
+
+/**
+ * Erfolgreiche SumUp-Zahlung verbuchen – spiegelt die Trésorier-Bestätigung
+ * der App (beitraege + mitglieder.status/beitrittsdatum + WoltLab-Gruppe).
+ * Idempotent (bei Reload) und nicht destruktiv (bestätigte Zahlung bleibt).
+ * Best effort: Fehler werden geschluckt, damit die Danke-Seite nie bricht.
+ */
+function beitrag_book_payment(array $member, int $jahr, float $amount, string $reference): void
+{
+    if (!BEITRAG_AUTO_CONFIRM) {
+        return;
+    }
+    $mitgliedId = (int) $member['id'];
+    $heute = date('Y-m-d');
+    $bem = 'SumUp Online – ' . $reference;
+
+    // 1) Beitrag verbuchen (Tabelle `beitraege`).
+    try {
+        $sel = WCF::getDB()->prepareStatement(
+            "SELECT id, bezahlt_am FROM beitraege WHERE mitglied_id = ? AND jahr = ? LIMIT 1");
+        $sel->execute([$mitgliedId, $jahr]);
+        $row = $sel->fetchArray();
+
+        if (!$row) {
+            $ins = WCF::getDB()->prepareStatement(
+                "INSERT INTO beitraege (mitglied_id, jahr, betrag, art, bezahlt_am, bemerkung)
+                 VALUES (?, ?, ?, 'sumup', ?, ?)");
+            $ins->execute([$mitgliedId, $jahr, $amount, $heute, $bem]);
+        } elseif (empty($row['bezahlt_am'])) {
+            // vorhandene, noch nicht bezahlte Zeile jetzt als bezahlt markieren.
+            $upd = WCF::getDB()->prepareStatement(
+                "UPDATE beitraege SET betrag = ?, art = 'sumup', bezahlt_am = ?, bemerkung = ?
+                 WHERE id = ? AND bezahlt_am IS NULL");
+            $upd->execute([$amount, $heute, $bem, (int) $row['id']]);
+        }
+        // Bereits bezahlt -> unverändert lassen (idempotent, nicht destruktiv).
+    } catch (\Throwable $e) {
+        return; // ohne Beitrag keine Aktivierung
+    }
+
+    // 2) Mitglied aktivieren (status/beitrittsdatum), wcf_user_id ggf. verknüpfen.
+    try {
+        $upd = WCF::getDB()->prepareStatement(
+            "UPDATE mitglieder
+                SET status = 'aktiv',
+                    beitrittsdatum = COALESCE(beitrittsdatum, ?),
+                    wcf_user_id = COALESCE(wcf_user_id, ?)
+              WHERE id = ?");
+        $upd->execute([$heute, ($member['wcf_user_id'] ?: null), $mitgliedId]);
+    } catch (\Throwable $e) {
+        // unkritisch – der Beitrag ist verbucht
+    }
+
+    // 3) WoltLab-Gruppe angleichen (aktiv/foerder), wie GroupSync in der App.
+    beitrag_sync_group((int) ($member['wcf_user_id'] ?: 0), (string) $member['typ']);
+}
+
+/** WoltLab-Gruppe des Nutzers auf den Mitgliedstyp setzen (best effort). */
+function beitrag_sync_group(int $userId, string $typ): void
+{
+    if ($userId <= 0 || !class_exists('\wcf\data\user\UserAction')) {
+        return;
+    }
+    $aktiv   = BEITRAG_GRUPPE_AKTIV_ID;
+    $foerder = BEITRAG_GRUPPE_FOERDER_ID;
+    if ($aktiv <= 0 && $foerder <= 0) {
+        return; // Gruppen-Sync deaktiviert
+    }
+    $ziel  = $typ === 'foerder' ? $foerder : $aktiv;
+    $other = $typ === 'foerder' ? $aktiv : $foerder;
+    try {
+        if ($ziel > 0) {
+            (new \wcf\data\user\UserAction([$userId], 'addToGroups', [
+                'groups' => [$ziel], 'deleteOldGroups' => false, 'addDefaultGroups' => false,
+            ]))->executeAction();
+        }
+        if ($other > 0 && $other !== $ziel) {
+            (new \wcf\data\user\UserAction([$userId], 'removeFromGroups', [
+                'groups' => [$other],
+            ]))->executeAction();
+        }
+    } catch (\Throwable $e) {
+        // best effort; der manuelle Gruppen-Abgleich in der App holt es nach.
+    }
+}
+
+/** Beitragsjahr aus einer Checkout-Referenz (AFOL-<Nr>-<Jahr>-…) lesen. */
+function beitrag_jahr_from_reference(string $reference): ?int
+{
+    if (preg_match('/-(\d{4})-\d+$/', $reference, $m)) {
+        $y = (int) $m[1];
+        if ($y >= 2000 && $y <= 2100) {
+            return $y;
+        }
+    }
+    return null;
 }
 
 // ===========================================================================
@@ -745,9 +857,10 @@ function beitrag_handle_return(string $lang, array $user): void
 {
     $member = beitrag_load_member($user);
     $name   = $member ? trim($member['vorname'] . ' ' . $member['nachname']) : ($user['username'] ?? '');
-    $jahr   = beitrag_jahr();
 
     $reference = beitrag_read_token('return', (string) ($_GET['c'] ?? ''));
+    // Beitragsjahr aus der (signierten) Referenz, sonst laufendes Jahr.
+    $jahr = ($reference !== null ? beitrag_jahr_from_reference($reference) : null) ?? beitrag_jahr();
     $status = ($reference !== null && BEITRAG_SUMUP_KEY !== '')
         ? beitrag_checkout_status($reference)
         : null;
@@ -756,6 +869,10 @@ function beitrag_handle_return(string $lang, array $user): void
         . '<a class="btn gray" href="' . beitrag_e(BEITRAG_FORUM_URL) . '">' . beitrag_e(beitrag_tr($lang, 'back_forum')) . '</a></p>';
 
     if ($status === 'PAID') {
+        // Zahlung verbuchen und Mitglied aktivieren (idempotent).
+        if ($member !== null && $reference !== null) {
+            beitrag_book_payment($member, $jahr, beitrag_amount($member['typ']), $reference);
+        }
         beitrag_layout($lang, beitrag_tr($lang, 'ret_paid_title'),
             '<div class="alert ok">' . beitrag_e(beitrag_tr($lang, 'ret_paid', ['{name}' => $name, '{jahr}' => (string) $jahr])) . '</div>' . $tryAgain);
         return;
@@ -797,6 +914,8 @@ function beitrag_handle_test(): void
     echo "Währung:         " . BEITRAG_CURRENCY . "\n";
     echo "Beitragsjahr:    " . beitrag_jahr() . " (GV-Monat " . BEITRAG_GV_MONAT . ")\n";
     echo "Secret gesetzt:  " . (BEITRAG_SECRET !== 'BITTE-LANGES-ZUFALLSGEHEIMNIS-SETZEN' ? 'ja' : 'NEIN') . "\n";
+    echo "Auto-Verbuchung: " . (BEITRAG_AUTO_CONFIRM ? 'an (bei PAID: beitraege + aktiv + Gruppe)' : 'aus (nur Anzeige)') . "\n";
+    echo "Gruppen-IDs:     aktiv=" . BEITRAG_GRUPPE_AKTIV_ID . ", foerder=" . BEITRAG_GRUPPE_FOERDER_ID . "\n";
     echo "Self-URL:        " . BEITRAG_SELF_URL . "\n\n";
 
     echo "--- SumUp ---\n";
