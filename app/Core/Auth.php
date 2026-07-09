@@ -205,7 +205,7 @@ class Auth
     /** WoltLab-Gruppen-ID der Membres Sympathisant (typ = 'foerder'). */
     public static function gruppeFoerderId(): int
     {
-        return (int) (self::config()['gruppe_foerder_id'] ?? 134);
+        return (int) (self::config()['gruppe_foerder_id'] ?? 143);
     }
 
     /**

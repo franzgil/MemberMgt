@@ -36,7 +36,7 @@ return [
     // Aktive Mitglieder (typ=aktiv, inkl. Vorstand) bzw. Membres Sympathisant
     // (typ=foerder). Nur bestätigte Mitglieder (Status 'aktiv') kommen hinein.
     'gruppe_aktiv_id'   => 133,
-    'gruppe_foerder_id' => 134,
+    'gruppe_foerder_id' => 143,
 
     // SumUp-API-Key (Secret) für die Zahlungs-Abfrage (Menü „SumUp").
     // Aus dem SumUp-Dashboard (Developers/API keys). Leer = Funktion aus.
