@@ -9,6 +9,8 @@
 
 # Geheimnis der Mitgliedskarte (nie einchecken)
 card-secret.txt
+# SumUp-API-Key (nie einchecken)
+sumup-api-key.txt
 /woltlab/fpdf.php
 
 # Composer

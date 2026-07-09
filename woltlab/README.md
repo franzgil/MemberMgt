@@ -118,3 +118,75 @@ Antrag erhält den neuen Status `zurueckgezogen`.
 - `…/afol55/mitgliedsantrag.php?page=test` (als Admin) zeigt die Konfiguration;
   `…?page=test&mail=1` sendet eine Test-Mail an die eigene Adresse.
 - Danach das Formular selbst absenden und die Bestätigungsmail + Storno-Link prüfen.
+
+---
+
+# Jahresbeitrag mit SumUp (`beitrag.php`)
+
+Eigenständige Seite, auf der ein **eingeloggtes Mitglied** seinen Jahresbeitrag
+**online mit SumUp** bezahlt. Der Betrag richtet sich nach dem Mitgliedstyp
+(`mitglieder.typ`):
+
+- **Fördermitglied** (`typ='foerder'`, Membre sympathisant) → **15,00 €**
+- **Aktives Mitglied** (`typ='aktiv'`, Membre actif) → **50,00 €**
+
+Der Betrag wird **immer serverseitig aus dem Typ abgeleitet** (nie aus dem
+Formular) und ist so nicht manipulierbar.
+
+Ablauf:
+
+1. Das Skript verlangt Login (WoltLab-Session) und lädt das Mitglied aus
+   `mitglieder` (Treffer über `wcf_user_id`, sonst E-Mail).
+2. Es zeigt eine Bestätigungsseite mit Typ, Beitragsjahr und Betrag.
+3. Beim Klick erzeugt es per **SumUp Hosted Checkout** (`POST /v0.1/checkouts`,
+   `hosted_checkout.enabled`) einen Checkout mit exaktem Betrag und
+   Mitglieds-Referenz (`AFOL-<Nr>-<Jahr>-…`) und leitet auf die von SumUp
+   gehostete Bezahlseite weiter.
+4. Nach der Zahlung kommt der Nutzer auf die Danke-/Status-Seite zurück
+   (`?page=return`), die den Checkout-Status (bezahlt/offen/fehlgeschlagen)
+   anzeigt. Der Trésorier gleicht die Zahlung wie gewohnt über die
+   **SumUp-Übersicht** in der App ab (die Referenz erleichtert die Zuordnung).
+
+Weitere Eigenschaften:
+
+- **4 Sprachen** (LB/DE/FR/EN) mit Umschalter, **AFOL.lu-Design** wie die
+  anderen Skripte.
+- **Fallback:** Ist kein API-Key/Merchant-Code gesetzt, können stattdessen feste
+  SumUp-Bezahllinks je Typ (`BEITRAG_SUMUP_LINK_FOERDER`/`…_AKTIV`) verwendet
+  werden (fester Betrag, ohne automatische Referenz).
+- Schreibt **nicht** selbst in `beitraege` – die Bestätigung bleibt beim
+  Trésorier (unverändertes Abgleich-Prinzip).
+
+Seiten:
+
+- `beitrag.php` – Bestätigungsseite (Login nötig; POST `action=pay` = Zahlung starten)
+- `beitrag.php?page=return&c=…&lang=…` – Rückkehr von SumUp (Danke/Status)
+- `beitrag.php?page=test` – Diagnose (nur Admin), `&ping=1` testet die SumUp-API
+
+> Läuft **im WoltLab-Root** (neben `global.php`) und teilt sich die Datenbank
+> mit der App. Das HMAC-Geheimnis ist dasselbe wie bei `membercard.php`
+> (`card-secret.txt`).
+
+## Installation
+
+1. **`beitrag.php`** nach `…/public_html/afol55/` hochladen (neben `global.php`).
+2. **SumUp konfigurieren** (für die dynamische Zahlung):
+   - **API-Key** mit `payments`-Scope im SumUp-Dashboard erstellen und als
+     `sumup-api-key.txt` **außerhalb** von `public_html` ablegen
+     (`…/afol-secrets/sumup-api-key.txt`) oder als Umgebungsvariable
+     `SUMUP_API_KEY` setzen. Das Skript sucht in derselben Reihenfolge wie beim
+     Karten-Geheimnis.
+   - **Merchant-Code** (Format `MCxxxxxx`, im SumUp-Profil) in `beitrag.php` als
+     `BEITRAG_SUMUP_MERCHANT` eintragen oder als `SUMUP_MERCHANT_CODE` setzen.
+3. Im **KONFIGURATION**-Block oben ggf. anpassen: Beträge (`BEITRAG_FOERDER`,
+   `BEITRAG_AKTIV`), `BEITRAG_KONTAKT_EMAIL`, GV-Monat.
+4. `card-secret.txt` muss gesetzt sein (wie bei der Mitgliedskarte).
+5. Im Forum/Menü einen Link auf `…/afol55/beitrag.php` anlegen.
+
+## Prüfen
+
+- `…/afol55/beitrag.php?page=test` (als Admin) zeigt Konfiguration, den
+  gefundenen Mitglieds-Datensatz und den fälligen Betrag; `…?page=test&ping=1`
+  prüft, ob die SumUp-API mit dem Key erreichbar ist.
+- Danach als Mitglied einloggen, `beitrag.php` öffnen und eine Testzahlung
+  durchführen.
