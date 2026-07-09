@@ -144,11 +144,11 @@ Ablauf:
    mitgegeben:
    - `checkout_reference` = `AFOL-<Mitgliedsnr>-<Jahr>-…` (eindeutig, im
      Dashboard/CSV-Export sichtbar),
-   - `description` = `Cotisation <Jahr> – <Vorname Nachname> – <E-Mail>`
+   - `description` = `Cotisation <Jahr> – <Vorname Nachname> – <E-Mail> – @<Login>`
      (als Beleg der Transaktion in der SumUp-App/im Dashboard sichtbar).
-   Es werden **nur** Name und E-Mail an SumUp übermittelt (keine Adresse,
-   kein Geburtsdatum). Die E-Mail stammt aus dem Mitglieds-Datensatz, sonst
-   aus dem Login.
+   Es werden **nur** Name, E-Mail und WoltLab-Login-Name an SumUp übermittelt
+   (keine Adresse, kein Geburtsdatum). Die E-Mail stammt aus dem
+   Mitglieds-Datensatz, sonst aus dem Login.
 4. Nach der Zahlung kommt der Nutzer auf die Danke-/Status-Seite zurück
    (`?page=return`), die den Checkout-Status (bezahlt/offen/fehlgeschlagen)
    anzeigt. Der Trésorier gleicht die Zahlung wie gewohnt über die

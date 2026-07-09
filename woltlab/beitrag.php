@@ -465,16 +465,19 @@ function beitrag_sumup_request(string $method, string $path, ?array $body = null
 /**
  * Erzeugt einen Hosted Checkout und liefert ['url'=>..., 'id'=>...] oder Fehler.
  * $email: E-Mail für die Zuordnung (Mitglieds-E-Mail, sonst Login-E-Mail).
+ * $login: WoltLab-Benutzername (Login-Name) für die Zuordnung.
  */
-function beitrag_create_checkout(array $member, float $amount, int $jahr, string $lang, string $email = ''): array
+function beitrag_create_checkout(array $member, float $amount, int $jahr, string $lang, string $email = '', string $login = ''): array
 {
     $name = trim($member['vorname'] . ' ' . $member['nachname']);
     $nr   = $member['mitgliedsnummer'] !== '' ? $member['mitgliedsnummer'] : ('id' . $member['id']);
     // Eindeutige Referenz für den Abgleich beim Trésorier.
     $reference = 'AFOL-' . $nr . '-' . $jahr . '-' . substr((string) time(), -6);
-    // Beschreibung zur Identifikation in SumUp: Vor-/Nachname + E-Mail (+ Jahr).
+    // Beschreibung zur Identifikation in SumUp: Vor-/Nachname + E-Mail + Login (+ Jahr).
     // Sie ist in der SumUp-App/im Dashboard als Beleg der Transaktion sichtbar.
-    $description = 'Cotisation ' . $jahr . ' – ' . $name . ($email !== '' ? ' – ' . $email : '');
+    $description = 'Cotisation ' . $jahr . ' – ' . $name
+                 . ($email !== '' ? ' – ' . $email : '')
+                 . ($login !== '' ? ' – @' . $login : '');
 
     // Signierter Rückkehr-Link mit der Checkout-Referenz.
     $returnUrl = BEITRAG_SELF_URL . '?page=return&lang=' . $lang
@@ -698,10 +701,11 @@ function beitrag_handle_pay(string $lang, array $user): void
 
     // E-Mail zur Zuordnung: bevorzugt aus dem Mitglieds-Datensatz, sonst Login.
     $email = $member['email'] !== '' ? $member['email'] : ($user['email'] ?? '');
+    $login = (string) ($user['username'] ?? '');
 
     // 1) Hosted Checkout per API (bevorzugt, exakter Betrag + Referenz).
     if (BEITRAG_SUMUP_KEY !== '' && BEITRAG_SUMUP_MERCHANT !== '') {
-        $res = beitrag_create_checkout($member, $amount, $jahr, $lang, $email);
+        $res = beitrag_create_checkout($member, $amount, $jahr, $lang, $email, $login);
         if ($res['ok']) {
             header('Location: ' . $res['url']);
             echo '<a href="' . beitrag_e($res['url']) . '">SumUp…</a>';
