@@ -1,0 +1,588 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AFOL.lu – Aktive Mitglieder</title>
+<style>
+    /* WoltLab Suite 5.5 inspired styling - matches afol55.afol.lu look & feel */
+    :root {
+        --wcfContentBackground: #ffffff;
+        --wcfContentBorder: #e1e1e1;
+        --wcfContentBorderInner: #ededed;
+        --wcfContentText: #2c2e30;
+        --wcfContentLink: #0a4a66;
+        --wcfContentLinkActive: #04293c;
+        --wcfHeadlineText: #1c1d1f;
+        --wcfPageBackground: #f5f6f7;
+        --wcfButtonPrimary: #0a4a66;
+        --wcfButtonPrimaryHover: #04293c;
+        --wcfNavBackground: #1c2833;
+        --wcfNavText: #ffffff;
+        --wcfBoxAccent: #c8a951;
+        --wcfGreen: #1a7f37;
+    }
+
+    * { box-sizing: border-box; }
+    html, body { margin: 0; padding: 0; }
+
+    body {
+        font-family: "Segoe UI", "Liberation Sans", Arial, sans-serif;
+        font-size: 14px;
+        line-height: 1.55;
+        color: var(--wcfContentText);
+        background: var(--wcfPageBackground);
+    }
+
+    a { color: var(--wcfContentLink); text-decoration: none; }
+    a:hover { color: var(--wcfContentLinkActive); text-decoration: underline; }
+
+    /* ---------- HEADER ---------- */
+    .pageHeader {
+        background: var(--wcfNavBackground);
+        color: var(--wcfNavText);
+        border-bottom: 3px solid var(--wcfBoxAccent);
+    }
+    .pageHeaderInner {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 18px 20px;
+        display: flex;
+        align-items: center;
+        gap: 18px;
+    }
+    .pageHeaderLogo {
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        text-decoration: none;
+        color: var(--wcfNavText);
+    }
+    .pageHeaderLogo:hover { text-decoration: none; }
+    .logoMark {
+        width: 56px;
+        height: 56px;
+        background: var(--wcfBoxAccent);
+        border-radius: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 700;
+        font-size: 22px;
+        color: #1c2833;
+        letter-spacing: -0.5px;
+        box-shadow: 0 2px 6px rgba(0,0,0,0.25);
+    }
+    .pageHeaderTitle { display: flex; flex-direction: column; line-height: 1.1; }
+    .pageHeaderTitle .siteTitle { font-size: 22px; font-weight: 600; letter-spacing: 0.3px; }
+    .pageHeaderTitle .siteSubtitle {
+        font-size: 12px;
+        color: #b8c2cc;
+        margin-top: 3px;
+        letter-spacing: 0.5px;
+        text-transform: uppercase;
+    }
+
+    /* ---------- MAIN NAVIGATION ---------- */
+    .mainMenu {
+        background: #243340;
+        border-bottom: 1px solid #1a242e;
+    }
+    .mainMenuInner { max-width: 1200px; margin: 0 auto; padding: 0 20px; }
+    .mainMenuList {
+        list-style: none; margin: 0; padding: 0;
+        display: flex; flex-wrap: wrap;
+    }
+    .mainMenuList a {
+        display: block;
+        padding: 10px 16px;
+        color: #d4dce3;
+        font-size: 13px;
+        font-weight: 500;
+        text-decoration: none;
+        border-right: 1px solid #1a242e;
+    }
+    .mainMenuList a:hover { background: #1c2833; color: #fff; text-decoration: none; }
+    .mainMenuList .active a { background: var(--wcfBoxAccent); color: #1c2833; }
+
+    /* ---------- LAYOUT ---------- */
+    .pageWrapper {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 24px 20px;
+        display: grid;
+        grid-template-columns: 1fr 300px;
+        gap: 24px;
+    }
+    @media (max-width: 900px) {
+        .pageWrapper { grid-template-columns: 1fr; }
+    }
+
+    /* ---------- BREADCRUMB ---------- */
+    .breadcrumbs { font-size: 12px; color: #66707a; margin-bottom: 14px; }
+    .breadcrumbs a { color: #66707a; }
+    .breadcrumbs span.sep { margin: 0 6px; color: #aab2ba; }
+
+    /* ---------- CONTENT BOX ---------- */
+    .contentBox {
+        background: var(--wcfContentBackground);
+        border: 1px solid var(--wcfContentBorder);
+        border-radius: 4px;
+        margin-bottom: 20px;
+        box-shadow: 0 1px 2px rgba(0,0,0,0.03);
+    }
+    .contentBoxHeader {
+        background: linear-gradient(180deg, #fafbfc 0%, #f0f2f4 100%);
+        border-bottom: 1px solid var(--wcfContentBorder);
+        padding: 12px 18px;
+        font-size: 16px;
+        font-weight: 600;
+        color: var(--wcfHeadlineText);
+        border-radius: 4px 4px 0 0;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+    .contentBoxHeader .icon {
+        width: 18px; height: 18px;
+        background: var(--wcfBoxAccent);
+        border-radius: 3px;
+        flex-shrink: 0;
+    }
+    .contentBoxBody { padding: 20px 22px; }
+    .contentBoxBody p { margin: 0 0 12px; }
+    .contentBoxBody p:last-child { margin-bottom: 0; }
+
+    /* ---------- HERO ---------- */
+    .hero {
+        background: linear-gradient(135deg, #1c2833 0%, #2c3e50 60%, #34495e 100%);
+        color: #fff;
+        border-radius: 4px;
+        padding: 32px 28px;
+        margin-bottom: 22px;
+        position: relative;
+        overflow: hidden;
+        border: 1px solid #1a242e;
+    }
+    .hero::before {
+        content: "";
+        position: absolute;
+        top: -40px; right: -40px;
+        width: 200px; height: 200px;
+        background: var(--wcfBoxAccent);
+        opacity: 0.08;
+        border-radius: 50%;
+    }
+    .hero::after {
+        content: "";
+        position: absolute;
+        bottom: -60px; left: -60px;
+        width: 220px; height: 220px;
+        background: var(--wcfBoxAccent);
+        opacity: 0.05;
+        border-radius: 50%;
+    }
+    .hero .heroBadge {
+        display: inline-block;
+        background: var(--wcfBoxAccent);
+        color: #1c2833;
+        font-size: 11px;
+        font-weight: 700;
+        letter-spacing: 1px;
+        padding: 4px 10px;
+        border-radius: 3px;
+        text-transform: uppercase;
+        margin-bottom: 14px;
+        position: relative;
+        z-index: 1;
+    }
+    .hero h1 {
+        font-size: 28px;
+        margin: 0 0 8px;
+        font-weight: 700;
+        letter-spacing: -0.3px;
+        position: relative;
+        z-index: 1;
+    }
+    .hero .heroSubtitle {
+        font-size: 15px;
+        color: #c8d1da;
+        margin: 0;
+        position: relative;
+        z-index: 1;
+    }
+
+    /* ---------- VORAUSSETZUNGEN ---------- */
+    .reqBox {
+        background: #fafbfc;
+        border: 1px solid var(--wcfContentBorderInner);
+        border-left: 3px solid var(--wcfGreen);
+        border-radius: 4px;
+        padding: 14px 18px;
+        margin-top: 14px;
+    }
+    .reqList { list-style: none; padding: 0; margin: 0; }
+    .reqList li {
+        display: flex; align-items: flex-start; gap: 10px;
+        padding: 7px 0; font-size: 13.5px;
+        border-bottom: 1px solid var(--wcfContentBorderInner);
+    }
+    .reqList li:last-child { border-bottom: none; }
+    .reqCheck { color: var(--wcfGreen); font-weight: 700; flex-shrink: 0; }
+    .reqBadge {
+        display: inline-block;
+        background: #e7f6ec; color: var(--wcfGreen);
+        font-size: 11px; font-weight: 700;
+        padding: 2px 9px; border-radius: 999px;
+        margin-left: 6px;
+    }
+
+    /* ---------- SUBPAGE CARDS ---------- */
+    .cardGrid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+        gap: 14px;
+        margin-top: 14px;
+    }
+    .navCard {
+        position: relative;
+        display: flex;
+        flex-direction: column;
+        background: var(--wcfContentBackground);
+        border: 1px solid var(--wcfContentBorder);
+        border-top: 3px solid var(--wcfBoxAccent);
+        border-radius: 8px;
+        padding: 18px;
+        text-decoration: none;
+        color: inherit;
+        box-shadow: 0 1px 2px rgba(0,0,0,0.03);
+        transition: transform .12s ease, box-shadow .12s ease, border-color .12s ease;
+    }
+    .navCard:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 10px 22px rgba(28,40,51,0.12);
+        border-color: var(--wcfBoxAccent);
+        text-decoration: none;
+    }
+    .navCard .ncIcon {
+        width: 46px; height: 46px;
+        background: rgba(200,169,81,.18);
+        border-radius: 12px;
+        display: grid; place-items: center;
+        font-size: 24px;
+        margin-bottom: 12px;
+    }
+    .navCard .ncTitle {
+        font-size: 16px; font-weight: 600; color: var(--wcfHeadlineText);
+        margin-bottom: 5px;
+    }
+    .navCard .ncDesc { font-size: 12.5px; color: #66707a; flex: 1; margin-bottom: 12px; }
+    .navCard .ncMore {
+        font-size: 12.5px; font-weight: 600; color: var(--wcfContentLink);
+        align-self: flex-start;
+    }
+    .navCard:hover .ncMore { color: var(--wcfContentLinkActive); }
+
+    /* ---------- CTA BOX ---------- */
+    .ctaBox {
+        background: linear-gradient(135deg, #0a4a66 0%, #0d5e80 100%);
+        color: #fff;
+        border-radius: 4px;
+        padding: 22px 24px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 16px;
+        flex-wrap: wrap;
+        margin-bottom: 20px;
+        border: 1px solid #073c54;
+    }
+    .ctaBox .ctaText h3 { margin: 0 0 4px; font-size: 17px; color: #fff; }
+    .ctaBox .ctaText p { margin: 0; font-size: 13px; color: #cfe2ec; }
+    .ctaBox .ctaBtn {
+        background: var(--wcfBoxAccent);
+        color: #1c2833;
+        padding: 10px 20px;
+        border-radius: 3px;
+        font-weight: 600;
+        font-size: 13.5px;
+        white-space: nowrap;
+    }
+    .ctaBox .ctaBtn:hover { background: #d8bb6a; color: #1c2833; text-decoration: none; }
+
+    /* ---------- DISCLAIMER ---------- */
+    .disclaimer {
+        font-size: 12px;
+        color: #66707a;
+        background: #fafbfc;
+        border: 1px solid var(--wcfContentBorderInner);
+        padding: 14px 18px;
+        border-radius: 3px;
+        font-style: italic;
+        line-height: 1.5;
+    }
+
+    /* ---------- SIDEBAR ---------- */
+    .sidebar { display: flex; flex-direction: column; gap: 18px; }
+    .sidebarBox {
+        background: var(--wcfContentBackground);
+        border: 1px solid var(--wcfContentBorder);
+        border-radius: 4px;
+        overflow: hidden;
+    }
+    .sidebarBoxHeader {
+        background: linear-gradient(180deg, #fafbfc 0%, #f0f2f4 100%);
+        padding: 10px 14px;
+        font-size: 13px;
+        font-weight: 600;
+        color: var(--wcfHeadlineText);
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        border-bottom: 1px solid var(--wcfContentBorder);
+    }
+    .sidebarBoxBody { padding: 14px; font-size: 13px; }
+    .sidebarBoxBody p { margin: 0 0 8px; }
+    .sidebarBoxBody ul { padding-left: 18px; margin: 8px 0; }
+    .sidebarBoxBody ul li { margin-bottom: 4px; }
+    .quickFact {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 6px 0;
+        border-bottom: 1px dashed var(--wcfContentBorderInner);
+        font-size: 12.5px;
+    }
+    .quickFact:last-child { border-bottom: none; }
+    .quickFact .factLabel { color: #66707a; }
+    .quickFact .factValue { font-weight: 600; color: var(--wcfHeadlineText); }
+    .sidebarBtn {
+        display: block;
+        text-align: center;
+        background: var(--wcfButtonPrimary);
+        color: #fff;
+        padding: 9px 14px;
+        border-radius: 3px;
+        font-size: 13px;
+        font-weight: 500;
+        margin-top: 10px;
+    }
+    .sidebarBtn:hover { background: var(--wcfButtonPrimaryHover); color: #fff; text-decoration: none; }
+
+    /* ---------- FOOTER ---------- */
+    .pageFooter {
+        background: #1c2833;
+        color: #b8c2cc;
+        padding: 30px 20px 18px;
+        margin-top: 30px;
+        border-top: 3px solid var(--wcfBoxAccent);
+    }
+    .pageFooterInner { max-width: 1200px; margin: 0 auto; }
+    .pageFooter ol {
+        list-style: none;
+        padding: 0;
+        margin: 0 0 14px;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 18px;
+        font-size: 13px;
+    }
+    .pageFooter a { color: #d4dce3; }
+    .pageFooter a:hover { color: #fff; }
+    .footerNote {
+        font-size: 11px;
+        color: #8a949e;
+        line-height: 1.6;
+        border-top: 1px solid #2c3e50;
+        padding-top: 12px;
+        margin-top: 12px;
+    }
+    .wsTag { font-size: 11px; color: #8a949e; margin-top: 8px; }
+    .wsTag a { color: #c8a951; }
+</style>
+</head>
+<body>
+
+<!-- ===== HEADER ===== -->
+<header class="pageHeader">
+    <div class="pageHeaderInner">
+        <a class="pageHeaderLogo" href="https://afol55.afol.lu/">
+            <div class="logoMark">A.lu</div>
+            <div class="pageHeaderTitle">
+                <span class="siteTitle">AFOL.lu</span>
+                <span class="siteSubtitle">Aktive Mitglieder</span>
+            </div>
+        </a>
+    </div>
+</header>
+
+<!-- ===== MAIN NAVIGATION ===== -->
+<nav class="mainMenu">
+    <div class="mainMenuInner">
+        <ul class="mainMenuList">
+            <li class="active"><a href="#ueberblick">Überblick</a></li>
+            <li><a href="#voraussetzungen">Voraussetzungen</a></li>
+            <li><a href="#bereiche">Bereiche</a></li>
+            <li><a href="#mitmachen">Mitmachen</a></li>
+        </ul>
+    </div>
+</nav>
+
+<!-- ===== MAIN LAYOUT ===== -->
+<div class="pageWrapper">
+
+    <!-- ===== MAIN CONTENT ===== -->
+    <main>
+        <div class="breadcrumbs">
+            <a href="https://afol55.afol.lu/">AFOLs of Luxembourg</a>
+            <span class="sep">›</span>
+            <a href="https://afol55.afol.lu/">Community</a>
+            <span class="sep">›</span>
+            <span>Aktive Mitglieder</span>
+        </div>
+
+        <!-- HERO -->
+        <section class="hero" id="ueberblick">
+            <span class="heroBadge">Community · a.s.b.l.</span>
+            <h1>Aktive Mitglieder</h1>
+            <p class="heroSubtitle">Das Herz der AFOL.lu: bauen, ausstellen, teilnehmen und die Community mitgestalten – bei Stammtischen, Bauabenden, Events und mehr.</p>
+        </section>
+
+        <!-- VORAUSSETZUNGEN -->
+        <article class="contentBox" id="voraussetzungen">
+            <div class="contentBoxHeader"><span class="icon"></span>Voraussetzungen für die aktive Mitgliedschaft</div>
+            <div class="contentBoxBody">
+                <p>Aktive Community-Mitglieder sind Personen, die aktiv an Community-Treffen
+                   (monatlicher Stammtisch, Bauabende), Veranstaltungen und anderen Aktivitäten
+                   <strong>bauen, ausstellen, beitragen und/oder teilnehmen</strong> – und seit
+                   mindestens einem Jahr förderndes Mitglied des Vereins sind.</p>
+                <div class="reqBox">
+                    <ul class="reqList">
+                        <li><span class="reqCheck">✓</span> Teilnahme an Community-Treffen: monatlicher Stammtisch &amp; Bauabende</li>
+                        <li><span class="reqCheck">✓</span> Mitwirken bei Veranstaltungen und weiteren Aktivitäten</li>
+                        <li><span class="reqCheck">✓</span> Aktiver Beitrag: bauen, ausstellen, beitragen und/oder teilnehmen</li>
+                        <li><span class="reqCheck">✓</span> Seit mindestens einem Jahr förderndes Mitglied <span class="reqBadge">≥ 1 Jahr</span></li>
+                    </ul>
+                </div>
+            </div>
+        </article>
+
+        <!-- BEREICHE / CARDS -->
+        <article class="contentBox" id="bereiche">
+            <div class="contentBoxHeader"><span class="icon"></span>Bereiche für Aktive</div>
+            <div class="contentBoxBody">
+                <p>Hier passiert das Vereinsleben. Wähle einen Bereich, um mehr zu erfahren.</p>
+                <div class="cardGrid">
+
+                    <a class="navCard" href="#">
+                        <div class="ncIcon">🧱</div>
+                        <div class="ncTitle">Projekte</div>
+                        <div class="ncDesc">Gemeinsame Bauprojekte und MOCs – von der Idee bis zur fertigen Ausstellung.</div>
+                        <span class="ncMore">Mehr erfahren →</span>
+                    </a>
+
+                    <a class="navCard" href="#">
+                        <div class="ncIcon">🎯</div>
+                        <div class="ncTitle">Aktivitäten</div>
+                        <div class="ncDesc">Monatlicher Stammtisch, Bauabende und regelmäßige Treffen der Community.</div>
+                        <span class="ncMore">Mehr erfahren →</span>
+                    </a>
+
+                    <a class="navCard" href="#">
+                        <div class="ncIcon">🤝</div>
+                        <div class="ncTitle">Aktionen</div>
+                        <div class="ncDesc">Gemeinschaftsaktionen, Spenden- und Mitmach-Projekte für einen guten Zweck.</div>
+                        <span class="ncMore">Mehr erfahren →</span>
+                    </a>
+
+                    <a class="navCard" href="#">
+                        <div class="ncIcon">📅</div>
+                        <div class="ncTitle">Events</div>
+                        <div class="ncDesc">Messen, Ausstellungen und öffentliche Auftritte – Termine und Anmeldung.</div>
+                        <span class="ncMore">Mehr erfahren →</span>
+                    </a>
+
+                    <a class="navCard" href="#">
+                        <div class="ncIcon">🎓</div>
+                        <div class="ncTitle">Kurse</div>
+                        <div class="ncDesc">Bautechniken, Workshops und Wissensaustausch für alle Erfahrungsstufen.</div>
+                        <span class="ncMore">Mehr erfahren →</span>
+                    </a>
+
+                    <a class="navCard" href="#">
+                        <div class="ncIcon">🏛️</div>
+                        <div class="ncTitle">Ausstellungen</div>
+                        <div class="ncDesc">Eigene Kreationen der Öffentlichkeit zeigen – bei Ausstellungen im In- und Ausland.</div>
+                        <span class="ncMore">Mehr erfahren →</span>
+                    </a>
+
+                </div>
+            </div>
+        </article>
+
+        <!-- CTA / MITMACHEN -->
+        <div class="ctaBox" id="mitmachen">
+            <div class="ctaText">
+                <h3>Aktives Mitglied werden?</h3>
+                <p>Du bist förderndes Mitglied und möchtest aktiv mitmachen? Komm zum nächsten Stammtisch oder melde dich in der Community.</p>
+            </div>
+            <a class="ctaBtn" href="https://afol55.afol.lu/">In der Community melden</a>
+        </div>
+
+        <!-- DISCLAIMER -->
+        <p class="disclaimer">
+            Community-Bereich der AFOL.lu a.s.b.l. · LEGO® ist eine Marke der LEGO Gruppe,
+            die dieses Projekt weder sponsert noch unterstützt.
+        </p>
+
+    </main>
+
+    <!-- ===== SIDEBAR ===== -->
+    <aside class="sidebar">
+        <div class="sidebarBox">
+            <div class="sidebarBoxHeader">Auf einen Blick</div>
+            <div class="sidebarBoxBody">
+                <div class="quickFact"><span class="factLabel">Stammtisch</span><span class="factValue">Monatlich</span></div>
+                <div class="quickFact"><span class="factLabel">Bauabende</span><span class="factValue">Regelmäßig</span></div>
+                <div class="quickFact"><span class="factLabel">Voraussetzung</span><span class="factValue">≥ 1 Jahr Förderer</span></div>
+                <div class="quickFact"><span class="factLabel">Träger</span><span class="factValue">AFOL.lu a.s.b.l.</span></div>
+                <a class="sidebarBtn" href="https://afol55.afol.lu/">Zur Community</a>
+            </div>
+        </div>
+
+        <div class="sidebarBox">
+            <div class="sidebarBoxHeader">Kurz erklärt</div>
+            <div class="sidebarBoxBody">
+                <p>Die aktive Mitgliedschaft baut auf der <strong>fördernden Mitgliedschaft</strong> auf.
+                   Wer seit mindestens einem Jahr Förderer ist und regelmäßig mitwirkt, gehört
+                   zum aktiven Kern der Community.</p>
+                <ul>
+                    <li>Bauen &amp; ausstellen</li>
+                    <li>Teilnehmen &amp; beitragen</li>
+                    <li>Community mitgestalten</li>
+                </ul>
+            </div>
+        </div>
+    </aside>
+
+</div>
+
+<!-- ===== FOOTER ===== -->
+<footer class="pageFooter">
+    <div class="pageFooterInner">
+        <ol>
+            <li><a href="#ueberblick">Überblick</a></li>
+            <li><a href="#voraussetzungen">Voraussetzungen</a></li>
+            <li><a href="#bereiche">Bereiche</a></li>
+            <li><a href="#mitmachen">Mitmachen</a></li>
+        </ol>
+        <div class="footerNote">
+            AFOL.lu a.s.b.l. · 22, rue de Manternach, L-6681 Mertert, Luxemburg ·
+            Community der luxemburgischen LEGO®-Fans.
+            LEGO® ist eine Marke der LEGO Gruppe, die dieses Projekt weder sponsert noch unterstützt.
+        </div>
+        <div class="wsTag">Im Stil der AFOL.lu Community · <a href="https://afol55.afol.lu/">afol55.afol.lu</a></div>
+    </div>
+</footer>
+
+</body>
+</html>

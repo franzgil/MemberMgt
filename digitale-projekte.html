@@ -1,0 +1,787 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AFOL.lu – Digitale Projekte</title>
+<style>
+    /* WoltLab Suite 5.5 inspired styling - matches afol55.afol.lu look & feel */
+    :root {
+        --wcfContentBackground: #ffffff;
+        --wcfContentBorder: #e1e1e1;
+        --wcfContentBorderInner: #ededed;
+        --wcfContentText: #2c2e30;
+        --wcfContentLink: #0a4a66;
+        --wcfContentLinkActive: #04293c;
+        --wcfHeadlineText: #1c1d1f;
+        --wcfPageBackground: #f5f6f7;
+        --wcfSidebarBackground: #fafbfc;
+        --wcfButtonPrimary: #0a4a66;
+        --wcfButtonPrimaryHover: #04293c;
+        --wcfNavBackground: #1c2833;
+        --wcfNavText: #ffffff;
+        --wcfBoxAccent: #c8a951;
+        --wcfGreen: #1a7f37;
+        --wcfBlue: #0a4a66;
+    }
+
+    * { box-sizing: border-box; }
+    html, body { margin: 0; padding: 0; }
+
+    body {
+        font-family: "Segoe UI", "Liberation Sans", Arial, sans-serif;
+        font-size: 14px;
+        line-height: 1.55;
+        color: var(--wcfContentText);
+        background: var(--wcfPageBackground);
+    }
+
+    a { color: var(--wcfContentLink); text-decoration: none; }
+    a:hover { color: var(--wcfContentLinkActive); text-decoration: underline; }
+
+    /* ---------- HEADER ---------- */
+    .pageHeader {
+        background: var(--wcfNavBackground);
+        color: var(--wcfNavText);
+        border-bottom: 3px solid var(--wcfBoxAccent);
+    }
+    .pageHeaderInner {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 18px 20px;
+        display: flex;
+        align-items: center;
+        gap: 18px;
+    }
+    .pageHeaderLogo {
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        text-decoration: none;
+        color: var(--wcfNavText);
+    }
+    .pageHeaderLogo:hover { text-decoration: none; }
+    .logoMark {
+        width: 56px;
+        height: 56px;
+        background: var(--wcfBoxAccent);
+        border-radius: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 700;
+        font-size: 22px;
+        color: #1c2833;
+        letter-spacing: -0.5px;
+        box-shadow: 0 2px 6px rgba(0,0,0,0.25);
+    }
+    .pageHeaderTitle { display: flex; flex-direction: column; line-height: 1.1; }
+    .pageHeaderTitle .siteTitle { font-size: 22px; font-weight: 600; letter-spacing: 0.3px; }
+    .pageHeaderTitle .siteSubtitle {
+        font-size: 12px;
+        color: #b8c2cc;
+        margin-top: 3px;
+        letter-spacing: 0.5px;
+        text-transform: uppercase;
+    }
+
+    /* ---------- MAIN NAVIGATION ---------- */
+    .mainMenu {
+        background: #243340;
+        border-bottom: 1px solid #1a242e;
+    }
+    .mainMenuInner { max-width: 1200px; margin: 0 auto; padding: 0 20px; }
+    .mainMenuList {
+        list-style: none; margin: 0; padding: 0;
+        display: flex; flex-wrap: wrap;
+    }
+    .mainMenuList a {
+        display: block;
+        padding: 10px 16px;
+        color: #d4dce3;
+        font-size: 13px;
+        font-weight: 500;
+        text-decoration: none;
+        border-right: 1px solid #1a242e;
+    }
+    .mainMenuList a:hover { background: #1c2833; color: #fff; text-decoration: none; }
+    .mainMenuList .active a { background: var(--wcfBoxAccent); color: #1c2833; }
+
+    /* ---------- LAYOUT ---------- */
+    .pageWrapper {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 24px 20px;
+        display: grid;
+        grid-template-columns: 1fr 300px;
+        gap: 24px;
+    }
+    @media (max-width: 900px) {
+        .pageWrapper { grid-template-columns: 1fr; }
+    }
+
+    /* ---------- BREADCRUMB ---------- */
+    .breadcrumbs { font-size: 12px; color: #66707a; margin-bottom: 14px; }
+    .breadcrumbs a { color: #66707a; }
+    .breadcrumbs span.sep { margin: 0 6px; color: #aab2ba; }
+
+    /* ---------- CONTENT BOX ---------- */
+    .contentBox {
+        background: var(--wcfContentBackground);
+        border: 1px solid var(--wcfContentBorder);
+        border-radius: 4px;
+        margin-bottom: 20px;
+        box-shadow: 0 1px 2px rgba(0,0,0,0.03);
+    }
+    .contentBoxHeader {
+        background: linear-gradient(180deg, #fafbfc 0%, #f0f2f4 100%);
+        border-bottom: 1px solid var(--wcfContentBorder);
+        padding: 12px 18px;
+        font-size: 16px;
+        font-weight: 600;
+        color: var(--wcfHeadlineText);
+        border-radius: 4px 4px 0 0;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+    .contentBoxHeader .icon {
+        width: 18px; height: 18px;
+        background: var(--wcfBoxAccent);
+        border-radius: 3px;
+        flex-shrink: 0;
+    }
+    .contentBoxBody { padding: 20px 22px; }
+    .contentBoxBody h2 {
+        font-size: 18px;
+        font-weight: 600;
+        color: var(--wcfHeadlineText);
+        margin: 0 0 10px;
+        padding-bottom: 6px;
+        border-bottom: 2px solid var(--wcfBoxAccent);
+        display: inline-block;
+    }
+    .contentBoxBody h3 {
+        font-size: 15px;
+        font-weight: 600;
+        color: var(--wcfHeadlineText);
+        margin: 18px 0 8px;
+    }
+    .contentBoxBody p { margin: 0 0 12px; }
+    .contentBoxBody p:last-child { margin-bottom: 0; }
+    .contentBoxBody ul { margin: 10px 0 14px; padding-left: 22px; }
+    .contentBoxBody ul li { margin-bottom: 6px; }
+
+    /* ---------- HERO ---------- */
+    .hero {
+        background: linear-gradient(135deg, #1c2833 0%, #2c3e50 60%, #34495e 100%);
+        color: #fff;
+        border-radius: 4px;
+        padding: 32px 28px;
+        margin-bottom: 22px;
+        position: relative;
+        overflow: hidden;
+        border: 1px solid #1a242e;
+    }
+    .hero::before {
+        content: "";
+        position: absolute;
+        top: -40px; right: -40px;
+        width: 200px; height: 200px;
+        background: var(--wcfBoxAccent);
+        opacity: 0.08;
+        border-radius: 50%;
+    }
+    .hero::after {
+        content: "";
+        position: absolute;
+        bottom: -60px; left: -60px;
+        width: 220px; height: 220px;
+        background: var(--wcfBoxAccent);
+        opacity: 0.05;
+        border-radius: 50%;
+    }
+    .hero .heroBadge {
+        display: inline-block;
+        background: var(--wcfBoxAccent);
+        color: #1c2833;
+        font-size: 11px;
+        font-weight: 700;
+        letter-spacing: 1px;
+        padding: 4px 10px;
+        border-radius: 3px;
+        text-transform: uppercase;
+        margin-bottom: 14px;
+        position: relative;
+        z-index: 1;
+    }
+    .hero h1 {
+        font-size: 28px;
+        margin: 0 0 8px;
+        font-weight: 700;
+        letter-spacing: -0.3px;
+        position: relative;
+        z-index: 1;
+    }
+    .hero .heroSubtitle {
+        font-size: 15px;
+        color: #c8d1da;
+        margin: 0;
+        position: relative;
+        z-index: 1;
+    }
+    .hero .heroDraft {
+        position: absolute;
+        top: 14px;
+        right: 18px;
+        font-size: 11px;
+        color: #c8a951;
+        background: rgba(0,0,0,0.25);
+        padding: 4px 8px;
+        border-radius: 3px;
+        z-index: 1;
+        letter-spacing: 0.5px;
+    }
+    .heroActions { margin-top: 18px; position: relative; z-index: 1; display: flex; gap: 10px; flex-wrap: wrap; }
+    .heroBtn {
+        display: inline-block;
+        background: var(--wcfBoxAccent);
+        color: #1c2833;
+        padding: 9px 18px;
+        border-radius: 3px;
+        font-size: 13px;
+        font-weight: 600;
+    }
+    .heroBtn:hover { background: #d8bb6a; color: #1c2833; text-decoration: none; }
+    .heroBtn.ghost { background: transparent; color: #fff; border: 1px solid rgba(255,255,255,0.4); }
+    .heroBtn.ghost:hover { background: rgba(255,255,255,0.1); color: #fff; }
+
+    /* ---------- PROJECT CARDS ---------- */
+    .projectGrid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+        gap: 14px;
+        margin-top: 14px;
+    }
+    .projectCard {
+        background: #fafbfc;
+        border: 1px solid var(--wcfContentBorderInner);
+        border-top: 3px solid var(--wcfBoxAccent);
+        border-radius: 4px;
+        padding: 16px 18px;
+        display: flex;
+        flex-direction: column;
+    }
+    .projectCard .pcIcon {
+        width: 38px; height: 38px;
+        background: rgba(200,169,81,.18);
+        border-radius: 8px;
+        display: inline-grid; place-items: center;
+        font-size: 20px;
+        margin-bottom: 10px;
+    }
+    .projectCard .pcTitle {
+        font-weight: 600;
+        color: var(--wcfHeadlineText);
+        font-size: 15px;
+        margin-bottom: 6px;
+    }
+    .projectCard .pcDesc {
+        font-size: 13px;
+        color: #4d5662;
+        margin-bottom: 12px;
+        flex: 1;
+    }
+    .projectCard .pcMeta {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 8px;
+        margin-top: auto;
+    }
+    .pcLink { font-size: 12.5px; font-weight: 600; }
+
+    /* ---------- STATUS BADGES ---------- */
+    .pBadge {
+        display: inline-block;
+        font-size: 10.5px;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        padding: 3px 8px;
+        border-radius: 999px;
+    }
+    .pBadge.live { background: #e7f6ec; color: var(--wcfGreen); }
+    .pBadge.dev  { background: #fff5e6; color: #b54708; }
+    .pBadge.plan { background: #eef1f5; color: #66707a; }
+
+    /* ---------- FEATURE / VALUE GRID ---------- */
+    .valueGrid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+        gap: 12px;
+        margin-top: 14px;
+    }
+    .valueItem {
+        background: #fafbfc;
+        border: 1px solid var(--wcfContentBorderInner);
+        padding: 14px;
+        border-radius: 3px;
+    }
+    .valueItem .valueName {
+        font-weight: 600;
+        color: var(--wcfHeadlineText);
+        font-size: 14px;
+        margin-bottom: 4px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+    .valueItem .valueDesc {
+        font-size: 12.5px;
+        color: #66707a;
+    }
+    .valueItem .pico {
+        width: 22px; height: 22px;
+        background: rgba(200,169,81,.18);
+        border-radius: 4px;
+        display: inline-grid; place-items: center;
+        font-size: 13px;
+    }
+
+    /* ---------- FLOW ---------- */
+    .flow { display: flex; align-items: stretch; gap: 10px; flex-wrap: wrap; margin-top: 14px; }
+    .flowStep {
+        flex: 1; min-width: 150px;
+        background: #fafbfc; border: 1px solid var(--wcfContentBorderInner);
+        border-top: 3px solid var(--wcfBoxAccent);
+        border-radius: 3px; padding: 12px 14px; text-align: center;
+    }
+    .flowStep.done { border-top-color: var(--wcfGreen); }
+    .flowStep .ft { font-weight: 600; color: var(--wcfHeadlineText); font-size: 13.5px; }
+    .flowStep .fd { font-size: 12px; color: #66707a; margin-top: 3px; }
+    .flowArrow { align-self: center; color: var(--wcfBoxAccent); font-weight: 700; font-size: 18px; }
+    @media (max-width: 700px) { .flowArrow { transform: rotate(90deg); } .flow { flex-direction: column; } }
+
+    /* ---------- TECH PILLS ---------- */
+    .techPills { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
+    .techPill {
+        background: #fafbfc; border: 1px solid var(--wcfContentBorderInner);
+        border-radius: 999px; padding: 6px 14px; font-size: 12.5px; font-weight: 500;
+    }
+    .techPill b { color: var(--wcfContentLink); }
+
+    /* ---------- CTA BOX ---------- */
+    .ctaBox {
+        background: linear-gradient(135deg, #0a4a66 0%, #0d5e80 100%);
+        color: #fff;
+        border-radius: 4px;
+        padding: 22px 24px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 16px;
+        flex-wrap: wrap;
+        margin-bottom: 20px;
+        border: 1px solid #073c54;
+    }
+    .ctaBox .ctaText h3 { margin: 0 0 4px; font-size: 17px; color: #fff; }
+    .ctaBox .ctaText p { margin: 0; font-size: 13px; color: #cfe2ec; }
+    .ctaBox .ctaBtn {
+        background: var(--wcfBoxAccent);
+        color: #1c2833;
+        padding: 10px 20px;
+        border-radius: 3px;
+        font-weight: 600;
+        font-size: 13.5px;
+        white-space: nowrap;
+    }
+    .ctaBox .ctaBtn:hover { background: #d8bb6a; color: #1c2833; text-decoration: none; }
+
+    /* ---------- DISCLAIMER ---------- */
+    .disclaimer {
+        font-size: 12px;
+        color: #66707a;
+        background: #fafbfc;
+        border: 1px solid var(--wcfContentBorderInner);
+        padding: 14px 18px;
+        border-radius: 3px;
+        font-style: italic;
+        line-height: 1.5;
+    }
+
+    /* ---------- SIDEBAR ---------- */
+    .sidebar { display: flex; flex-direction: column; gap: 18px; }
+
+    .sidebarBox {
+        background: var(--wcfContentBackground);
+        border: 1px solid var(--wcfContentBorder);
+        border-radius: 4px;
+        overflow: hidden;
+    }
+    .sidebarBoxHeader {
+        background: linear-gradient(180deg, #fafbfc 0%, #f0f2f4 100%);
+        padding: 10px 14px;
+        font-size: 13px;
+        font-weight: 600;
+        color: var(--wcfHeadlineText);
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        border-bottom: 1px solid var(--wcfContentBorder);
+    }
+    .sidebarBoxBody { padding: 14px; font-size: 13px; }
+    .sidebarBoxBody p { margin: 0 0 8px; }
+    .sidebarBoxBody ul { padding-left: 18px; margin: 8px 0; }
+    .sidebarBoxBody ul li { margin-bottom: 4px; }
+
+    .quickFact {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 6px 0;
+        border-bottom: 1px dashed var(--wcfContentBorderInner);
+        font-size: 12.5px;
+    }
+    .quickFact:last-child { border-bottom: none; }
+    .quickFact .factLabel { color: #66707a; }
+    .quickFact .factValue { font-weight: 600; color: var(--wcfHeadlineText); }
+
+    .miniProject {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 8px 0;
+        border-bottom: 1px solid var(--wcfContentBorderInner);
+        font-size: 13px;
+    }
+    .miniProject:last-child { border-bottom: none; }
+    .miniProject .mpDot {
+        width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0;
+    }
+    .mpDot.live { background: var(--wcfGreen); }
+    .mpDot.dev  { background: #b54708; }
+    .mpDot.plan { background: #aab2ba; }
+
+    .sidebarBtn {
+        display: block;
+        text-align: center;
+        background: var(--wcfButtonPrimary);
+        color: #fff;
+        padding: 9px 14px;
+        border-radius: 3px;
+        font-size: 13px;
+        font-weight: 500;
+        margin-top: 10px;
+    }
+    .sidebarBtn:hover { background: var(--wcfButtonPrimaryHover); color: #fff; text-decoration: none; }
+
+    /* ---------- FOOTER ---------- */
+    .pageFooter {
+        background: #1c2833;
+        color: #b8c2cc;
+        padding: 30px 20px 18px;
+        margin-top: 30px;
+        border-top: 3px solid var(--wcfBoxAccent);
+    }
+    .pageFooterInner { max-width: 1200px; margin: 0 auto; }
+    .pageFooter ol {
+        list-style: none;
+        padding: 0;
+        margin: 0 0 14px;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 18px;
+        font-size: 13px;
+    }
+    .pageFooter a { color: #d4dce3; }
+    .pageFooter a:hover { color: #fff; }
+    .footerNote {
+        font-size: 11px;
+        color: #8a949e;
+        line-height: 1.6;
+        border-top: 1px solid #2c3e50;
+        padding-top: 12px;
+        margin-top: 12px;
+    }
+    .wsTag {
+        font-size: 11px;
+        color: #8a949e;
+        margin-top: 8px;
+    }
+    .wsTag a { color: #c8a951; }
+</style>
+</head>
+<body>
+
+<!-- ===== HEADER ===== -->
+<header class="pageHeader">
+    <div class="pageHeaderInner">
+        <a class="pageHeaderLogo" href="https://afol55.afol.lu/">
+            <div class="logoMark">A.lu</div>
+            <div class="pageHeaderTitle">
+                <span class="siteTitle">AFOL.lu</span>
+                <span class="siteSubtitle">Digitale Projekte</span>
+            </div>
+        </a>
+    </div>
+</header>
+
+<!-- ===== MAIN NAVIGATION ===== -->
+<nav class="mainMenu">
+    <div class="mainMenuInner">
+        <ul class="mainMenuList">
+            <li class="active"><a href="#ueberblick">Überblick</a></li>
+            <li><a href="#projekte">Projekte</a></li>
+            <li><a href="#ablauf">So arbeiten wir</a></li>
+            <li><a href="#technik">Technik</a></li>
+            <li><a href="#mitmachen">Mitmachen</a></li>
+        </ul>
+    </div>
+</nav>
+
+<!-- ===== MAIN LAYOUT ===== -->
+<div class="pageWrapper">
+
+    <!-- ===== MAIN CONTENT ===== -->
+    <main>
+        <div class="breadcrumbs">
+            <a href="https://afol55.afol.lu/">AFOLs of Luxembourg</a>
+            <span class="sep">›</span>
+            <a href="https://afol55.afol.lu/">Vorstand</a>
+            <span class="sep">›</span>
+            <span>Digitale Projekte</span>
+        </div>
+
+        <!-- HERO -->
+        <section class="hero" id="ueberblick">
+            <span class="heroDraft">Entwurf · 2026</span>
+            <span class="heroBadge">Digitalisierung · a.s.b.l.</span>
+            <h1>Digitale Projekte der AFOL.lu</h1>
+            <p class="heroSubtitle">Werkzeuge, die unsere LEGO®-Community im Hintergrund am Laufen halten – von der Mitgliederverwaltung bis zum Event-Planer. An einem Ort gebündelt.</p>
+            <div class="heroActions">
+                <a class="heroBtn" href="#projekte">Projekte ansehen</a>
+                <a class="heroBtn ghost" href="#mitmachen">Mitmachen</a>
+            </div>
+        </section>
+
+        <!-- ÜBERBLICK -->
+        <article class="contentBox">
+            <div class="contentBoxHeader"><span class="icon"></span>Worum es geht</div>
+            <div class="contentBoxBody">
+                <p>Unter <strong>Digitale Projekte</strong> bündeln wir alle selbst entwickelten
+                   Werkzeuge und Online-Dienste der AFOL.lu a.s.b.l. Ziel ist eine Vereinsarbeit,
+                   die schlank, nachvollziehbar und für alle im Vorstand zugänglich ist – ohne
+                   Tabellen-Chaos und ohne ein zweites Login-System.</p>
+                <p>Alle Anwendungen fügen sich optisch wie funktional in die gewohnte
+                   AFOL.lu-Umgebung ein und nutzen, wo es sinnvoll ist, dieselbe Datenbank
+                   und Anmeldung wie unsere WoltLab-Community.</p>
+            </div>
+        </article>
+
+        <!-- PROJEKTE -->
+        <article class="contentBox" id="projekte">
+            <div class="contentBoxHeader"><span class="icon"></span>Unsere Projekte</div>
+            <div class="contentBoxBody">
+                <p>Ein Überblick über laufende und geplante Vorhaben.</p>
+                <div class="projectGrid">
+
+                    <div class="projectCard">
+                        <span class="pcIcon">👥</span>
+                        <div class="pcTitle">Mitgliederverwaltung</div>
+                        <div class="pcDesc">Mitglieder und Online-Anträge sauber an einem Ort – einsehbar, pflegbar, geschützt. Inklusive Beiträgen und Dashboard.</div>
+                        <div class="pcMeta">
+                            <span class="pBadge live">Live</span>
+                            <a class="pcLink" href="https://afol55.afol.lu/index.php?projekt-mitglieder-verwaltung-vorstellung/">Mehr erfahren →</a>
+                        </div>
+                    </div>
+
+                    <div class="projectCard">
+                        <span class="pcIcon">🪪</span>
+                        <div class="pcTitle">Digitale Mitgliedskarte</div>
+                        <div class="pcDesc">Mitgliedsausweis fürs Smartphone – jederzeit griffbereit, fälschungssicher und immer aktuell.</div>
+                        <div class="pcMeta">
+                            <span class="pBadge plan">Geplant</span>
+                            <span class="pcLink muted">Idee</span>
+                        </div>
+                    </div>
+
+                    <div class="projectCard">
+                        <span class="pcIcon">📬</span>
+                        <div class="pcTitle">Newsletter &amp; Infos</div>
+                        <div class="pcDesc">Vereinsneuigkeiten und Termine gebündelt – direkt aus der Community heraus an alle Mitglieder.</div>
+                        <div class="pcMeta">
+                            <span class="pBadge plan">Geplant</span>
+                            <span class="pcLink muted">Idee</span>
+                        </div>
+                    </div>
+
+                    <div class="projectCard">
+                        <span class="pcIcon">🧱</span>
+                        <div class="pcTitle">Set-Datenbank</div>
+                        <div class="pcDesc">LEGO®-Sets des Vereins erfassen und durchsuchen – Bestand und Details an einer Stelle.</div>
+                        <div class="pcMeta">
+                            <span class="pBadge live">Live</span>
+                            <a class="pcLink" href="https://afol55.afol.lu/apps/SetDatenbank/test.php?action=list">Öffnen →</a>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </article>
+
+        <!-- WAS UNS WICHTIG IST -->
+        <article class="contentBox">
+            <div class="contentBoxHeader"><span class="icon"></span>Was uns wichtig ist</div>
+            <div class="contentBoxBody">
+                <p>Jedes Projekt folgt denselben Grundsätzen.</p>
+                <div class="valueGrid">
+                    <div class="valueItem">
+                        <div class="valueName"><span class="pico">🔐</span>Datenschutz zuerst</div>
+                        <div class="valueDesc">Zugriff nur intern, nur für berechtigte Vorstandsmitglieder – über die bestehende WoltLab-Anmeldung.</div>
+                    </div>
+                    <div class="valueItem">
+                        <div class="valueName"><span class="pico">🧩</span>Eine Umgebung</div>
+                        <div class="valueDesc">Gleiches Design, gleiche Datenbank, kein zweites Login – alles fügt sich in afol55.afol.lu ein.</div>
+                    </div>
+                    <div class="valueItem">
+                        <div class="valueName"><span class="pico">🪶</span>Schlank &amp; wartbar</div>
+                        <div class="valueDesc">Reines PHP im MVC-Stil, ohne Framework-Ballast – gut pflegbar im bestehenden Webspace.</div>
+                    </div>
+                    <div class="valueItem">
+                        <div class="valueName"><span class="pico">🤝</span>Ehrenamtlich</div>
+                        <div class="valueDesc">Von Mitgliedern für Mitglieder entwickelt – offen für Ideen und helfende Hände.</div>
+                    </div>
+                </div>
+            </div>
+        </article>
+
+        <!-- ABLAUF -->
+        <article class="contentBox" id="ablauf">
+            <div class="contentBoxHeader"><span class="icon"></span>So entsteht ein Projekt</div>
+            <div class="contentBoxBody">
+                <p>Von der Idee bis zum fertigen Werkzeug – in nachvollziehbaren Schritten.</p>
+                <div class="flow">
+                    <div class="flowStep">
+                        <div class="ft">Idee</div>
+                        <div class="fd">Bedarf aus dem Vereinsalltag</div>
+                    </div>
+                    <div class="flowArrow">→</div>
+                    <div class="flowStep">
+                        <div class="ft">Konzept</div>
+                        <div class="fd">Abstimmung im Vorstand</div>
+                    </div>
+                    <div class="flowArrow">→</div>
+                    <div class="flowStep">
+                        <div class="ft">Umsetzung</div>
+                        <div class="fd">Entwicklung &amp; Test</div>
+                    </div>
+                    <div class="flowArrow">→</div>
+                    <div class="flowStep done">
+                        <div class="ft">Live ✓</div>
+                        <div class="fd">Im Einsatz für den Verein</div>
+                    </div>
+                </div>
+            </div>
+        </article>
+
+        <!-- TECHNIK -->
+        <article class="contentBox" id="technik">
+            <div class="contentBoxHeader"><span class="icon"></span>Technik &amp; Sicherheit</div>
+            <div class="contentBoxBody">
+                <p>Unsere Werkzeuge laufen auf reinem PHP im MVC-Stil auf derselben MariaDB wie die
+                   Community – wartbar und gut in den bestehenden Webspace integrierbar, ganz ohne
+                   Framework-Ballast.</p>
+                <p>Sicherheit ist von Anfang an mitgedacht: Zugriffsschutz über das WoltLab-Login,
+                   abgesicherte Datenbankzugriffe und konsequenter Schutz vor den gängigen
+                   Web-Angriffen.</p>
+                <div class="techPills">
+                    <span class="techPill"><b>PHP</b> · MVC</span>
+                    <span class="techPill"><b>MySQL/MariaDB</b></span>
+                    <span class="techPill"><b>PDO</b> · Prepared Statements</span>
+                    <span class="techPill"><b>WoltLab</b> · SSO</span>
+                    <span class="techPill">CSRF-Schutz</span>
+                    <span class="techPill">XSS-Escaping</span>
+                </div>
+            </div>
+        </article>
+
+        <!-- CTA / MITMACHEN -->
+        <div class="ctaBox" id="mitmachen">
+            <div class="ctaText">
+                <h3>Eine Idee für ein digitales Projekt?</h3>
+                <p>Du möchtest mithelfen oder hast einen Vorschlag? Melde dich in der Community beim Vorstand.</p>
+            </div>
+            <a class="ctaBtn" href="https://afol55.afol.lu/">In der Community melden</a>
+        </div>
+
+        <!-- DISCLAIMER -->
+        <p class="disclaimer">
+            Interne Vereinsprojekte der AFOL.lu a.s.b.l. · LEGO® ist eine Marke der LEGO Gruppe,
+            die dieses Projekt weder sponsert noch unterstützt.
+        </p>
+
+    </main>
+
+    <!-- ===== SIDEBAR ===== -->
+    <aside class="sidebar">
+        <div class="sidebarBox">
+            <div class="sidebarBoxHeader">Auf einen Blick</div>
+            <div class="sidebarBoxBody">
+                <div class="quickFact"><span class="factLabel">Projekte gesamt</span><span class="factValue">4</span></div>
+                <div class="quickFact"><span class="factLabel">Live</span><span class="factValue">2</span></div>
+                <div class="quickFact"><span class="factLabel">Geplant</span><span class="factValue">2</span></div>
+                <div class="quickFact"><span class="factLabel">Technik</span><span class="factValue">PHP · MariaDB</span></div>
+                <div class="quickFact"><span class="factLabel">Träger</span><span class="factValue">AFOL.lu a.s.b.l.</span></div>
+                <a class="sidebarBtn" href="https://afol55.afol.lu/">Zur Community</a>
+            </div>
+        </div>
+
+        <div class="sidebarBox">
+            <div class="sidebarBoxHeader">Projektstatus</div>
+            <div class="sidebarBoxBody">
+                <div class="miniProject"><span class="mpDot live"></span>Mitgliederverwaltung</div>
+                <div class="miniProject"><span class="mpDot live"></span>Set-Datenbank</div>
+                <div class="miniProject"><span class="mpDot plan"></span>Digitale Mitgliedskarte</div>
+                <div class="miniProject"><span class="mpDot plan"></span>Newsletter &amp; Infos</div>
+            </div>
+        </div>
+
+        <div class="sidebarBox">
+            <div class="sidebarBoxHeader">Kurz erklärt</div>
+            <div class="sidebarBoxBody">
+                <p>Alle Werkzeuge nutzen die bestehende WoltLab-Anmeldung. Zugriff erhalten in der Regel
+                   Mitglieder der Gruppen <strong>„AFOL.lu a.s.b.l. Vorsitz"</strong> und
+                   <strong>„AFOL.lu a.s.b.l. Vorstand"</strong>. Die Mitgliederverwaltung ist
+                   ausschließlich dem Vorsitz vorbehalten.</p>
+                <ul>
+                    <li>Keine zweite Benutzerverwaltung</li>
+                    <li>Gleiche Datenbank wie die Community</li>
+                    <li>Datenschutz: Zugriff nur intern</li>
+                </ul>
+            </div>
+        </div>
+    </aside>
+
+</div>
+
+<!-- ===== FOOTER ===== -->
+<footer class="pageFooter">
+    <div class="pageFooterInner">
+        <ol>
+            <li><a href="#ueberblick">Überblick</a></li>
+            <li><a href="#projekte">Projekte</a></li>
+            <li><a href="#ablauf">So arbeiten wir</a></li>
+            <li><a href="#technik">Technik</a></li>
+            <li><a href="#mitmachen">Mitmachen</a></li>
+        </ol>
+        <div class="footerNote">
+            AFOL.lu a.s.b.l. · 22, rue de Manternach, L-6681 Mertert, Luxemburg ·
+            Digitale Projekte für die luxemburgische LEGO®-Fan-Community.
+            LEGO® ist eine Marke der LEGO Gruppe, die dieses Projekt weder sponsert noch unterstützt.
+        </div>
+        <div class="wsTag">Im Stil der AFOL.lu Community · <a href="https://afol55.afol.lu/">afol55.afol.lu</a></div>
+    </div>
+</footer>
+
+</body>
+</html>

@@ -1,0 +1,371 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#1c2833">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="AFOL.lu Apps">
+<title>AFOL.lu – Apps</title>
+<style>
+    /* App-Launcher im AFOL.lu / WoltLab-Stil */
+    :root {
+        --wcfContentBackground: #ffffff;
+        --wcfContentBorder: #e1e1e1;
+        --wcfContentBorderInner: #ededed;
+        --wcfContentText: #2c2e30;
+        --wcfContentLink: #0a4a66;
+        --wcfContentLinkActive: #04293c;
+        --wcfHeadlineText: #1c1d1f;
+        --wcfPageBackground: #f5f6f7;
+        --wcfButtonPrimary: #0a4a66;
+        --wcfButtonPrimaryHover: #04293c;
+        --wcfNavBackground: #1c2833;
+        --wcfNavText: #ffffff;
+        --wcfBoxAccent: #c8a951;
+        --wcfGreen: #1a7f37;
+    }
+
+    * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+    html, body { margin: 0; padding: 0; }
+
+    body {
+        font-family: "Segoe UI", "Liberation Sans", Arial, sans-serif;
+        font-size: 14px;
+        line-height: 1.55;
+        color: var(--wcfContentText);
+        background: var(--wcfPageBackground);
+        min-height: 100vh;
+    }
+
+    a { color: var(--wcfContentLink); text-decoration: none; }
+
+    /* ---------- APP-HEADER ---------- */
+    .appHeader {
+        background: linear-gradient(135deg, #1c2833 0%, #2c3e50 100%);
+        color: var(--wcfNavText);
+        border-bottom: 3px solid var(--wcfBoxAccent);
+        padding: calc(20px + env(safe-area-inset-top)) 20px 22px;
+        position: relative;
+        overflow: hidden;
+    }
+    .appHeader::before {
+        content: "";
+        position: absolute;
+        top: -50px; right: -40px;
+        width: 200px; height: 200px;
+        background: var(--wcfBoxAccent);
+        opacity: 0.08;
+        border-radius: 50%;
+    }
+    .appHeaderInner {
+        max-width: 760px;
+        margin: 0 auto;
+        position: relative;
+        z-index: 1;
+    }
+    .appBrandRow {
+        display: flex;
+        align-items: center;
+        gap: 14px;
+    }
+    .logoMark {
+        width: 52px;
+        height: 52px;
+        background: var(--wcfBoxAccent);
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 700;
+        font-size: 20px;
+        color: #1c2833;
+        letter-spacing: -0.5px;
+        box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+        flex-shrink: 0;
+    }
+    .appBrandText { display: flex; flex-direction: column; line-height: 1.15; }
+    .appBrandText .t1 { font-size: 20px; font-weight: 600; }
+    .appBrandText .t2 {
+        font-size: 11px; color: #b8c2cc; margin-top: 2px;
+        letter-spacing: 0.5px; text-transform: uppercase;
+    }
+    .appGreeting { margin-top: 18px; }
+    .appGreeting h1 { font-size: 22px; margin: 0 0 4px; font-weight: 700; letter-spacing: -0.3px; }
+    .appGreeting p { margin: 0; font-size: 13.5px; color: #c8d1da; }
+
+    /* ---------- LAYOUT ---------- */
+    .appWrapper {
+        max-width: 760px;
+        margin: 0 auto;
+        padding: 22px 18px calc(40px + env(safe-area-inset-bottom));
+    }
+
+    .sectionTitle {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 12px;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.6px;
+        color: #66707a;
+        margin: 8px 2px 12px;
+    }
+    .sectionTitle .count {
+        background: #e7f6ec; color: var(--wcfGreen);
+        border-radius: 999px; padding: 1px 8px; font-size: 11px;
+    }
+
+    /* ---------- APP-GRID (fertige Projekte) ---------- */
+    .appGrid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 14px;
+    }
+    @media (max-width: 460px) { .appGrid { grid-template-columns: 1fr; } }
+
+    .appTile {
+        position: relative;
+        display: flex;
+        flex-direction: column;
+        background: var(--wcfContentBackground);
+        border: 1px solid var(--wcfContentBorder);
+        border-radius: 16px;
+        padding: 18px;
+        text-decoration: none;
+        color: inherit;
+        box-shadow: 0 2px 6px rgba(0,0,0,0.04);
+        transition: transform .12s ease, box-shadow .12s ease, border-color .12s ease;
+        overflow: hidden;
+    }
+    .appTile:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 10px 22px rgba(28,40,51,0.14);
+        border-color: var(--wcfBoxAccent);
+        text-decoration: none;
+    }
+    .appTile:active { transform: translateY(-1px); }
+
+    .appIcon {
+        width: 60px; height: 60px;
+        border-radius: 16px;
+        display: grid; place-items: center;
+        font-size: 30px;
+        margin-bottom: 14px;
+        box-shadow: 0 4px 10px rgba(0,0,0,0.12);
+    }
+    .appIcon.ico-members { background: linear-gradient(135deg, #0a4a66, #0d5e80); }
+    .appIcon.ico-wiki    { background: linear-gradient(135deg, #1c2833, #34495e); }
+    .appIcon.ico-sets    { background: linear-gradient(135deg, #1a7f37, #34a853); }
+    .appIcon.ico-projects{ background: linear-gradient(135deg, #c8a951, #d8bb6a); }
+
+    .appName {
+        font-size: 16px; font-weight: 600; color: var(--wcfHeadlineText);
+        margin-bottom: 4px;
+    }
+    .appDesc { font-size: 12.5px; color: #66707a; flex: 1; margin-bottom: 14px; }
+
+    .appAccess {
+        display: inline-flex; align-items: center; gap: 5px;
+        font-size: 11px; font-weight: 600; color: #66707a;
+        background: #eef1f5; border-radius: 999px;
+        padding: 3px 9px; margin-bottom: 12px;
+        align-self: flex-start;
+    }
+
+    .appOpen {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        align-self: flex-start;
+        background: var(--wcfButtonPrimary);
+        color: #fff;
+        font-size: 12.5px;
+        font-weight: 600;
+        padding: 7px 14px;
+        border-radius: 999px;
+    }
+    .appTile:hover .appOpen { background: var(--wcfButtonPrimaryHover); }
+
+    .appLiveDot {
+        position: absolute;
+        top: 16px; right: 16px;
+        display: inline-flex; align-items: center; gap: 5px;
+        font-size: 10.5px; font-weight: 700; text-transform: uppercase;
+        letter-spacing: 0.5px;
+        color: var(--wcfGreen);
+        background: #e7f6ec;
+        padding: 3px 9px;
+        border-radius: 999px;
+    }
+    .appLiveDot::before {
+        content: ""; width: 7px; height: 7px; border-radius: 50%;
+        background: var(--wcfGreen);
+    }
+
+    /* ---------- BALD VERFÜGBAR ---------- */
+    .soonGrid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 12px;
+        margin-top: 6px;
+    }
+    @media (max-width: 460px) { .soonGrid { grid-template-columns: 1fr; } }
+
+    .soonTile {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        background: #fafbfc;
+        border: 1px dashed var(--wcfContentBorder);
+        border-radius: 14px;
+        padding: 14px;
+        opacity: .9;
+    }
+    .soonIcon {
+        width: 42px; height: 42px;
+        border-radius: 12px;
+        background: #eef1f5;
+        display: grid; place-items: center;
+        font-size: 20px;
+        flex-shrink: 0;
+        filter: grayscale(.3);
+    }
+    .soonText .sName { font-size: 13.5px; font-weight: 600; color: var(--wcfHeadlineText); }
+    .soonText .sTag {
+        font-size: 10.5px; font-weight: 700; text-transform: uppercase;
+        letter-spacing: 0.5px; color: #b54708;
+    }
+    .soonText .sTag.plan { color: #66707a; }
+
+    /* ---------- INFO-BANNER ---------- */
+    .infoCard {
+        background: var(--wcfContentBackground);
+        border: 1px solid var(--wcfContentBorder);
+        border-left: 3px solid var(--wcfBoxAccent);
+        border-radius: 12px;
+        padding: 14px 16px;
+        margin-top: 26px;
+        font-size: 12.5px;
+        color: #4d5662;
+        display: flex;
+        gap: 12px;
+        align-items: flex-start;
+    }
+    .infoCard .ii {
+        width: 26px; height: 26px; flex-shrink: 0;
+        background: rgba(200,169,81,.18);
+        border-radius: 8px;
+        display: grid; place-items: center;
+        font-size: 14px;
+    }
+    .infoCard strong { color: var(--wcfHeadlineText); }
+
+    /* ---------- FOOTER ---------- */
+    .appFooter {
+        text-align: center;
+        font-size: 11px;
+        color: #8a949e;
+        line-height: 1.6;
+        margin-top: 28px;
+    }
+    .appFooter a { color: var(--wcfContentLink); }
+    .appFooter .fLinks { margin-bottom: 8px; }
+    .appFooter .fLinks a { margin: 0 8px; font-size: 12px; font-weight: 500; }
+</style>
+</head>
+<body>
+
+<!-- ===== APP-HEADER ===== -->
+<header class="appHeader">
+    <div class="appHeaderInner">
+        <div class="appBrandRow">
+            <div class="logoMark">A.lu</div>
+            <div class="appBrandText">
+                <span class="t1">AFOL.lu</span>
+                <span class="t2">Apps</span>
+            </div>
+        </div>
+        <div class="appGreeting">
+            <h1>Vereins-Apps</h1>
+            <p>Alle fertigen Werkzeuge der AFOL.lu a.s.b.l. – ein Tipp und du bist drin.</p>
+        </div>
+    </div>
+</header>
+
+<!-- ===== APP-LAUNCHER ===== -->
+<main class="appWrapper">
+
+    <!-- FERTIGE PROJEKTE -->
+    <div class="sectionTitle">Fertige Apps <span class="count">2 live</span></div>
+    <div class="appGrid">
+
+        <a class="appTile" href="https://afol55.afol.lu/index.php?projekt-mitglieder-verwaltung-vorstellung/">
+            <span class="appLiveDot">Live</span>
+            <div class="appIcon ico-members">👥</div>
+            <div class="appName">Mitgliederverwaltung</div>
+            <div class="appDesc">Mitglieder &amp; Online-Anträge pflegen, Beiträge im Blick, Dashboard mit Kennzahlen.</div>
+            <span class="appAccess">🔒 Nur Vorsitz</span>
+            <span class="appOpen">Öffnen →</span>
+        </a>
+
+        <a class="appTile" href="https://afol55.afol.lu/apps/SetDatenbank/test.php?action=list">
+            <span class="appLiveDot">Live</span>
+            <div class="appIcon ico-sets">🧱</div>
+            <div class="appName">Set-Datenbank</div>
+            <div class="appDesc">LEGO®-Sets des Vereins erfassen und durchsuchen – Bestand und Details an einer Stelle.</div>
+            <span class="appOpen">Öffnen →</span>
+        </a>
+
+    </div>
+
+    <!-- BALD VERFÜGBAR -->
+    <div class="sectionTitle" style="margin-top:26px;">Bald verfügbar</div>
+    <div class="soonGrid">
+
+        <div class="soonTile">
+            <div class="soonIcon">🪪</div>
+            <div class="soonText">
+                <div class="sName">Digitale Mitgliedskarte</div>
+                <div class="sTag plan">Geplant</div>
+            </div>
+        </div>
+
+        <div class="soonTile">
+            <div class="soonIcon">📬</div>
+            <div class="soonText">
+                <div class="sName">Newsletter &amp; Infos</div>
+                <div class="sTag plan">Geplant</div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- INFO -->
+    <div class="infoCard">
+        <span class="ii">🔐</span>
+        <div>
+            <strong>Anmeldung erforderlich.</strong> Alle Apps nutzen die bestehende
+            WoltLab-Anmeldung. Zugriff erhalten in der Regel Mitglieder der Gruppen
+            „AFOL.lu a.s.b.l. Vorsitz" und „AFOL.lu a.s.b.l. Vorstand" – kein zweites Login nötig.
+            Die <strong>Mitgliederverwaltung</strong> ist aus Datenschutzgründen ausschließlich
+            dem Vorsitz vorbehalten.
+        </div>
+    </div>
+
+    <!-- FOOTER -->
+    <footer class="appFooter">
+        <div class="fLinks">
+            <a href="digitale-projekte.html">Alle Projekte</a>
+            <a href="https://afol55.afol.lu/">Community</a>
+        </div>
+        AFOL.lu a.s.b.l. · Digitale Projekte für die luxemburgische LEGO®-Fan-Community.<br>
+        LEGO® ist eine Marke der LEGO Gruppe, die dieses Projekt weder sponsert noch unterstützt.
+    </footer>
+
+</main>
+
+</body>
+</html>
